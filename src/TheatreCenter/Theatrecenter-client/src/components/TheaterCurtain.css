@@ -1,0 +1,153 @@
+:root {
+  --curtain-main: #4a141a; /* Благородный темно-бордовый */
+  --curtain-dark: #2d0a0f;
+  --curtain-light: #6e232e;
+  --curtain-accent: #8c6d46;
+  --curtain-highlight: rgba(255, 255, 255, 0.03);
+}
+
+.content-wrapper {
+  position: relative;
+  z-index: 100;
+  transition: opacity 0.3s ease;
+}
+
+.content-wrapper.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.curtain-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.curtain-panel {
+  position: absolute;
+  top: 0;
+  width: 51%;
+  height: 100vh;
+  transition: transform 0.8s cubic-bezier(0.33, 1, 0.68, 1);
+  overflow: hidden;
+}
+
+/* Левый занавес */
+.curtain-left {
+    
+  left: 0;
+  transform: translateX(-100%);
+  background: 
+    linear-gradient(
+      15deg,
+      var(--curtain-dark) 0%,
+      var(--curtain-main) 50%,
+      var(--curtain-dark) 100%
+    );
+  box-shadow: 
+    inset -15px 0 30px rgba(0, 0, 0, 0.6),
+    inset 0 -50px 80px rgba(0, 0, 0, 0.4);
+}
+
+/* Правый занавес */
+.curtain-right {
+  right: 0;
+  transform: translateX(100%);
+  background: 
+    linear-gradient(
+      -15deg,
+      var(--curtain-dark) 0%,
+      var(--curtain-main) 50%,
+      var(--curtain-dark) 100%
+    );
+  box-shadow: 
+    inset 15px 0 30px rgba(0, 0, 0, 0.6),
+    inset 0 -50px 80px rgba(0, 0, 0, 0.4);
+}
+
+/* Объемные складки */
+.curtain-panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    /* Вертикальные складки */
+    repeating-linear-gradient(
+      90deg,
+      var(--curtain-highlight),
+      var(--curtain-highlight) 1px,
+      transparent 1px,
+      transparent 25px
+    ),
+    /* Горизонтальные складки */
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.15),
+      rgba(0, 0, 0, 0.15) 1px,
+      transparent 1px,
+      transparent 40px
+    );
+  mask: 
+    linear-gradient(
+      to right,
+      transparent 0%,
+      rgba(0,0,0,0.8) 10%,
+      rgba(0,0,0,0.9) 50%,
+      rgba(0,0,0,0.8) 90%,
+      transparent 100%
+    );
+}
+
+/* Кисточки и сборка внизу */
+.curtain-panel::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 40px;
+  background: 
+    linear-gradient(
+      to bottom,
+      transparent,
+      rgba(0, 0, 0, 0.6) 70%
+    ),
+    repeating-linear-gradient(
+      90deg,
+      var(--curtain-accent),
+      var(--curtain-accent) 15px,
+      var(--curtain-main) 15px,
+      var(--curtain-main) 30px
+    );
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.7);
+}
+
+/* Состояние закрытия */
+.curtain-left.closed {
+  transform: translateX(-1%);
+}
+
+.curtain-right.closed {
+  transform: translateX(1%);
+}
+
+
+
+/* Эффект колыхания ткани */
+/* @keyframes fabricSway {
+  0%, 100% { transform: translateX(-1%) rotate(0.2deg); }
+  50% { transform: translateX(-1%) rotate(-0.3deg); }
+}
+
+.curtain-left.closed {
+  animation: fabricSway 5s ease-in-out infinite;
+}
+
+.curtain-right.closed {
+  animation: fabricSway 5s ease-in-out infinite reverse;
+} */

@@ -1,0 +1,418 @@
+﻿using Allure.Xunit.Attributes;
+using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using Moq;
+using TheatreCenter.Domain.Enums;
+using TheatreCenter.Domain.Interfaces.Repositories;
+using TheatreCenter.Domain.Models;
+using TheatreCenter.Services.Services;
+using TheatreCenter.Tests.Fixtures;
+using Xunit;
+
+namespace TheatreCenter.Tests.Services;
+
+[AllureSuite("Actor Service Tests")]
+[AllureSubSuite("London Style (with Mocks)")]
+public class ActorServiceMockTests : IClassFixture<ActorFixture>
+{
+    private readonly Mock<IActorRepository> _actorRepositoryMock;
+    private readonly Mock<ILogger<ActorService>> _loggerMock;
+    private readonly ActorService _sut;
+    private readonly ActorFixture _fixture;
+
+    public ActorServiceMockTests(ActorFixture fixture)
+    {
+        _fixture = fixture;
+        _actorRepositoryMock = new Mock<IActorRepository>();
+        _loggerMock = new Mock<ILogger<ActorService>>();
+        _sut = new ActorService(_actorRepositoryMock.Object, _loggerMock.Object);
+    }
+
+    [Fact]
+    [AllureFeature("GetActorByIdAsync")]
+    [AllureStory("Positive case - actor exists")]
+    public async Task GetActorByIdAsync_ActorExists_ReturnsActor()
+    {
+        // Arrange
+        var actorId = 1;
+        var expectedActor = _fixture.CreateActor(id: actorId);
+
+        _actorRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(actorId))
+            .ReturnsAsync(expectedActor);
+
+        // Act
+        var result = await _sut.GetActorByIdAsync(actorId);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeEquivalentTo(expectedActor);
+        _actorRepositoryMock.Verify(repo => repo.GetByIdAsync(actorId), Times.Once);
+
+        // Verify logging
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Attempting to get actor")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.AtLeastOnce);
+    }
+
+    [Fact]
+    [AllureFeature("GetActorByIdAsync")]
+    [AllureStory("Negative case - invalid ID")]
+    public async Task GetActorByIdAsync_InvalidId_ThrowsArgumentException()
+    {
+        // Arrange
+        var invalidId = 0;
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => _sut.GetActorByIdAsync(invalidId));
+        _actorRepositoryMock.Verify(repo => repo.GetByIdAsync(It.IsAny<int>()), Times.Never);
+
+        // Verify logging
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Warning,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Invalid actor ID")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
+
+    [Fact]
+    [AllureFeature("GetActorByIdAsync")]
+    [AllureStory("Negative case - actor not found")]
+    public async Task GetActorByIdAsync_ActorNotFound_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var actorId = 1;
+
+        _actorRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(actorId))
+            .ReturnsAsync((Actor?)null);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(() => _sut.GetActorByIdAsync(actorId));
+        _actorRepositoryMock.Verify(repo => repo.GetByIdAsync(actorId), Times.Once);
+
+        // Verify logging
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Warning,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("not found")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
+
+    [Fact]
+    [AllureFeature("GetAllActorsAsync")]
+    [AllureStory("Positive case - actors exist")]
+    public async Task GetAllActorsAsync_ActorsExist_ReturnsActors()
+    {
+        // Arrange
+        var actors = new List<Actor>
+        {
+            _fixture.CreateActor(id: 1),
+            _fixture.CreateActor(id: 2)
+        };
+
+        _actorRepositoryMock
+            .Setup(repo => repo.GetAllAsync())
+            .ReturnsAsync(actors);
+
+        // Act
+        var result = await _sut.GetAllActorsAsync();
+
+        // Assert
+        result.Should().HaveCount(2);
+        _actorRepositoryMock.Verify(repo => repo.GetAllAsync(), Times.Once);
+
+        // Verify logging
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Successfully retrieved")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.AtLeastOnce);
+    }
+
+    [Fact]
+    [AllureFeature("CreateActorAsync")]
+    [AllureStory("Positive case - valid actor")]
+    public async Task CreateActorAsync_ValidActor_ReturnsCreatedActor()
+    {
+        // Arrange
+        var actor = _fixture.CreateActor();
+
+        _actorRepositoryMock
+            .Setup(repo => repo.AddAsync(actor))
+            .Returns(Task.CompletedTask);
+        _actorRepositoryMock
+            .Setup(repo => repo.SaveChangesAsync())
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _sut.CreateActorAsync(actor);
+
+        // Assert
+        result.Should().BeEquivalentTo(actor);
+        _actorRepositoryMock.Verify(repo => repo.AddAsync(actor), Times.Once);
+        _actorRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Once);
+
+        // Verify logging
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Successfully created")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.AtLeastOnce);
+    }
+
+    [Fact]
+    [AllureFeature("CreateActorAsync")]
+    [AllureStory("Negative case - null actor")]
+    public async Task CreateActorAsync_NullActor_ThrowsArgumentNullException()
+    {
+        // Arrange
+        Actor actor = null!;
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(() => _sut.CreateActorAsync(actor));
+        _actorRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<Actor>()), Times.Never);
+
+        // Verify logging
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Attempted to create null actor")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
+
+    [Fact]
+    [AllureFeature("CreateActorAsync")]
+    [AllureStory("Negative case - empty name")]
+    public async Task CreateActorAsync_EmptyName_ThrowsArgumentException()
+    {
+        // Arrange
+        var actor = _fixture.CreateActor();
+        actor.Name = "";
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => _sut.CreateActorAsync(actor));
+        _actorRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<Actor>()), Times.Never);
+
+        // Verify logging
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("empty name")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
+
+    [Fact]
+    [AllureFeature("CreateActorAsync")]
+    [AllureStory("Negative case - future birth date")]
+    public async Task CreateActorAsync_FutureBirthDate_ThrowsArgumentException()
+    {
+        // Arrange
+        var actor = _fixture.CreateActor();
+        actor.BirthDate = DateTime.Now.AddDays(1);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => _sut.CreateActorAsync(actor));
+        _actorRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<Actor>()), Times.Never);
+
+        // Verify logging
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Invalid birth date")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
+
+    [Fact]
+    [AllureFeature("CreateActorAsync")]
+    [AllureStory("Negative case - invalid height")]
+    public async Task CreateActorAsync_InvalidHeight_ThrowsArgumentException()
+    {
+        // Arrange
+        var actor = _fixture.CreateActor();
+        actor.Height = 50; // Too short
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => _sut.CreateActorAsync(actor));
+        _actorRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<Actor>()), Times.Never);
+
+        // Verify logging
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Invalid height value")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
+
+    [Fact]
+    [AllureFeature("UpdateActorAsync")]
+    [AllureStory("Positive case - valid update")]
+    public async Task UpdateActorAsync_ValidActor_ReturnsUpdatedActor()
+    {
+        // Arrange
+        var actor = _fixture.CreateActor(id: 1);
+        var existingActor = _fixture.CreateActor(id: 1);
+
+        _actorRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(actor.Id))
+            .ReturnsAsync(existingActor);
+        _actorRepositoryMock
+            .Setup(repo => repo.UpdateAsync(existingActor))
+            .Returns(Task.CompletedTask);
+        _actorRepositoryMock
+            .Setup(repo => repo.SaveChangesAsync())
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _sut.UpdateActorAsync(actor);
+
+        // Assert
+        result.Should().BeEquivalentTo(existingActor);
+        _actorRepositoryMock.Verify(repo => repo.GetByIdAsync(actor.Id), Times.Once);
+        _actorRepositoryMock.Verify(repo => repo.UpdateAsync(existingActor), Times.Once);
+        _actorRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Once);
+
+        // Verify logging
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Successfully updated")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.AtLeastOnce);
+    }
+
+    [Fact]
+    [AllureFeature("DeleteActorAsync")]
+    [AllureStory("Positive case - actor deleted")]
+    public async Task DeleteActorAsync_ValidActor_ReturnsTrue()
+    {
+        // Arrange
+        var actorId = 1;
+        var actor = _fixture.CreateActor(id: actorId);
+        actor.ActorRoles = new List<ActorRole>(); // No assigned roles
+
+        _actorRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(actorId))
+            .ReturnsAsync(actor);
+        _actorRepositoryMock
+            .Setup(repo => repo.RemoveAsync(actor))
+            .Returns(Task.CompletedTask);
+        _actorRepositoryMock
+            .Setup(repo => repo.SaveChangesAsync())
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _sut.DeleteActorAsync(actorId);
+
+        // Assert
+        result.Should().BeTrue();
+        _actorRepositoryMock.Verify(repo => repo.GetByIdAsync(actorId), Times.Once);
+        _actorRepositoryMock.Verify(repo => repo.RemoveAsync(actor), Times.Once);
+        _actorRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Once);
+
+        // Verify logging
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Successfully deleted")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.AtLeastOnce);
+    }
+
+    [Fact]
+    [AllureFeature("DeleteActorAsync")]
+    [AllureStory("Negative case - actor with assigned roles")]
+    public async Task DeleteActorAsync_ActorWithRoles_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var actorId = 1;
+        var actor = _fixture.CreateActor(id: actorId);
+        actor.ActorRoles = new List<ActorRole> { new ActorRole(1, 1) }; // Has assigned roles
+
+        _actorRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(actorId))
+            .ReturnsAsync(actor);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.DeleteActorAsync(actorId));
+        _actorRepositoryMock.Verify(repo => repo.RemoveAsync(It.IsAny<Actor>()), Times.Never);
+
+        // Verify logging
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("has assigned roles")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
+
+    [Fact]
+    [AllureFeature("GetActorsByVoiceTypeAsync")]
+    [AllureStory("Positive case - actors found")]
+    public async Task GetActorsByVoiceTypeAsync_ValidVoiceType_ReturnsActors()
+    {
+        // Arrange
+        var voiceType = VoiceType.Tenor;
+        var actors = new List<Actor>
+        {
+            _fixture.CreateActor(voiceType: voiceType),
+            _fixture.CreateActor(voiceType: voiceType)
+        };
+
+        _actorRepositoryMock
+            .Setup(repo => repo.GetByVoiceTypeAsync(voiceType))
+            .ReturnsAsync(actors);
+
+        // Act
+        var result = await _sut.GetActorsByVoiceTypeAsync(voiceType);
+
+        // Assert
+        result.Should().HaveCount(2);
+        _actorRepositoryMock.Verify(repo => repo.GetByVoiceTypeAsync(voiceType), Times.Once);
+
+        // Verify logging
+        _loggerMock.Verify(
+            x => x.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Found")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.AtLeastOnce);
+    }
+}
