@@ -39,12 +39,14 @@ namespace TheatreCenter.Data.Repositories
 
         public async Task CreateAsync(Account account)
         {
-            await _context.Accounts.AddAsync(account);
+            _context.Accounts.AddAsync(account);
+            await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(Account account)
         {
             _context.Accounts.Update(account);
+            await _context.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(int id)
@@ -53,6 +55,7 @@ namespace TheatreCenter.Data.Repositories
             if (account != null)
             {
                 _context.Accounts.Remove(account);
+                await _context.SaveChangesAsync();
             }
         }
 
@@ -81,6 +84,7 @@ namespace TheatreCenter.Data.Repositories
                 return false;
 
             account.FavoriteActors.Add(new AccountActorFavorite(accountId, actorId));
+            await _context.SaveChangesAsync();
             return true;
         }
 
@@ -96,6 +100,7 @@ namespace TheatreCenter.Data.Repositories
             if (favorite == null) return false;
 
             account.FavoriteActors.Remove(favorite);
+            await _context.SaveChangesAsync();
             return true;
         }
 
@@ -113,6 +118,7 @@ namespace TheatreCenter.Data.Repositories
                 return false;
 
             account.FavoriteMusicals.Add(new AccountMusicalFavorite(accountId, musicalId));
+            await _context.SaveChangesAsync();
             return true;
         }
 
@@ -128,6 +134,7 @@ namespace TheatreCenter.Data.Repositories
             if (favorite == null) return false;
 
             account.FavoriteMusicals.Remove(favorite);
+            await _context.SaveChangesAsync();
             return true;
         }
 
@@ -145,6 +152,7 @@ namespace TheatreCenter.Data.Repositories
                 return false;
 
             account.FavoriteTheatres.Add(new AccountTheatreFavorite(accountId, theatreId));
+            await _context.SaveChangesAsync();
             return true;
         }
 
@@ -160,6 +168,7 @@ namespace TheatreCenter.Data.Repositories
             if (favorite == null) return false;
 
             account.FavoriteTheatres.Remove(favorite);
+            await _context.SaveChangesAsync();
             return true;
         }
 

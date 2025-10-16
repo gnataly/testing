@@ -59,10 +59,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Tests\Domain.Tests\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\TheatreCenter.Data\TheatreCenter.Data.csproj" />
     <ProjectReference Include="..\TheatreCenter.Domain\TheatreCenter.Domain.csproj" />
     <ProjectReference Include="..\TheatreCenter.Services\TheatreCenter.Services.csproj" />

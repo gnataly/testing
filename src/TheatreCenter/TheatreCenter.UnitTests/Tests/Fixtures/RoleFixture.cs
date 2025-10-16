@@ -27,20 +27,30 @@ public class RoleFixture
             .With(r => r.Name, name ?? $"Role {_fixture.Create<int>()}")
             .With(r => r.RoleType, roleType)
             .With(r => r.MusicalId, musicalId ?? _fixture.Create<int>())
+            .Without(r => r.Musical)
             .Without(r => r.ActorRoles)
+            .Without(r => r.CastMembers)
             .Create();
 
         return role;
     }
 
-    public Musical CreateMusical(int? id = null, string? title = null)
+    public Musical CreateMusical(
+        int? id = null,
+        string? title = null,
+        AgeRestriction ageRestriction = AgeRestriction.EighteenPlus)
     {
         var musical = _fixture.Build<Musical>()
             .With(m => m.Id, id ?? _fixture.Create<int>())
             .With(m => m.Title, title ?? $"Musical {_fixture.Create<int>()}")
+            .With(m => m.Description, $"Description {_fixture.Create<int>()}")
             .With(m => m.Duration, TimeSpan.FromHours(2))
+            .With(m => m.AgeRestriction, ageRestriction)
+            .With(m => m.TheatreId, _fixture.Create<int>())
+            .Without(m => m.Theatre)
             .Without(m => m.Shows)
             .Without(m => m.Roles)
+            .Without(m => m.MusicalThemes)
             .Create();
 
         return musical;

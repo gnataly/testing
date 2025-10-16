@@ -26,7 +26,8 @@ namespace TheatreCenter.Data.Repositories
 
         public async Task AddAsync(Musical musical)
         {
-            await _context.Set<Musical>().AddAsync(musical);
+            _context.Set<Musical>().AddAsync(musical);
+            await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(Musical musical)

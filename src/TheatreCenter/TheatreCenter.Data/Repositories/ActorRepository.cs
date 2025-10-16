@@ -58,7 +58,7 @@ public class ActorRepository : IActorRepository
         _logger.LogInformation("Adding new actor with ID: {ActorId}", actor.Id);
         try
         {
-            await _context.Actors.AddAsync(actor);
+            _context.Actors.AddAsync(actor);
             await _context.SaveChangesAsync();
             _logger.LogDebug("Actor with ID {ActorId} added to context", actor.Id);
         }

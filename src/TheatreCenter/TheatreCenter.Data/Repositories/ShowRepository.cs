@@ -29,7 +29,8 @@ namespace TheatreCenter.Data.Repositories
 
         public async Task AddAsync(Show show)
         {
-            await _context.Shows.AddAsync(show);
+            _context.Shows.AddAsync(show);
+            await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(Show show)

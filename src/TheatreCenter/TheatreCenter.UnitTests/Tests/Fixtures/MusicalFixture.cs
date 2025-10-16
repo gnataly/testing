@@ -31,18 +31,21 @@ public class MusicalFixture
             .With(m => m.Duration, duration ?? TimeSpan.FromHours(2))
             .With(m => m.AgeRestriction, ageRestriction)
             .With(m => m.TheatreId, theatreId ?? _fixture.Create<int>())
+            .Without(m => m.Theatre)
             .Without(m => m.Shows)
             .Without(m => m.Roles)
+            .Without(m => m.MusicalThemes)
             .Create();
 
         return musical;
     }
 
-    public Theatre CreateTheatre(int? id = null, string? name = null)
+    public Theatre CreateTheatre(int? id = null, string? name = null, string? addInfo = null)
     {
         var theatre = _fixture.Build<Theatre>()
             .With(t => t.Id, id ?? _fixture.Create<int>())
             .With(t => t.Name, name ?? $"Theatre {_fixture.Create<int>()}")
+            .With(t => t.AddInfo, addInfo ?? $"Additional info {_fixture.Create<int>()}")
             .Without(t => t.Musicals)
             .Create();
 

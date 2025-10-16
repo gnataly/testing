@@ -27,7 +27,8 @@ namespace TheatreCenter.Data.Repositories
 
         public async Task AddAsync(Theme theme)
         {
-            await _context.Themes.AddAsync(theme);
+            _context.Themes.AddAsync(theme);
+            await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(Theme theme)

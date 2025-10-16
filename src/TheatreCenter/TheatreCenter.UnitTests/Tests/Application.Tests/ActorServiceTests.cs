@@ -33,7 +33,7 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
     [AllureStory("Positive case - actor exists")]
     public async Task GetActorByIdAsync_ActorExists_ReturnsActor()
     {
-        // Arrange
+        
         var actorId = 1;
         var expectedActor = _fixture.CreateActor(id: actorId);
 
@@ -41,10 +41,10 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
             .Setup(repo => repo.GetByIdAsync(actorId))
             .ReturnsAsync(expectedActor);
 
-        // Act
+        
         var result = await _sut.GetActorByIdAsync(actorId);
 
-        // Assert
+        
         result.Should().NotBeNull();
         result.Should().BeEquivalentTo(expectedActor);
         _actorRepositoryMock.Verify(repo => repo.GetByIdAsync(actorId), Times.Once);
@@ -65,10 +65,10 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
     [AllureStory("Negative case - invalid ID")]
     public async Task GetActorByIdAsync_InvalidId_ThrowsArgumentException()
     {
-        // Arrange
+        
         var invalidId = 0;
 
-        // Act & Assert
+        
         await Assert.ThrowsAsync<ArgumentException>(() => _sut.GetActorByIdAsync(invalidId));
         _actorRepositoryMock.Verify(repo => repo.GetByIdAsync(It.IsAny<int>()), Times.Never);
 
@@ -88,14 +88,14 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
     [AllureStory("Negative case - actor not found")]
     public async Task GetActorByIdAsync_ActorNotFound_ThrowsArgumentNullException()
     {
-        // Arrange
+        
         var actorId = 1;
 
         _actorRepositoryMock
             .Setup(repo => repo.GetByIdAsync(actorId))
             .ReturnsAsync((Actor?)null);
 
-        // Act & Assert
+        
         await Assert.ThrowsAsync<ArgumentNullException>(() => _sut.GetActorByIdAsync(actorId));
         _actorRepositoryMock.Verify(repo => repo.GetByIdAsync(actorId), Times.Once);
 
@@ -115,7 +115,7 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
     [AllureStory("Positive case - actors exist")]
     public async Task GetAllActorsAsync_ActorsExist_ReturnsActors()
     {
-        // Arrange
+        
         var actors = new List<Actor>
         {
             _fixture.CreateActor(id: 1),
@@ -126,10 +126,10 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
             .Setup(repo => repo.GetAllAsync())
             .ReturnsAsync(actors);
 
-        // Act
+        
         var result = await _sut.GetAllActorsAsync();
 
-        // Assert
+        
         result.Should().HaveCount(2);
         _actorRepositoryMock.Verify(repo => repo.GetAllAsync(), Times.Once);
 
@@ -149,7 +149,7 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
     [AllureStory("Positive case - valid actor")]
     public async Task CreateActorAsync_ValidActor_ReturnsCreatedActor()
     {
-        // Arrange
+        
         var actor = _fixture.CreateActor();
 
         _actorRepositoryMock
@@ -159,10 +159,10 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
             .Setup(repo => repo.SaveChangesAsync())
             .Returns(Task.CompletedTask);
 
-        // Act
+        
         var result = await _sut.CreateActorAsync(actor);
 
-        // Assert
+        
         result.Should().BeEquivalentTo(actor);
         _actorRepositoryMock.Verify(repo => repo.AddAsync(actor), Times.Once);
         _actorRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Once);
@@ -183,10 +183,10 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
     [AllureStory("Negative case - null actor")]
     public async Task CreateActorAsync_NullActor_ThrowsArgumentNullException()
     {
-        // Arrange
+        
         Actor actor = null!;
 
-        // Act & Assert
+        
         await Assert.ThrowsAsync<ArgumentNullException>(() => _sut.CreateActorAsync(actor));
         _actorRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<Actor>()), Times.Never);
 
@@ -206,11 +206,11 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
     [AllureStory("Negative case - empty name")]
     public async Task CreateActorAsync_EmptyName_ThrowsArgumentException()
     {
-        // Arrange
+        
         var actor = _fixture.CreateActor();
         actor.Name = "";
 
-        // Act & Assert
+        
         await Assert.ThrowsAsync<ArgumentException>(() => _sut.CreateActorAsync(actor));
         _actorRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<Actor>()), Times.Never);
 
@@ -230,11 +230,11 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
     [AllureStory("Negative case - future birth date")]
     public async Task CreateActorAsync_FutureBirthDate_ThrowsArgumentException()
     {
-        // Arrange
+        
         var actor = _fixture.CreateActor();
         actor.BirthDate = DateTime.Now.AddDays(1);
 
-        // Act & Assert
+        
         await Assert.ThrowsAsync<ArgumentException>(() => _sut.CreateActorAsync(actor));
         _actorRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<Actor>()), Times.Never);
 
@@ -254,11 +254,11 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
     [AllureStory("Negative case - invalid height")]
     public async Task CreateActorAsync_InvalidHeight_ThrowsArgumentException()
     {
-        // Arrange
+        
         var actor = _fixture.CreateActor();
         actor.Height = 50; // Too short
 
-        // Act & Assert
+        
         await Assert.ThrowsAsync<ArgumentException>(() => _sut.CreateActorAsync(actor));
         _actorRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<Actor>()), Times.Never);
 
@@ -278,7 +278,7 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
     [AllureStory("Positive case - valid update")]
     public async Task UpdateActorAsync_ValidActor_ReturnsUpdatedActor()
     {
-        // Arrange
+        
         var actor = _fixture.CreateActor(id: 1);
         var existingActor = _fixture.CreateActor(id: 1);
 
@@ -292,10 +292,10 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
             .Setup(repo => repo.SaveChangesAsync())
             .Returns(Task.CompletedTask);
 
-        // Act
+        
         var result = await _sut.UpdateActorAsync(actor);
 
-        // Assert
+        
         result.Should().BeEquivalentTo(existingActor);
         _actorRepositoryMock.Verify(repo => repo.GetByIdAsync(actor.Id), Times.Once);
         _actorRepositoryMock.Verify(repo => repo.UpdateAsync(existingActor), Times.Once);
@@ -317,7 +317,7 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
     [AllureStory("Positive case - actor deleted")]
     public async Task DeleteActorAsync_ValidActor_ReturnsTrue()
     {
-        // Arrange
+        
         var actorId = 1;
         var actor = _fixture.CreateActor(id: actorId);
         actor.ActorRoles = new List<ActorRole>(); // No assigned roles
@@ -332,10 +332,10 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
             .Setup(repo => repo.SaveChangesAsync())
             .Returns(Task.CompletedTask);
 
-        // Act
+        
         var result = await _sut.DeleteActorAsync(actorId);
 
-        // Assert
+        
         result.Should().BeTrue();
         _actorRepositoryMock.Verify(repo => repo.GetByIdAsync(actorId), Times.Once);
         _actorRepositoryMock.Verify(repo => repo.RemoveAsync(actor), Times.Once);
@@ -357,7 +357,7 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
     [AllureStory("Negative case - actor with assigned roles")]
     public async Task DeleteActorAsync_ActorWithRoles_ThrowsInvalidOperationException()
     {
-        // Arrange
+        
         var actorId = 1;
         var actor = _fixture.CreateActor(id: actorId);
         actor.ActorRoles = new List<ActorRole> { new ActorRole(1, 1) }; // Has assigned roles
@@ -366,7 +366,7 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
             .Setup(repo => repo.GetByIdAsync(actorId))
             .ReturnsAsync(actor);
 
-        // Act & Assert
+        
         await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.DeleteActorAsync(actorId));
         _actorRepositoryMock.Verify(repo => repo.RemoveAsync(It.IsAny<Actor>()), Times.Never);
 
@@ -386,7 +386,7 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
     [AllureStory("Positive case - actors found")]
     public async Task GetActorsByVoiceTypeAsync_ValidVoiceType_ReturnsActors()
     {
-        // Arrange
+        
         var voiceType = VoiceType.Tenor;
         var actors = new List<Actor>
         {
@@ -398,10 +398,10 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
             .Setup(repo => repo.GetByVoiceTypeAsync(voiceType))
             .ReturnsAsync(actors);
 
-        // Act
+        
         var result = await _sut.GetActorsByVoiceTypeAsync(voiceType);
 
-        // Assert
+        
         result.Should().HaveCount(2);
         _actorRepositoryMock.Verify(repo => repo.GetByVoiceTypeAsync(voiceType), Times.Once);
 

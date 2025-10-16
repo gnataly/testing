@@ -13,6 +13,7 @@ using TheatreCenter.Services.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Serilog.Sinks.SystemConsole.Themes;
 
 
 
@@ -33,7 +34,7 @@ public class Program
 
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Information()
-            .WriteTo.Console()
+            .WriteTo.Console(theme: AnsiConsoleTheme.Code)
             .WriteTo.File("logs/theatrecenter-.txt", rollingInterval: RollingInterval.Day)
             .CreateLogger();
 

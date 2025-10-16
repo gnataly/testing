@@ -39,7 +39,7 @@ public class CastMemberServiceMockTests : IClassFixture<CastMemberFixture>
     [AllureStory("Positive case - cast member exists")]
     public async Task GetByIdAsync_CastMemberExists_ReturnsCastMember()
     {
-        // Arrange
+        
         var castMemberId = 1;
         var expectedCastMember = _fixture.CreateCastMember(id: castMemberId);
 
@@ -47,10 +47,10 @@ public class CastMemberServiceMockTests : IClassFixture<CastMemberFixture>
             .Setup(repo => repo.GetByIdAsync(castMemberId))
             .ReturnsAsync(expectedCastMember);
 
-        // Act
+        
         var result = await _sut.GetByIdAsync(castMemberId);
 
-        // Assert
+        
         result.Should().NotBeNull();
         result.Should().BeEquivalentTo(expectedCastMember);
         _castMemberRepositoryMock.Verify(repo => repo.GetByIdAsync(castMemberId), Times.Once);
@@ -61,10 +61,10 @@ public class CastMemberServiceMockTests : IClassFixture<CastMemberFixture>
     [AllureStory("Negative case - invalid ID")]
     public async Task GetByIdAsync_InvalidId_ThrowsArgumentException()
     {
-        // Arrange
+        
         var invalidId = 0;
 
-        // Act & Assert
+        
         await Assert.ThrowsAsync<ArgumentException>(() => _sut.GetByIdAsync(invalidId));
         _castMemberRepositoryMock.Verify(repo => repo.GetByIdAsync(It.IsAny<int>()), Times.Never);
     }
@@ -74,14 +74,14 @@ public class CastMemberServiceMockTests : IClassFixture<CastMemberFixture>
     [AllureStory("Negative case - cast member not found")]
     public async Task GetByIdAsync_CastMemberNotFound_ThrowsKeyNotFoundException()
     {
-        // Arrange
+        
         var castMemberId = 1;
 
         _castMemberRepositoryMock
             .Setup(repo => repo.GetByIdAsync(castMemberId))
             .ReturnsAsync((CastMember?)null);
 
-        // Act & Assert
+        
         await Assert.ThrowsAsync<KeyNotFoundException>(() => _sut.GetByIdAsync(castMemberId));
         _castMemberRepositoryMock.Verify(repo => repo.GetByIdAsync(castMemberId), Times.Once);
     }
@@ -91,7 +91,7 @@ public class CastMemberServiceMockTests : IClassFixture<CastMemberFixture>
     [AllureStory("Positive case - valid cast member")]
     public async Task CreateAsync_ValidCastMember_ReturnsCreatedCastMember()
     {
-        // Arrange
+        
         var castMember = _fixture.CreateCastMember();
         var show = _fixture.CreateShow(id: castMember.ShowId);
         var role = _fixture.CreateRole(id: castMember.RoleId);
@@ -116,10 +116,10 @@ public class CastMemberServiceMockTests : IClassFixture<CastMemberFixture>
             .Setup(repo => repo.SaveChangesAsync())
             .Returns(Task.CompletedTask);
 
-        // Act
+        
         var result = await _sut.CreateAsync(castMember);
 
-        // Assert
+        
         result.Should().BeEquivalentTo(castMember);
         _showRepositoryMock.Verify(repo => repo.GetByIdAsync(castMember.ShowId), Times.Once);
         _roleRepositoryMock.Verify(repo => repo.GetByIdAsync(castMember.RoleId), Times.Once);
@@ -134,7 +134,7 @@ public class CastMemberServiceMockTests : IClassFixture<CastMemberFixture>
     [AllureStory("Negative case - role already assigned")]
     public async Task CreateAsync_RoleAlreadyAssigned_ThrowsInvalidOperationException()
     {
-        // Arrange
+        
         var castMember = _fixture.CreateCastMember();
         var show = _fixture.CreateShow(id: castMember.ShowId);
         var role = _fixture.CreateRole(id: castMember.RoleId);
@@ -154,7 +154,7 @@ public class CastMemberServiceMockTests : IClassFixture<CastMemberFixture>
             .Setup(repo => repo.GetByShowAndRoleAsync(castMember.ShowId, castMember.RoleId))
             .ReturnsAsync(existingAssignment);
 
-        // Act & Assert
+        
         await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.CreateAsync(castMember));
         _castMemberRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<CastMember>()), Times.Never);
     }
@@ -164,7 +164,7 @@ public class CastMemberServiceMockTests : IClassFixture<CastMemberFixture>
     [AllureStory("Positive case - cast members found")]
     public async Task GetByShowIdAsync_ValidId_ReturnsCastMembers()
     {
-        // Arrange
+        
         var showId = 1;
         var castMembers = new List<CastMember>
         {
@@ -176,10 +176,10 @@ public class CastMemberServiceMockTests : IClassFixture<CastMemberFixture>
             .Setup(repo => repo.GetByShowIdAsync(showId))
             .ReturnsAsync(castMembers);
 
-        // Act
+        
         var result = await _sut.GetByShowIdAsync(showId);
 
-        // Assert
+        
         result.Should().HaveCount(2);
         _castMemberRepositoryMock.Verify(repo => repo.GetByShowIdAsync(showId), Times.Once);
     }
@@ -189,10 +189,10 @@ public class CastMemberServiceMockTests : IClassFixture<CastMemberFixture>
     [AllureStory("Negative case - invalid show ID")]
     public async Task GetByShowIdAsync_InvalidId_ThrowsArgumentException()
     {
-        // Arrange
+        
         var invalidId = 0;
 
-        // Act & Assert
+        
         await Assert.ThrowsAsync<ArgumentException>(() => _sut.GetByShowIdAsync(invalidId));
         _castMemberRepositoryMock.Verify(repo => repo.GetByShowIdAsync(It.IsAny<int>()), Times.Never);
     }
@@ -202,7 +202,7 @@ public class CastMemberServiceMockTests : IClassFixture<CastMemberFixture>
     [AllureStory("Positive case - cast members found")]
     public async Task GetByActorIdAsync_ValidId_ReturnsCastMembers()
     {
-        // Arrange
+        
         var actorId = 1;
         var castMembers = new List<CastMember>
         {
@@ -214,10 +214,10 @@ public class CastMemberServiceMockTests : IClassFixture<CastMemberFixture>
             .Setup(repo => repo.GetByActorIdAsync(actorId))
             .ReturnsAsync(castMembers);
 
-        // Act
+        
         var result = await _sut.GetByActorIdAsync(actorId);
 
-        // Assert
+        
         result.Should().HaveCount(2);
         _castMemberRepositoryMock.Verify(repo => repo.GetByActorIdAsync(actorId), Times.Once);
     }
@@ -227,10 +227,10 @@ public class CastMemberServiceMockTests : IClassFixture<CastMemberFixture>
     [AllureStory("Negative case - invalid actor ID")]
     public async Task GetByActorIdAsync_InvalidId_ThrowsArgumentException()
     {
-        // Arrange
+        
         var invalidId = 0;
 
-        // Act & Assert
+        
         await Assert.ThrowsAsync<ArgumentException>(() => _sut.GetByActorIdAsync(invalidId));
         _castMemberRepositoryMock.Verify(repo => repo.GetByActorIdAsync(It.IsAny<int>()), Times.Never);
     }

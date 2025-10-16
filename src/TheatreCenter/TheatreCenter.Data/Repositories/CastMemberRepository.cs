@@ -28,7 +28,8 @@ namespace TheatreCenter.Data.Repositories
 
         public async Task AddAsync(CastMember castMember)
         {
-            await _context.CastMembers.AddAsync(castMember);
+            _context.CastMembers.AddAsync(castMember);
+            await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(CastMember castMember)

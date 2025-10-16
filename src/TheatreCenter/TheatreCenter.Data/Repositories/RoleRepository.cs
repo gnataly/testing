@@ -29,7 +29,8 @@ namespace TheatreCenter.Data.Repositories
 
         public async Task AddAsync(Role role)
         {
-            await _context.Roles.AddAsync(role);
+            _context.Roles.AddAsync(role);
+            await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(Role role)
