@@ -13,7 +13,8 @@ public class ActorFixture
         _fixture = new Fixture();
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-        _fixture.Customize<string>(c => c.FromFactory(() => Guid.NewGuid().ToString().Substring(0, 10)));
+        _fixture.Customize<string>(c => c.FromFactory(() =>
+            Guid.NewGuid().ToString().Substring(0, 8)));
     }
 
     public Actor CreateActor(
@@ -26,6 +27,11 @@ public class ActorFixture
         int? weight = null,
         string? addInfo = null)
     {
+        var actorName = name ?? $"A{_fixture.Create<int>() % 1000}";
+        if (actorName.Length > 100) actorName = actorName.Substring(0, 100);
+
+        var actorAddInfo = addInfo ?? $"Info{_fixture.Create<int>()}";
+
         var actor = _fixture.Build<Actor>()
             .With(a => a.Id, id ?? _fixture.Create<int>())
             .With(a => a.Name, name ?? $"Actor {_fixture.Create<int>()}")

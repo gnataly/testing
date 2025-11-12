@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheatreCenter.Domain.Models;
 using TheatreCenter.Domain.Enums;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace TheatreCenter.Data
 {
@@ -32,8 +33,23 @@ namespace TheatreCenter.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Конфигурация для Account
-            modelBuilder.Entity<Account>(entity =>
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                foreach (var property in entityType.GetProperties())
+                {
+                    if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?))
+                    {
+                        property.SetValueConverter(
+                            new ValueConverter<DateTime, DateTime>(
+                                v => v.Kind == DateTimeKind.Utc ? v : v.ToUniversalTime(),
+                                v => DateTime.SpecifyKind(v, DateTimeKind.Utc)));
+                    }
+                }
+            }
+
+
+                // Конфигурация для Account
+                modelBuilder.Entity<Account>(entity =>
             {
                 entity.HasKey(a => a.Id);
                 entity.Property(a => a.Username)

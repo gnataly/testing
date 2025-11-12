@@ -40,7 +40,7 @@ namespace TheatreCenter.Services.Services
             if (show == null)
                 throw new ArgumentNullException(nameof(show));
 
-            if (show.Date < DateTime.Now)
+            if (show.Date < DateTime.UtcNow)
                 throw new ArgumentException("Show date cannot be in the past");
 
             var musical = await _musicalRepository.GetByIdAsync(show.MusicalId);
@@ -61,7 +61,7 @@ namespace TheatreCenter.Services.Services
             if (existingShow == null)
                 throw new KeyNotFoundException("Show not found");
 
-            if (show.Date < DateTime.Now)
+            if (show.Date < DateTime.UtcNow)
                 throw new ArgumentException("Show date cannot be in the past");
 
             var musical = await _musicalRepository.GetByIdAsync(show.MusicalId);
@@ -82,7 +82,7 @@ namespace TheatreCenter.Services.Services
             if (show == null)
                 return false;
 
-            if (show.Date < DateTime.Now)
+            if (show.Date < DateTime.UtcNow)
                 throw new InvalidOperationException("Cannot delete past shows");
 
             await _showRepository.RemoveAsync(show);

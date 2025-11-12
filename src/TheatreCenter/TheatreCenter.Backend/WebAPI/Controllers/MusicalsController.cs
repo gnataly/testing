@@ -140,7 +140,7 @@ namespace TheatreCenter.Backend.WebAPI.Controllers
                     updatedMusical.Duration,
                     updatedMusical.AgeRestriction,
                     updatedMusical.TheatreId
-                //DateTime.Now
+                //DateTime.UtcNow
                 );
 
                 return Ok(musicalDto);

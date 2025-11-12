@@ -232,7 +232,7 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
     {
         
         var actor = _fixture.CreateActor();
-        actor.BirthDate = DateTime.Now.AddDays(1);
+        actor.BirthDate = DateTime.UtcNow.AddDays(1);
 
         
         await Assert.ThrowsAsync<ArgumentException>(() => _sut.CreateActorAsync(actor));

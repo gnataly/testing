@@ -60,7 +60,7 @@ namespace TheatreCenter.Data.Repositories
         public async Task<IEnumerable<Show>> GetUpcomingShowsAsync()
         {
             return await _context.Shows
-                .Where(s => s.Date >= DateTime.Now)
+                .Where(s => s.Date >= DateTime.UtcNow)
                 .OrderBy(s => s.Date)
                 .ToListAsync();
         }

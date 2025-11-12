@@ -191,7 +191,7 @@ public class MusicalServiceMockTests : IClassFixture<MusicalFixture>
         
         var musicalId = 1;
         var musical = _fixture.CreateMusical(id: musicalId);
-        musical.Shows = new List<Show> { new Show(1, DateTime.Now, 1) }; // Has scheduled shows
+        musical.Shows = new List<Show> { new Show(1, DateTime.UtcNow, 1) };
 
         _musicalRepositoryMock
             .Setup(repo => repo.GetByIdAsync(musicalId))

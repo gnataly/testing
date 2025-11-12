@@ -132,7 +132,7 @@ public class ShowRepositoryTests : IClassFixture<ShowFixture>
         
 
         var existingShow = await repository.GetByIdAsync(show.Id);
-        var newDate = DateTime.Now.AddDays(14);
+        var newDate = DateTime.UtcNow.AddDays(14);
         existingShow.Date = newDate;
 
         
@@ -227,7 +227,7 @@ public class ShowRepositoryTests : IClassFixture<ShowFixture>
 
         
         result.Should().HaveCount(2);
-        result.All(s => s.Date >= DateTime.Now).Should().BeTrue();
+        result.All(s => s.Date >= DateTime.UtcNow).Should().BeTrue();
     }
 
     [Fact]

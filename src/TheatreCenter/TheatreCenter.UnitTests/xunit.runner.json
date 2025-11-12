@@ -1,0 +1,10 @@
+{
+  "parallelizeTestCollections": false,
+  "parallelizeAssembly": false,
+  "maxParallelThreads": 1,
+  "diagnosticMessages": true,
+  "internalDiagnosticMessages": true,
+  "stopOnFail": false,
+  "seed": "random"
+}
+

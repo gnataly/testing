@@ -86,7 +86,7 @@ namespace TheatreCenter.Services.Services
                     throw new ArgumentException("Actor name cannot be empty");
                 }
 
-                if (actor.BirthDate > DateTime.Now)
+                if (actor.BirthDate > DateTime.UtcNow)
                 {
                     _logger.LogError("Invalid birth date provided: {BirthDate}", actor.BirthDate);
                     throw new ArgumentException("Birth date cannot be in the future");

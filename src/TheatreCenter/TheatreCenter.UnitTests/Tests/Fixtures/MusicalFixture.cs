@@ -1,6 +1,7 @@
 ﻿using TheatreCenter.Domain.Models;
 using TheatreCenter.Domain.Enums;
 using AutoFixture;
+using TheatreCenter.Data;
 
 namespace TheatreCenter.Tests.Fixtures;
 
@@ -13,7 +14,36 @@ public class MusicalFixture
         _fixture = new Fixture();
         _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
-        _fixture.Customize<string>(c => c.FromFactory(() => Guid.NewGuid().ToString().Substring(0, 10)));
+        _fixture.Customize<string>(c => c.FromFactory(() =>
+            Guid.NewGuid().ToString().Substring(0, 8)));
+    }
+
+    public async Task<Musical> CreateMusicalWithTheatreAsync(
+        AppDbContext context,
+        int? id = null,
+        string? title = null,
+        string? description = null,
+        TimeSpan? duration = null,
+        AgeRestriction ageRestriction = AgeRestriction.EighteenPlus,
+        Theatre? existingTheatre = null)
+    {
+        // Создать театр если не предоставлен
+        var theatre = existingTheatre ?? CreateTheatre();
+        if (existingTheatre == null)
+        {
+            context.Theatres.Add(theatre);
+            await context.SaveChangesAsync();
+        }
+
+        var musical = CreateMusical(
+            id: id,
+            title: title,
+            description: description,
+            duration: duration,
+            ageRestriction: ageRestriction,
+            theatreId: theatre.Id);
+
+        return musical;
     }
 
     public Musical CreateMusical(
@@ -24,13 +54,18 @@ public class MusicalFixture
         AgeRestriction ageRestriction = AgeRestriction.EighteenPlus,
         int? theatreId = null)
     {
+        var musicalTitle = title ?? $"M{_fixture.Create<int>() % 1000}";
+        if (musicalTitle.Length > 100) musicalTitle = musicalTitle.Substring(0, 100);
+
+        var musicalDescription = description ?? $"Desc{_fixture.Create<int>()}";
+
         var musical = _fixture.Build<Musical>()
             .With(m => m.Id, id ?? _fixture.Create<int>())
             .With(m => m.Title, title ?? $"Musical {_fixture.Create<int>()}")
             .With(m => m.Description, description ?? $"Description {_fixture.Create<int>()}")
             .With(m => m.Duration, duration ?? TimeSpan.FromHours(2))
             .With(m => m.AgeRestriction, ageRestriction)
-            .With(m => m.TheatreId, theatreId ?? _fixture.Create<int>())
+            .With(m => m.TheatreId, theatreId ?? 1)
             .Without(m => m.Theatre)
             .Without(m => m.Shows)
             .Without(m => m.Roles)
@@ -42,6 +77,11 @@ public class MusicalFixture
 
     public Theatre CreateTheatre(int? id = null, string? name = null, string? addInfo = null)
     {
+        var theatreName = name ?? $"T{_fixture.Create<int>() % 1000}";
+        if (theatreName.Length > 100) theatreName = theatreName.Substring(0, 100);
+
+        var theatreAddInfo = addInfo ?? $"Info{_fixture.Create<int>()}";
+
         var theatre = _fixture.Build<Theatre>()
             .With(t => t.Id, id ?? _fixture.Create<int>())
             .With(t => t.Name, name ?? $"Theatre {_fixture.Create<int>()}")

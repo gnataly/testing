@@ -72,14 +72,14 @@ namespace TheatreCenter.Domain.Models
             }
 
             // Валидация даты рождения
-            if (BirthDate > DateTime.Now)
+            if (BirthDate > DateTime.UtcNow)
             {
                 yield return new ValidationResult(
                     "Дата рождения не может быть в будущем",
                     new[] { nameof(BirthDate) });
             }
 
-            if (BirthDate < DateTime.Now.AddYears(-120))
+            if (BirthDate < DateTime.UtcNow.AddYears(-120))
             {
                 yield return new ValidationResult(
                     "Дата рождения слишком далеко в прошлом",
