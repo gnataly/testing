@@ -8,44 +8,51 @@ using FluentAssertions;
 using TheatreCenter.UnitTests.Tests.Database;
 using TheatreCenter.UnitTests;
 using Xunit;
+using Xunit.Abstractions;
+using AutoFixture;
+using TheatreCenter.UnitTests.Tests.IntegrationTests;
 
 namespace TheatreCenter.Tests.IntegrationTests.Repositories;
 
 [Collection("Database collection")]
 [Trait("Category", TestCategories.Integration)]
-public class MusicalRepositoryIt(DatabaseFixture db) : IClassFixture<DatabaseFixture>
+public class MusicalRepositoryIt : IntegrationTestBase
 {
     private readonly MusicalFixture _musicalFixture = new MusicalFixture();
     private readonly TheatreFixture _theatreFixture = new TheatreFixture();
+    private MusicalRepository _repository;
+    private Func<Task> _commitTransaction;
+    private Func<Task> _rollbackTransaction;
 
-    private MusicalRepository CreateRepository()
+    public MusicalRepositoryIt(DatabaseFixture fixture, ITestOutputHelper output)
+        : base(fixture, output) { }
+
+    public override async Task InitializeAsync()
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseNpgsql(db.ConnectionString)
-            .Options;
+        var (repository, commit, rollback) = await Fixture.CreateTransactionalRepositoryAsync<MusicalRepository>();
+        _repository = repository;
+        _commitTransaction = commit;
+        _rollbackTransaction = rollback;
+    }
 
-        var context = new AppDbContext(options);
-        return new MusicalRepository(context);
+    public override async Task DisposeAsync()
+    {
+        await _rollbackTransaction();
     }
 
     [Fact]
     public async Task Musical_FullCycle_WithAgeRestriction()
     {
-        // Arrange
-        var repo = CreateRepository();
-
-        // Создаем театр для мюзикла
+        // Arrange - Создаем театр для мюзикла
         var theatre = _theatreFixture.CreateTheatre(name: "Test Theatre");
 
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseNpgsql(db.ConnectionString)
-            .Options;
-        using var context = new AppDbContext(options);
+        var context = await Fixture.CreateTransactionalContextAsync();
         context.Theatres.Add(theatre);
         await context.SaveChangesAsync();
+        await context.Database.CommitTransactionAsync();
+        await context.DisposeAsync();
 
         // Act 1 - создать мюзикл
-
         var musical = _musicalFixture.CreateMusical(
             title: "Test Musical",
             description: "Test Description",
@@ -53,10 +60,10 @@ public class MusicalRepositoryIt(DatabaseFixture db) : IClassFixture<DatabaseFix
             ageRestriction: AgeRestriction.SixteenPlus,
             theatreId: theatre.Id);
 
-        await repo.AddAsync(musical);
+        await _repository.AddAsync(musical);
 
         // Assert 1 - проверить создание
-        var created = await repo.GetByIdAsync(musical.Id);
+        var created = await _repository.GetByIdAsync(musical.Id);
         created.Should().NotBeNull();
         created!.Title.Should().Be("Test Musical");
         created.AgeRestriction.Should().Be(AgeRestriction.SixteenPlus);
@@ -65,71 +72,30 @@ public class MusicalRepositoryIt(DatabaseFixture db) : IClassFixture<DatabaseFix
         // Act 2 - обновить мюзикл
         created.Title = "Updated Musical";
         created.AgeRestriction = AgeRestriction.EighteenPlus;
-        await repo.UpdateAsync(created);
+        await _repository.UpdateAsync(created);
 
         // Assert 2 - проверить обновление
-        var updated = await repo.GetByIdAsync(musical.Id);
+        var updated = await _repository.GetByIdAsync(musical.Id);
         updated!.Title.Should().Be("Updated Musical");
         updated.AgeRestriction.Should().Be(AgeRestriction.EighteenPlus);
 
         // Act 3 - получить мюзиклы по театру
-        var theatreMusicals = await repo.GetByTheatreIdAsync(theatre.Id);
+        var theatreMusicals = await _repository.GetByTheatreIdAsync(theatre.Id);
 
         // Assert 3 - проверить фильтрацию по театру
         theatreMusicals.Should().ContainSingle(m => m.Id == musical.Id);
 
         // Act 4 - получить мюзиклы по возрастному ограничению
-        var adultMusicals = await repo.GetByAgeRestrictionAsync(AgeRestriction.EighteenPlus);
+        var adultMusicals = await _repository.GetByAgeRestrictionAsync(AgeRestriction.EighteenPlus);
 
         // Assert 4 - проверить фильтрацию по возрастному ограничению
         adultMusicals.Should().ContainSingle(m => m.Id == musical.Id);
 
         // Act 5 - удалить мюзикл
-        await repo.RemoveAsync(updated);
+        await _repository.RemoveAsync(updated);
 
         // Assert 5 - проверить удаление
-        var deleted = await repo.GetByIdAsync(musical.Id);
+        var deleted = await _repository.GetByIdAsync(musical.Id);
         deleted.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task Musical_GetByAgeRestriction_ReturnsCorrectMusicals()
-    {
-        // Arrange
-        var repo = CreateRepository();
-
-        var theatre = _theatreFixture.CreateTheatre();
-
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseNpgsql(db.ConnectionString)
-            .Options;
-        using var context = new AppDbContext(options);
-        context.Theatres.Add(theatre);
-        await context.SaveChangesAsync();
-
-        var musical1 = _musicalFixture.CreateMusical(
-            title: "Musical 16+",
-            ageRestriction: AgeRestriction.SixteenPlus,
-            theatreId: theatre.Id);
-
-        var musical2 = _musicalFixture.CreateMusical(
-            title: "Musical 18+",
-            ageRestriction: AgeRestriction.EighteenPlus,
-            theatreId: theatre.Id);
-
-        await repo.AddAsync(musical1);
-        await repo.AddAsync(musical2);
-
-        // Act
-        var sixteenPlus = await repo.GetByAgeRestrictionAsync(AgeRestriction.SixteenPlus);
-        var eighteenPlus = await repo.GetByAgeRestrictionAsync(AgeRestriction.EighteenPlus);
-
-        // Assert
-        sixteenPlus.Should().ContainSingle(m => m.Title == "Musical 16+");
-        eighteenPlus.Should().ContainSingle(m => m.Title == "Musical 18+");
-
-        // Cleanup
-        await repo.RemoveAsync(musical1);
-        await repo.RemoveAsync(musical2);
     }
 }

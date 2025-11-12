@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Xunit.Abstractions;
 using TheatreCenter.UnitTests.Tests.Database;
 using Xunit;
 
@@ -12,19 +8,16 @@ namespace TheatreCenter.UnitTests.Tests.IntegrationTests;
 public abstract class IntegrationTestBase : IAsyncLifetime
 {
     protected readonly DatabaseFixture Fixture;
+    protected readonly ITestOutputHelper Output;
 
-    protected IntegrationTestBase(DatabaseFixture fixture)
+    public IntegrationTestBase(DatabaseFixture fixture, ITestOutputHelper output)
     {
         Fixture = fixture;
+        Output = output;
+        Fixture.Output = output;
     }
 
-    public virtual Task InitializeAsync()
-    {
-        return Task.CompletedTask;
-    }
+    public virtual Task InitializeAsync() => Task.CompletedTask;
 
-    public virtual Task DisposeAsync()
-    {
-        return Task.CompletedTask;
-    }
+    public virtual Task DisposeAsync() => Task.CompletedTask;
 }

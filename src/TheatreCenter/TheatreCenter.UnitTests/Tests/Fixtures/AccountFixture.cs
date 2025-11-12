@@ -38,26 +38,4 @@ public class AccountFixture
 
         return account;
     }
-
-    public Actor CreateActor(
-        int? id = null,
-        string? name = null,
-        VoiceType voiceType = VoiceType.Tenor,
-        Gender gender = Gender.Male)
-    {
-        var actor = _fixture.Build<Actor>()
-            .With(a => a.Id, id ?? _fixture.Create<int>())
-            .With(a => a.Name, name ?? $"Actor {_fixture.Create<int>()}")
-            .With(a => a.VoiceType, voiceType)
-            .With(a => a.Gender, gender)
-            .With(a => a.BirthDate, new DateTime(1990, 1, 1))
-            .With(a => a.Height, 170)
-            .With(a => a.Weight, 70)
-            .With(a => a.AddInfo, $"Additional info {_fixture.Create<int>()}")
-            .Without(a => a.ActorRoles)
-            .Without(a => a.CastMembers)
-            .Create();
-
-        return actor;
-    }
 }

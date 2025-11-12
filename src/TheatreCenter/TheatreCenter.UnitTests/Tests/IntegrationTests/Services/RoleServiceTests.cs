@@ -1,10 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TheatreCenter.Data.Repositories;
 using TheatreCenter.Data;
 using TheatreCenter.Domain.Enums;
@@ -13,102 +8,107 @@ using TheatreCenter.Tests.Fixtures;
 using TheatreCenter.UnitTests.Tests.Database;
 using Xunit;
 using FluentAssertions;
+using Xunit.Abstractions;
+using TheatreCenter.UnitTests;
 
 namespace TheatreCenter.UnitTests.Tests.IntegrationTests.Services;
 
 [Collection("Database collection")]
 [Trait("Category", TestCategories.Integration)]
-public class RoleServiceIt(DatabaseFixture db) : IClassFixture<DatabaseFixture>
+public class RoleServiceIt : IntegrationTestBase
 {
     private readonly RoleFixture _roleFixture = new RoleFixture();
     private readonly MusicalFixture _musicalFixture = new MusicalFixture();
+    private RoleService _service;
+    private Func<Task> _commitTransaction;
+    private Func<Task> _rollbackTransaction;
 
-    private RoleService CreateService()
+    public RoleServiceIt(DatabaseFixture fixture, ITestOutputHelper output)
+        : base(fixture, output) { }
+
+    public override async Task InitializeAsync()
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseNpgsql(db.ConnectionString)
-            .Options;
+        var context = await Fixture.CreateTransactionalContextAsync();
+        var roleRepository = Fixture.CreateRepository<RoleRepository>(context);
+        var musicalRepository = Fixture.CreateRepository<MusicalRepository>(context);
+        _service = new RoleService(roleRepository, musicalRepository);
 
-        var context = new AppDbContext(options);
-        var roleRepository = new RoleRepository(context);
-        var musicalRepository = new MusicalRepository(context);
-        return new RoleService(roleRepository, musicalRepository);
+        _commitTransaction = async () => {
+            await context.Database.CommitTransactionAsync();
+            await context.DisposeAsync();
+        };
+        _rollbackTransaction = async () => {
+            await context.Database.RollbackTransactionAsync();
+            await context.DisposeAsync();
+        };
+    }
+
+    public override async Task DisposeAsync()
+    {
+        await _rollbackTransaction();
     }
 
     [Fact]
     public async Task Role_FullCycle_WithFixtures()
     {
-        //using (StreamWriter writer = new StreamWriter(@"C:\Users\gnata\OneDrive\Документы\log.txt"))
-        //{
-            var service = CreateService();
+        // Создаем театр и мюзикл для роли
+        var musical = _musicalFixture.CreateMusical(
+            title: "Test Musical"
+        );
 
-            // Создаем театр и мюзикл для роли
-            var options = new DbContextOptionsBuilder<AppDbContext>()
-                .UseNpgsql(db.ConnectionString)
-                .Options;
+        var context = await Fixture.CreateTransactionalContextAsync();
+        await context.Musicals.AddAsync(musical);
+        await context.SaveChangesAsync();
+        await context.Database.CommitTransactionAsync();
+        await context.DisposeAsync();
 
-            var musical = _musicalFixture.CreateMusical(
-                title: "Test Musical"
-            );
+        // Используем фикстуру для генерации роли
+        var testRole = _roleFixture.CreateRole(
+            name: "Test Role",
+            roleType: RoleType.Main,
+            musicalId: musical.Id
+        );
 
-            await using (var context = new AppDbContext(options))
-            {
-                await context.Musicals.AddAsync(musical);
-                await context.SaveChangesAsync();
-            }
+        // Act 1 — создание роли
+        var createdRole = await _service.CreateAsync(testRole);
 
-            // Используем фикстуру для генерации роли
-            var testRole = _roleFixture.CreateRole(
-                name: "Test Role",
-                roleType: RoleType.Main,
-                musicalId: musical.Id
-            );
+        // Assert 1 — проверка создания
+        createdRole.Should().NotBeNull();
+        createdRole.Id.Should().BeGreaterThan(0);
+        createdRole.Name.Should().Be(testRole.Name);
 
-            // Act 1 — создание роли
-            var createdRole = await service.CreateAsync(testRole);
+        // Act 2 — получение роли по ID
+        var retrievedRole = await _service.GetByIdAsync(createdRole.Id);
+        retrievedRole.Should().NotBeNull();
+        retrievedRole.Name.Should().Be(testRole.Name);
 
-            // Assert 1 — проверка создания
-            createdRole.Should().NotBeNull();
-            createdRole.Id.Should().BeGreaterThan(0);
-            createdRole.Name.Should().Be(testRole.Name);
+        // Act 3 — обновление роли
+        var updatedRole = _roleFixture.CreateRole(
+            id: createdRole.Id,
+            name: "Updated Role Name",
+            roleType: RoleType.Supporting,
+            musicalId: musical.Id
+        );
 
-            // Act 2 — получение роли по ID
-            var retrievedRole = await service.GetByIdAsync(createdRole.Id);
-            retrievedRole.Should().NotBeNull();
-            retrievedRole.Name.Should().Be(testRole.Name);
+        var updateResult = await _service.UpdateAsync(updatedRole);
+        updateResult.Should().NotBeNull();
+        updateResult.Name.Should().Be("Updated Role Name");
+        updateResult.RoleType.Should().Be(RoleType.Supporting);
 
-            // Act 3 — обновление роли
-            var updatedRole = _roleFixture.CreateRole(
-                id: createdRole.Id,
-                name: "Updated Role Name",
-                roleType: RoleType.Supporting,
-                musicalId: musical.Id
-            );
+        // Act 4 — получение ролей по мюзиклу
+        var rolesByMusical = await _service.GetByMusicalIdAsync(musical.Id);
+        rolesByMusical.Should().Contain(r => r.Id == createdRole.Id);
 
-            var updateResult = await service.UpdateAsync(updatedRole);
-            updateResult.Should().NotBeNull();
-            updateResult.Name.Should().Be("Updated Role Name");
-            updateResult.RoleType.Should().Be(RoleType.Supporting);
+        // Act 5 — получение ролей по типу
+        var rolesByType = await _service.GetByRoleTypeAsync(RoleType.Supporting);
+        rolesByType.Should().Contain(r => r.Id == createdRole.Id);
 
-            // Act 4 — получение ролей по мюзиклу
-            var rolesByMusical = await service.GetByMusicalIdAsync(musical.Id);
-            rolesByMusical.Should().Contain(r => r.Id == createdRole.Id);
+        // Act 6 — получение всех ролей
+        var allRoles = await _service.GetAllAsync();
+        allRoles.Should().Contain(r => r.Id == createdRole.Id);
 
-            // Act 5 — получение ролей по типу
-            var rolesByType = await service.GetByRoleTypeAsync(RoleType.Supporting);
-            rolesByType.Should().Contain(r => r.Id == createdRole.Id);
-
-            // Act 6 — получение всех ролей
-            var allRoles = await service.GetAllAsync();
-            allRoles.Should().Contain(r => r.Id == createdRole.Id);
-
-            // Act 7 — удаление роли
-            var deleteResult = await service.DeleteAsync(createdRole.Id);
-            deleteResult.Should().BeTrue();
-
-            //// Assert 7 — проверка удаления
-            //var deletedRole = await service.GetByIdAsync(createdRole.Id);
-            //deletedRole.Should().BeNull();
-        //}
+        // Act 7 — удаление роли
+        var deleteResult = await _service.DeleteAsync(createdRole.Id);
+        deleteResult.Should().BeTrue();
     }
 }

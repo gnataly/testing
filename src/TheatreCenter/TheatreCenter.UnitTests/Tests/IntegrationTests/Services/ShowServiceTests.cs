@@ -1,10 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TheatreCenter.Data.Repositories;
 using TheatreCenter.Data;
 using TheatreCenter.Services.Services;
@@ -12,47 +7,59 @@ using TheatreCenter.Tests.Fixtures;
 using TheatreCenter.UnitTests.Tests.Database;
 using Xunit;
 using FluentAssertions;
+using Xunit.Abstractions;
+using TheatreCenter.UnitTests;
 
 namespace TheatreCenter.UnitTests.Tests.IntegrationTests.Services;
 
 [Collection("Database collection")]
 [Trait("Category", TestCategories.Integration)]
-public class ShowServiceIt(DatabaseFixture db) : IClassFixture<DatabaseFixture>
+public class ShowServiceIt : IntegrationTestBase
 {
     private readonly ShowFixture _showFixture = new ShowFixture();
     private readonly MusicalFixture _musicalFixture = new MusicalFixture();
+    private ShowService _service;
+    private Func<Task> _commitTransaction;
+    private Func<Task> _rollbackTransaction;
 
-    private ShowService CreateService()
+    public ShowServiceIt(DatabaseFixture fixture, ITestOutputHelper output)
+        : base(fixture, output) { }
+
+    public override async Task InitializeAsync()
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseNpgsql(db.ConnectionString)
-            .Options;
+        var context = await Fixture.CreateTransactionalContextAsync();
+        var showRepository = Fixture.CreateRepository<ShowRepository>(context);
+        var musicalRepository = Fixture.CreateRepository<MusicalRepository>(context);
+        _service = new ShowService(showRepository, musicalRepository);
 
-        var context = new AppDbContext(options);
-        var showRepository = new ShowRepository(context);
-        var musicalRepository = new MusicalRepository(context);
-        return new ShowService(showRepository, musicalRepository);
+        _commitTransaction = async () => {
+            await context.Database.CommitTransactionAsync();
+            await context.DisposeAsync();
+        };
+        _rollbackTransaction = async () => {
+            await context.Database.RollbackTransactionAsync();
+            await context.DisposeAsync();
+        };
+    }
+
+    public override async Task DisposeAsync()
+    {
+        await _rollbackTransaction();
     }
 
     [Fact]
     public async Task Show_FullCycle_WithFixtures()
     {
-        var service = CreateService();
-
         // Создаем театр и мюзикл для показа
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseNpgsql(db.ConnectionString)
-            .Options;
-
         var musical = _musicalFixture.CreateMusical(
             title: "Test Musical"
         );
 
-        await using (var context = new AppDbContext(options))
-        {
-            await context.Musicals.AddAsync(musical);
-            await context.SaveChangesAsync();
-        }
+        var context = await Fixture.CreateTransactionalContextAsync();
+        await context.Musicals.AddAsync(musical);
+        await context.SaveChangesAsync();
+        await context.Database.CommitTransactionAsync();
+        await context.DisposeAsync();
 
         // Используем фикстуру для генерации показа
         var testShow = _showFixture.CreateShow(
@@ -61,7 +68,7 @@ public class ShowServiceIt(DatabaseFixture db) : IClassFixture<DatabaseFixture>
         );
 
         // Act 1 — создание показа
-        var createdShow = await service.CreateAsync(testShow);
+        var createdShow = await _service.CreateAsync(testShow);
 
         // Assert 1 — проверка создания
         createdShow.Should().NotBeNull();
@@ -69,7 +76,7 @@ public class ShowServiceIt(DatabaseFixture db) : IClassFixture<DatabaseFixture>
         createdShow.MusicalId.Should().Be(musical.Id);
 
         // Act 2 — получение показа по ID
-        var retrievedShow = await service.GetByIdAsync(createdShow.Id);
+        var retrievedShow = await _service.GetByIdAsync(createdShow.Id);
         retrievedShow.Should().NotBeNull();
         retrievedShow.MusicalId.Should().Be(musical.Id);
 
@@ -80,28 +87,24 @@ public class ShowServiceIt(DatabaseFixture db) : IClassFixture<DatabaseFixture>
             date: DateTime.UtcNow.AddDays(14)
         );
 
-        var updateResult = await service.UpdateAsync(updatedShow);
+        var updateResult = await _service.UpdateAsync(updatedShow);
         updateResult.Should().NotBeNull();
         updateResult.Date.Should().BeCloseTo(updatedShow.Date, TimeSpan.FromSeconds(1));
 
         // Act 4 — получение показов по мюзиклу
-        var showsByMusical = await service.GetByMusicalIdAsync(musical.Id);
+        var showsByMusical = await _service.GetByMusicalIdAsync(musical.Id);
         showsByMusical.Should().Contain(s => s.Id == createdShow.Id);
 
         // Act 5 — получение предстоящих показов
-        var upcomingShows = await service.GetUpcomingShowsAsync();
+        var upcomingShows = await _service.GetUpcomingShowsAsync();
         upcomingShows.Should().Contain(s => s.Id == createdShow.Id);
 
         // Act 6 — получение всех показов
-        var allShows = await service.GetAllAsync();
+        var allShows = await _service.GetAllAsync();
         allShows.Should().Contain(s => s.Id == createdShow.Id);
 
         // Act 7 — удаление показа
-        var deleteResult = await service.DeleteAsync(createdShow.Id);
+        var deleteResult = await _service.DeleteAsync(createdShow.Id);
         deleteResult.Should().BeTrue();
-
-        //// Assert 7 — проверка удаления
-        //var deletedShow = await service.GetByIdAsync(createdShow.Id);
-        //deletedShow.Should().BeNull();
     }
 }

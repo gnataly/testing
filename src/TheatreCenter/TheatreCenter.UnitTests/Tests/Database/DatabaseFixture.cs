@@ -1,6 +1,11 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Npgsql;
 using Xunit;
+using Microsoft.EntityFrameworkCore;
+using TheatreCenter.Data;
+using Xunit.Abstractions;
 
 namespace TheatreCenter.UnitTests.Tests.Database;
 
@@ -11,6 +16,7 @@ public class DatabaseFixture : IAsyncLifetime
     private readonly string _scriptsPath;
 
     public string ConnectionString { get; private set; }
+    public ITestOutputHelper Output { get; set; }
 
     public DatabaseFixture()
     {
@@ -79,7 +85,6 @@ public class DatabaseFixture : IAsyncLifetime
         await using var conn = new NpgsqlConnection(masterConnString);
         await conn.OpenAsync();
 
-        // Завершаем все активные соединения с тестовой БД
         var terminateSql = $@"
             SELECT pg_terminate_backend(pid) 
             FROM pg_stat_activity 
@@ -104,7 +109,6 @@ public class DatabaseFixture : IAsyncLifetime
         await using var conn = new NpgsqlConnection(ConnectionString);
         await conn.OpenAsync();
 
-        // Разделяем скрипт по точкам с запятой, но игнорируем пустые команды
         var commands = sql.Split(';')
             .Select(cmd => cmd.Trim())
             .Where(cmd => !string.IsNullOrEmpty(cmd))
@@ -119,8 +123,8 @@ public class DatabaseFixture : IAsyncLifetime
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error executing command: {command}");
-                Console.WriteLine($"Error: {ex.Message}");
+                Output?.WriteLine($"Error executing command: {command}");
+                Output?.WriteLine($"Error: {ex.Message}");
                 throw;
             }
         }
@@ -132,4 +136,46 @@ public class DatabaseFixture : IAsyncLifetime
         await ApplyScriptAsync("create.sql");
         await ApplyScriptAsync("init_data.sql");
     }
+
+    public async Task<AppDbContext> CreateTransactionalContextAsync()
+    {
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseNpgsql(ConnectionString)
+            .Options;
+
+        var context = new AppDbContext(options);
+        await context.Database.BeginTransactionAsync();
+        return context;
+    }
+
+    public async Task<(TRepository repository, Func<Task> commit, Func<Task> rollback)> CreateTransactionalRepositoryAsync<TRepository>()
+        where TRepository : class
+    {
+        var context = await CreateTransactionalContextAsync();
+        var repository = CreateRepository<TRepository>(context);
+
+        return (repository,
+            async () => { await context.Database.CommitTransactionAsync(); await context.DisposeAsync(); },
+            async () => { await context.Database.RollbackTransactionAsync(); await context.DisposeAsync(); }
+        );
+    }
+
+    public TRepository CreateRepository<TRepository>(AppDbContext context)
+        where TRepository : class
+    {
+        var repositoryType = typeof(TRepository);
+
+        // Создаем NullLogger для репозиториев, которые требуют ILogger
+        if (repositoryType == typeof(TheatreCenter.Data.Repositories.ActorRepository))
+        {
+            var logger = NullLogger<TheatreCenter.Data.Repositories.ActorRepository>.Instance;
+            return Activator.CreateInstance(repositoryType, context, logger) as TRepository;
+        }
+
+        // Для других репозиториев создаем с одним параметром
+        return Activator.CreateInstance(repositoryType, context) as TRepository;
+    }
 }
+
+[CollectionDefinition("Database collection")]
+public class DatabaseCollection : ICollectionFixture<DatabaseFixture> { }
