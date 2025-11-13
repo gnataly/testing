@@ -19,19 +19,19 @@ RUN dotnet build --configuration Release --no-restore
 RUN echo '#!/bin/bash\n\
 echo "Running Unit Tests from $(pwd)"\n\
 ls -la\n\
-dotnet test TheatreCenter.UnitTests/TheatreCenter.UnitTests.csproj --configuration Release --logger "trx;LogFileName=unit-tests.trx" --results-directory /test-results\n --filter "Category=Unit"\
+dotnet test TheatreCenter.UnitTests/TheatreCenter.UnitTests.csproj --filter "Category=Unit" --configuration Release --logger "trx;LogFileName=unit-tests.trx" --results-directory /test-results\n\
 exit $?' > /run-unit-tests.sh && chmod +x /run-unit-tests.sh
 
 RUN echo '#!/bin/bash\n\
 echo "Running Unit Tests from $(pwd)"\n\
 ls -la\n\
-dotnet test TheatreCenter.UnitTests/TheatreCenter.UnitTests.csproj --configuration Release --logger "trx;LogFileName=integration-tests.trx" --results-directory /test-results\n --filter "Category=Integration"\
+dotnet test TheatreCenter.UnitTests/TheatreCenter.UnitTests.csproj --filter "Category=Integration" --configuration Release --logger "trx;LogFileName=integration-tests.trx" --results-directory /test-results\n\
 exit $?' > /run-integration-tests.sh && chmod +x /run-integration-tests.sh
 
 RUN echo '#!/bin/bash\n\
 echo "Running Unit Tests from $(pwd)"\n\
 ls -la\n\
-dotnet test TheatreCenter.UnitTests/TheatreCenter.UnitTests.csproj --configuration Release --logger "trx;LogFileName=e2e-tests.trx" --results-directory /test-results\n --filter "Category=EndToEnd"\
+dotnet test TheatreCenter.UnitTests/TheatreCenter.UnitTests.csproj --filter "Category=EndToEnd" --configuration Release --logger "trx;LogFileName=e2e-tests.trx" --results-directory /test-results\n\
 exit $?' > /run-e2e-tests.sh && chmod +x /run-e2e-tests.sh
 
 

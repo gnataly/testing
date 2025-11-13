@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="593d4709-ce63-458b-9a10-e5741ae2cde3" name="@d18011a856fa 2025-11-13 04:12:29" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2025-11-13T04:12:29.1122784+00:00" queuing="2025-11-13T04:12:29.1122785+00:00" start="2025-11-13T04:12:23.2629590+00:00" finish="2025-11-13T04:12:29.5455034+00:00" />
+  <TestSettings name="default" id="ae2b05a5-ddaf-441e-b704-9d8b562703d4">
+    <Deployment runDeploymentRoot="_d18011a856fa_2025-11-13_04_12_29" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="c1541cf1-49fb-416e-94aa-99aa05668782" testId="1fb84e21-04ce-18b3-36b2-821ac1df65c8" testName="TheatreCenter.UnitTests.Tests.E2ETests.TheatreServiceE2ETests.ScenarioE2E_MusicalAndRolesManagement" computerName="d18011a856fa" duration="00:00:01.3533915" startTime="2025-11-13T04:12:26.0556901+00:00" endTime="2025-11-13T04:12:28.7663458+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c1541cf1-49fb-416e-94aa-99aa05668782">
+      <Output>
+        <StdOut>=== Starting Musical and Roles Management E2E Test ===
+Step 1: Creating theatre and musical...
+Created theatre: Test Theatre Roles, musical: Test Musical Gamma
+Step 2: Creating multiple roles...
+Created 3 roles: Test Role Alpha, Test Role Beta, Test Role Gamma
+Step 3: Getting roles by type...
+Roles filtered by type successfully
+Step 4: Getting roles by musical...
+Musical has 3 roles
+Step 5: Updating role...
+Updated role name to: Test Role Alpha Updated
+Step 6: Deleting role...
+Role deleted successfully
+=== Musical and Roles Management E2E Test Completed Successfully ===</StdOut>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="TheatreCenter.UnitTests.Tests.E2ETests.TheatreServiceE2ETests.ScenarioE2E_MusicalAndRolesManagement" storage="/src/theatrecenter.unittests/bin/release/net8.0/theatrecenter.unittests.dll" id="1fb84e21-04ce-18b3-36b2-821ac1df65c8">
+      <Execution id="c1541cf1-49fb-416e-94aa-99aa05668782" />
+      <TestMethod codeBase="/src/TheatreCenter.UnitTests/bin/Release/net8.0/TheatreCenter.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="TheatreCenter.UnitTests.Tests.E2ETests.TheatreServiceE2ETests" name="ScenarioE2E_MusicalAndRolesManagement" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="1fb84e21-04ce-18b3-36b2-821ac1df65c8" executionId="c1541cf1-49fb-416e-94aa-99aa05668782" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="1" executed="1" passed="1" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 8.0.22)
+[xUnit.net 00:00:00.21]   Discovering: TheatreCenter.UnitTests
+[xUnit.net 00:00:00.37]   Discovered:  TheatreCenter.UnitTests
+[xUnit.net 00:00:00.43]   Starting:    TheatreCenter.UnitTests
+[xUnit.net 00:00:05.05]   Finished:    TheatreCenter.UnitTests
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>
