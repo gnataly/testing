@@ -28,7 +28,7 @@ public class CastMemberFixture
         if (castMemberComment.Length > 200) castMemberComment = castMemberComment.Substring(0, 200);
 
         var castMember = _fixture.Build<CastMember>()
-            .With(cm => cm.Id, id ?? _fixture.Create<int>())
+            .With(cm => cm.Id, id ?? _fixture.Create<int>() + 5)
             .With(cm => cm.ShowId, showId ?? 1)
             .With(cm => cm.RoleId, roleId ?? 1)
             .With(cm => cm.ActorId, actorId ?? 1)
@@ -44,7 +44,7 @@ public class CastMemberFixture
     public Show CreateShow(int? id = null, int? musicalId = null, DateTime? date = null)
     {
         var show = _fixture.Build<Show>()
-            .With(s => s.Id, id ?? _fixture.Create<int>())
+            .With(s => s.Id, id ?? _fixture.Create<int>() + 5)
             .With(s => s.MusicalId, musicalId ?? 1)
             .With(s => s.Date, date ?? DateTime.UtcNow.AddDays(7))
             .Without(s => s.Musical)
@@ -64,7 +64,7 @@ public class CastMemberFixture
         if (roleName.Length > 50) roleName = roleName.Substring(0, 50);
 
         var role = _fixture.Build<Role>()
-            .With(r => r.Id, id ?? _fixture.Create<int>())
+            .With(r => r.Id, id ?? _fixture.Create<int>() + 5)
             .With(r => r.Name, name ?? $"Role {_fixture.Create<int>()}")
             .With(r => r.MusicalId, musicalId ?? 1)
             .With(r => r.RoleType, roleType)
@@ -86,7 +86,7 @@ public class CastMemberFixture
         if (actorName.Length > 100) actorName = actorName.Substring(0, 100);
 
         var actor = _fixture.Build<Actor>()
-            .With(a => a.Id, id ?? _fixture.Create<int>())
+            .With(a => a.Id, id ?? _fixture.Create<int>() + 5)
             .With(a => a.Name, name ?? $"Actor {_fixture.Create<int>()}")
             .With(a => a.VoiceType, voiceType)
             .With(a => a.Gender, gender)
@@ -110,7 +110,7 @@ public class CastMemberFixture
         int? theatreId = null)
     {
         var musical = _fixture.Build<Musical>()
-            .With(m => m.Id, id ?? _fixture.Create<int>())
+            .With(m => m.Id, id ?? _fixture.Create<int>() + 5)
             .With(m => m.Title, title ?? $"Musical {_fixture.Create<int>()}")
             .With(m => m.Description, description ?? $"Description {_fixture.Create<int>()}")
             .With(m => m.Duration, duration ?? TimeSpan.FromHours(2))

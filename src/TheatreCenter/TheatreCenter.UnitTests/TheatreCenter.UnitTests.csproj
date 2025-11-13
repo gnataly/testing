@@ -41,13 +41,13 @@
     <None Update="appsettings.Test.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Tests\Database\schemas\create.sql">
+    <None Update="Tests\Database\schemas\01-create.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Tests\Database\schemas\drop.sql">
+    <None Update="Tests\Database\schemas\03-drop.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Tests\Database\schemas\init_data.sql">
+    <None Update="Tests\Database\schemas\02-init_data.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Tests\Database\schemas\reset.sql">
@@ -59,13 +59,13 @@
     <Content Include="appsettings.Test.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Tests\Database\schemas\create.sql">
+    <Content Include="Tests\Database\schemas\01-create.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Tests\Database\schemas\drop.sql">
+    <Content Include="Tests\Database\schemas\03-drop.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Tests\Database\schemas\init_data.sql">
+    <Content Include="Tests\Database\schemas\02-init_data.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Tests\Database\schemas\reset.sql">

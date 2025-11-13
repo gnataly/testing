@@ -6,11 +6,13 @@ using TheatreCenter.Data.Repositories;
 using TheatreCenter.Domain.Enums;
 using TheatreCenter.Domain.Models;
 using TheatreCenter.Tests.Fixtures;
+using TheatreCenter.UnitTests;
 using Xunit;
 
 namespace TheatreCenter.Tests.Repositories;
 
 [AllureSuite("Musical Repository Tests")]
+[Trait("Category", TestCategories.Unit)]
 public class MusicalRepositoryTests : IClassFixture<MusicalFixture>
 {
     private readonly MusicalFixture _fixture;

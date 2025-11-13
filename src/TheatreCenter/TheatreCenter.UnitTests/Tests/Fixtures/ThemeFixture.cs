@@ -20,7 +20,7 @@ public class ThemeFixture
         string? name = null)
     {
         var theme = _fixture.Build<Theme>()
-            .With(t => t.Id, id ?? _fixture.Create<int>())
+            .With(t => t.Id, id ?? _fixture.Create<int>() + 5)
             .With(t => t.Name, name ?? $"Theme {Guid.NewGuid()}")
             .Without(t => t.MusicalThemes)
             .Create();

@@ -1,0 +1,14 @@
+﻿-- Drop tables in correct order to avoid foreign key constraints
+--DROP TABLE IF EXISTS "AccountActorFavorites" CASCADE;
+--DROP TABLE IF EXISTS "AccountMusicalFavorites" CASCADE;
+--DROP TABLE IF EXISTS "AccountTheatreFavorites" CASCADE;
+--DROP TABLE IF EXISTS "CastMembers" CASCADE;
+--DROP TABLE IF EXISTS "ActorRoles" CASCADE;
+--DROP TABLE IF EXISTS "MusicalThemes" CASCADE;
+--DROP TABLE IF EXISTS "Shows" CASCADE;
+--DROP TABLE IF EXISTS "Roles" CASCADE;
+--DROP TABLE IF EXISTS "Musicals" CASCADE;
+--DROP TABLE IF EXISTS "Themes" CASCADE;
+--DROP TABLE IF EXISTS "Actors" CASCADE;
+--DROP TABLE IF EXISTS "Theatres" CASCADE;
+--DROP TABLE IF EXISTS "Accounts" CASCADE;

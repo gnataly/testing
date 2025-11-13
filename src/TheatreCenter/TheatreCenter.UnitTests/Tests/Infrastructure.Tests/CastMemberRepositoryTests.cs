@@ -5,11 +5,13 @@ using TheatreCenter.Data;
 using TheatreCenter.Data.Repositories;
 using TheatreCenter.Domain.Models;
 using TheatreCenter.Tests.Fixtures;
+using TheatreCenter.UnitTests;
 using Xunit;
 
 namespace TheatreCenter.Tests.Repositories;
 
 [AllureSuite("Cast Member Repository Tests")]
+[Trait("Category", TestCategories.Unit)]
 public class CastMemberRepositoryTests : IClassFixture<CastMemberFixture>
 {
     private readonly CastMemberFixture _fixture;

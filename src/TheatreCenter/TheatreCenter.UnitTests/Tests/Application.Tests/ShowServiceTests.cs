@@ -5,12 +5,14 @@ using TheatreCenter.Domain.Interfaces.Repositories;
 using TheatreCenter.Domain.Models;
 using TheatreCenter.Services.Services;
 using TheatreCenter.Tests.Fixtures;
+using TheatreCenter.UnitTests;
 using Xunit;
 
 namespace TheatreCenter.Tests.Services;
 
 [AllureSuite("Show Service Tests")]
 [AllureSubSuite("London Style (with Mocks)")]
+[Trait("Category", TestCategories.Unit)]
 public class ShowServiceMockTests : IClassFixture<ShowFixture>
 {
     private readonly Mock<IShowRepository> _showRepositoryMock;

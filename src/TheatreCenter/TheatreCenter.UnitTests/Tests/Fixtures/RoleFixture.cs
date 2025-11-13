@@ -27,7 +27,7 @@ public class RoleFixture
         if (roleName.Length > 50) roleName = roleName.Substring(0, 50);
 
         var role = _fixture.Build<Role>()
-            .With(r => r.Id, id ?? _fixture.Create<int>())
+            .With(r => r.Id, id ?? _fixture.Create<int>() + 5)
             .With(r => r.Name, name ?? $"Role {_fixture.Create<int>()}")
             .With(r => r.RoleType, roleType)
             .With(r => r.MusicalId, musicalId ?? 1)
@@ -48,7 +48,7 @@ public class RoleFixture
         if (musicalTitle.Length > 100) musicalTitle = musicalTitle.Substring(0, 100);
 
         var musical = _fixture.Build<Musical>()
-            .With(m => m.Id, id ?? _fixture.Create<int>())
+            .With(m => m.Id, id ?? _fixture.Create<int>() + 5)
             .With(m => m.Title, title ?? $"Musical {_fixture.Create<int>()}")
             .With(m => m.Description, $"Description {_fixture.Create<int>()}")
             .With(m => m.Duration, TimeSpan.FromHours(2))

@@ -27,7 +27,7 @@ public class ShowFixture
             : DateTime.UtcNow.AddDays(-7));
 
         var show = _fixture.Build<Show>()
-            .With(s => s.Id, id ?? _fixture.Create<int>())
+            .With(s => s.Id, id ?? _fixture.Create<int>() + 5)
             .With(s => s.MusicalId, musicalId ?? 1)
             .With(s => s.Date, showDate)
             .Without(s => s.Musical)
@@ -46,7 +46,7 @@ public class ShowFixture
         if (musicalTitle.Length > 100) musicalTitle = musicalTitle.Substring(0, 100);
 
         var musical = _fixture.Build<Musical>()
-            .With(m => m.Id, id ?? _fixture.Create<int>())
+            .With(m => m.Id, id ?? _fixture.Create<int>() + 5)
             .With(m => m.Title, title ?? $"Musical {_fixture.Create<int>()}")
             .With(m => m.Description, $"Description {_fixture.Create<int>()}")
             .With(m => m.Duration, TimeSpan.FromHours(2))

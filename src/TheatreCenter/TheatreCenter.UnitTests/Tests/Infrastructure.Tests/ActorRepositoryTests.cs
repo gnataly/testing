@@ -7,11 +7,13 @@ using TheatreCenter.Data.Repositories;
 using TheatreCenter.Domain.Enums;
 using TheatreCenter.Domain.Models;
 using TheatreCenter.Tests.Fixtures;
+using TheatreCenter.UnitTests;
 using Xunit;
 
 namespace TheatreCenter.Tests.Repositories;
 
 [AllureSuite("Actor Repository Tests")]
+[Trait("Category", TestCategories.Unit)]
 public class ActorRepositoryTests : IClassFixture<ActorFixture>
 {
     private readonly ActorFixture _fixture;

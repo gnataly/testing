@@ -6,12 +6,14 @@ using TheatreCenter.Domain.Interfaces.Repositories;
 using TheatreCenter.Domain.Models;
 using TheatreCenter.Services.Services;
 using TheatreCenter.Tests.Fixtures;
+using TheatreCenter.UnitTests;
 using Xunit;
 
 namespace TheatreCenter.Tests.Services;
 
 [AllureSuite("Role Service Tests")]
 [AllureSubSuite("London Style (with Mocks)")]
+[Trait("Category", TestCategories.Unit)]
 public class RoleServiceMockTests : IClassFixture<RoleFixture>
 {
     private readonly Mock<IRoleRepository> _roleRepositoryMock;

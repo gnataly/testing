@@ -21,7 +21,7 @@ public class TheatreFixture
         string? addInfo = null)
     {
         var theatre = _fixture.Build<Theatre>()
-            .With(t => t.Id, id ?? _fixture.Create<int>())
+            .With(t => t.Id, id ?? _fixture.Create<int>() + 5)
             .With(t => t.Name, name ?? $"Theatre {_fixture.Create<int>()}")
             .With(t => t.AddInfo, addInfo ?? $"Additional info {_fixture.Create<int>()}")
             .Without(t => t.Musicals)

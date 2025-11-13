@@ -33,7 +33,7 @@ public class ActorFixture
         var actorAddInfo = addInfo ?? $"Info{_fixture.Create<int>()}";
 
         var actor = _fixture.Build<Actor>()
-            .With(a => a.Id, id ?? _fixture.Create<int>())
+            .With(a => a.Id, id ?? _fixture.Create<int>() + 5)
             .With(a => a.Name, name ?? $"Actor {_fixture.Create<int>()}")
             .With(a => a.VoiceType, voiceType)
             .With(a => a.Gender, gender)

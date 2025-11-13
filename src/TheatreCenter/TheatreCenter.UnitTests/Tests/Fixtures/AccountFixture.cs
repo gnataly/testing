@@ -25,7 +25,7 @@ public class AccountFixture
         DateTime? lastFavoritesViewDate = null)
     {
         var account = _fixture.Build<Account>()
-            .With(a => a.Id, id ?? _fixture.Create<int>())
+            .With(a => a.Id, id ?? _fixture.Create<int>() + 5)
             .With(a => a.Username, username ?? $"user{_fixture.Create<int>()}")
             .With(a => a.PasswordHash, passwordHash ?? $"hash{_fixture.Create<int>()}")
             .With(a => a.AccessLevel, accessLevel)

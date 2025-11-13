@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using TheatreCenter.Domain.Enums;
 using Microsoft.Extensions.Logging;
 
-
+namespace TheatreCenter.Data.Repositories;
 public class ActorRepository : IActorRepository
 {
     private readonly AppDbContext _context;

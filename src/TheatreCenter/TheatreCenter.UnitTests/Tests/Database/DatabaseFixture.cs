@@ -132,9 +132,9 @@ public class DatabaseFixture : IAsyncLifetime
 
     public async Task ResetDatabaseAsync()
     {
-        await ApplyScriptAsync("drop.sql");
-        await ApplyScriptAsync("create.sql");
-        await ApplyScriptAsync("init_data.sql");
+        await ApplyScriptAsync("03-drop.sql");
+        await ApplyScriptAsync("01-create.sql");
+        await ApplyScriptAsync("02-init_data.sql");
     }
 
     public async Task<AppDbContext> CreateTransactionalContextAsync()
