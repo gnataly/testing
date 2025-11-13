@@ -10,7 +10,7 @@ jobs:
     steps:
     - name: Run Unit Tests in Container
       run: |
-        cd src/TheatreCenter\
+        cd src/TheatreCenter
         docker compose up
 
   # unit-tests:
