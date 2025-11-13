@@ -48,11 +48,9 @@ public class TheatreServiceIt : IntegrationTestBase
     [Fact]
     public async Task Theatre_FullCycle_WithFixtures()
     {
+
         // Используем фикстуру для генерации театра
-        var testTheatre = _theatreFixture.CreateTheatre(
-            name: "Test Theatre",
-            addInfo: "Test additional info"
-        );
+        var testTheatre = _theatreFixture.CreateTheatre();
 
         // Act 1 — создание театра
         var createdTheatre = await _service.CreateTheatreAsync(testTheatre);
@@ -74,11 +72,11 @@ public class TheatreServiceIt : IntegrationTestBase
         //    addInfo: "Updated additional info"
         //);
 
-        createdTheatre.Name = "Updated Theatre Name";
+        createdTheatre.Name = createdTheatre.Name + "123";
 
         var updateResult = await _service.UpdateTheatreAsync(createdTheatre);
         updateResult.Should().NotBeNull();
-        updateResult.Name.Should().Be("Updated Theatre Name");
+        updateResult.Name.Should().Be(createdTheatre.Name);
 
         // Act 4 — получение всех театров
         var allTheatres = await _service.GetAllTheatresAsync();

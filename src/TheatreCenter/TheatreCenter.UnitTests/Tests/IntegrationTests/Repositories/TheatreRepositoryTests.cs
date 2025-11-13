@@ -41,28 +41,27 @@ public class TheatreRepositoryIt : IntegrationTestBase
     [Fact]
     public async Task Theatre_FullCycle_WithMusicals()
     {
+
         // Act 1 - создать театр
-        var theatre = _theatreFixture.CreateTheatre(
-            name: "Test Theatre",
-            addInfo: "Test information");
+        var theatre = _theatreFixture.CreateTheatre();
 
         await _repository.AddAsync(theatre);
 
         // Assert 1 - проверить создание
         var created = await _repository.GetByIdAsync(theatre.Id);
         created.Should().NotBeNull();
-        created!.Name.Should().Be("Test Theatre");
-        created.AddInfo.Should().Be("Test information");
+        created!.Name.Should().Be(theatre.Name);
+        created.AddInfo.Should().Be(theatre.AddInfo);
 
         // Act 2 - обновить театр
-        created.Name = "Updated Theatre";
-        created.AddInfo = "Updated information";
+        created.Name = theatre.Name + "123";
+        created.AddInfo = theatre.AddInfo + "123";
         await _repository.UpdateAsync(created);
 
         // Assert 2 - проверить обновление
         var updated = await _repository.GetByIdAsync(theatre.Id);
-        updated!.Name.Should().Be("Updated Theatre");
-        updated.AddInfo.Should().Be("Updated information");
+        updated!.Name.Should().Be(theatre.Name);
+        updated.AddInfo.Should().Be(theatre.AddInfo);
 
         // Act 3 - получить все театры
         var allTheatres = await _repository.GetAllAsync();

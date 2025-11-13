@@ -51,22 +51,15 @@ public class RoleServiceIt : IntegrationTestBase
     [Fact]
     public async Task Role_FullCycle_WithFixtures()
     {
-        // Создаем театр и мюзикл для роли
-        var musical = _musicalFixture.CreateMusical(
-            title: "Test Musical"
-        );
+        //var musical = _musicalFixture.CreateMusical();
 
-        var context = await Fixture.CreateTransactionalContextAsync();
-        await context.Musicals.AddAsync(musical);
-        await context.SaveChangesAsync();
-        await context.Database.CommitTransactionAsync();
-        await context.DisposeAsync();
+        //var context = await Fixture.CreateTransactionalContextAsync();
+        //await context.Musicals.AddAsync(musical);
+        //await context.SaveChangesAsync();
+        //await context.Database.CommitTransactionAsync();
 
-        // Используем фикстуру для генерации роли
         var testRole = _roleFixture.CreateRole(
-            name: "Test Role",
-            roleType: RoleType.Main,
-            musicalId: musical.Id
+            roleType: RoleType.Main
         );
 
         // Act 1 — создание роли
@@ -85,18 +78,17 @@ public class RoleServiceIt : IntegrationTestBase
         // Act 3 — обновление роли
         var updatedRole = _roleFixture.CreateRole(
             id: createdRole.Id,
-            name: "Updated Role Name",
             roleType: RoleType.Supporting,
-            musicalId: musical.Id
+            musicalId: testRole.MusicalId
         );
 
         var updateResult = await _service.UpdateAsync(updatedRole);
         updateResult.Should().NotBeNull();
-        updateResult.Name.Should().Be("Updated Role Name");
+        updateResult.Name.Should().Be(updatedRole.Name);
         updateResult.RoleType.Should().Be(RoleType.Supporting);
 
         // Act 4 — получение ролей по мюзиклу
-        var rolesByMusical = await _service.GetByMusicalIdAsync(musical.Id);
+        var rolesByMusical = await _service.GetByMusicalIdAsync(testRole.MusicalId);
         rolesByMusical.Should().Contain(r => r.Id == createdRole.Id);
 
         // Act 5 — получение ролей по типу

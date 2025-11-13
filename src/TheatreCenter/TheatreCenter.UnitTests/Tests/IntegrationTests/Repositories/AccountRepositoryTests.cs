@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging.Abstractions;
 using TheatreCenter.Data;
 using TheatreCenter.Data.Repositories;
 using TheatreCenter.Domain.Enums;
@@ -20,7 +19,6 @@ namespace TheatreCenter.Tests.IntegrationTests.Repositories;
 public class AccountRepositoryIt : IntegrationTestBase
 {
     private readonly AccountFixture _accountFixture = new AccountFixture();
-    private readonly ActorFixture _actorFixture = new ActorFixture();
     private AccountRepository _repository;
     private Func<Task> _commitTransaction;
     private Func<Task> _rollbackTransaction;
@@ -46,8 +44,6 @@ public class AccountRepositoryIt : IntegrationTestBase
     {
         // Arrange
         var account = _accountFixture.CreateAccount(
-            username: "testuser",
-            passwordHash: "hashed_password",
             accessLevel: AccessLevel.User,
             upgradeRequest: true,
             lastFavoritesViewDate: DateTime.UtcNow);
@@ -55,12 +51,11 @@ public class AccountRepositoryIt : IntegrationTestBase
         await _repository.CreateAsync(account);
 
         // Assert 1 — проверить создание
-        var created = await _repository.GetByUsernameAsync("testuser");
+        var created = await _repository.GetByUsernameAsync(account.Username);
         created.Should().NotBeNull();
-        created!.Username.Should().Be("testuser");
+        created!.Username.Should().Be(account.Username);
         created.AccessLevel.Should().Be(AccessLevel.User);
         created.UpgradeRequest.Should().BeTrue();
-
 
         // Act 4 — обработка запроса на апгрейд
         var processed = await _repository.ProcessUpgradeRequestAsync(account.Id, true);
@@ -72,11 +67,11 @@ public class AccountRepositoryIt : IntegrationTestBase
         updatedAccount.AccessLevel.Should().Be(AccessLevel.Admin);
 
         // Act 6 — аутентификация
-        var authenticated = await _repository.AuthenticateAsync("testuser", "hashed_password");
+        var authenticated = await _repository.AuthenticateAsync(account.Username, account.PasswordHash);
 
         // Assert 6 — проверка аутентификации
         authenticated.Should().NotBeNull();
-        authenticated!.Username.Should().Be("testuser");
+        authenticated!.Username.Should().Be(account.Username);
 
         // Act 7 — удалить аккаунт
         await _repository.DeleteAsync(account.Id);

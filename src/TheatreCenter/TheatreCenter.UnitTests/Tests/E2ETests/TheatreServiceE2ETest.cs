@@ -427,7 +427,6 @@ public class TheatreServiceE2ETests : IClassFixture<DatabaseFixture>, IAsyncLife
     }
 }
 
-// Helper class for DbContext factory
 public class TestDbContextFactory : IDbContextFactory<AppDbContext>
 {
     private readonly AppDbContext _context;

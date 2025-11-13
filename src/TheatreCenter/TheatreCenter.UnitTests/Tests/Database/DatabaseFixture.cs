@@ -6,6 +6,8 @@ using Xunit;
 using Microsoft.EntityFrameworkCore;
 using TheatreCenter.Data;
 using Xunit.Abstractions;
+using TheatreCenter.Data.Repositories;
+using System.Diagnostics;
 
 namespace TheatreCenter.UnitTests.Tests.Database;
 
@@ -31,72 +33,71 @@ public class DatabaseFixture : IAsyncLifetime
                 .Build();
 
             _baseConnectionString = config.GetConnectionString("TestDatabase")
-                                    ?? throw new InvalidOperationException("Connection string 'TestDatabase' not found in appsettings.Test.json");
+                                ?? throw new InvalidOperationException("Connection string 'TestDatabase' not found in appsettings.Tests.json");
         }
         else
         {
             _baseConnectionString = tmpConnectionString;
         }
 
-        _databaseName = $"theatre_test_{Guid.NewGuid():N}";
-
-        var builder = new NpgsqlConnectionStringBuilder(_baseConnectionString)
-        {
-            Database = _databaseName
-        };
-        ConnectionString = builder.ToString();
+        var builder = new NpgsqlConnectionStringBuilder(_baseConnectionString);
+        ConnectionString = _baseConnectionString;
 
         _scriptsPath = Path.Combine(Directory.GetCurrentDirectory(), "Tests", "Database", "schemas");
+
     }
 
     public async Task InitializeAsync()
     {
-        await CreateDatabaseAsync();
-        await ResetDatabaseAsync();
+
+        
+        //CreateDatabaseAsync();
+        ApplyScriptAsync("01-create.sql");
+        ApplyScriptAsync("02-init_data.sql");
     }
 
     public async Task DisposeAsync()
     {
-        await DropDatabaseAsync();
+        await ApplyScriptAsync("03-drop.sql");
     }
 
-    private async Task CreateDatabaseAsync()
-    {
-        var masterConnString = new NpgsqlConnectionStringBuilder(_baseConnectionString)
-        {
-            Database = "postgres"
-        }.ToString();
+    //private async Task CreateDatabaseAsync()
+    //{
+    //    var masterConnString = new NpgsqlConnectionStringBuilder(_baseConnectionString)
+    //    {
+    //        Database = "postgres"
+    //    }.ToString();
 
-        await using var conn = new NpgsqlConnection(masterConnString);
-        await conn.OpenAsync();
+    //    await using var conn = new NpgsqlConnection(masterConnString);
+    //    await conn.OpenAsync();
 
-        var createDbSql = $"CREATE DATABASE {_databaseName}";
-        await using var cmd = new NpgsqlCommand(createDbSql, conn);
-        await cmd.ExecuteNonQueryAsync();
-    }
+    //    var createDbSql = $"CREATE DATABASE {_databaseName}";
+    //    await using var cmd = new NpgsqlCommand(createDbSql, conn);
+    //    await cmd.ExecuteNonQueryAsync();
+    //}
 
-    private async Task DropDatabaseAsync()
-    {
-        var masterConnString = new NpgsqlConnectionStringBuilder(_baseConnectionString)
-        {
-            Database = "postgres"
-        }.ToString();
+    //private async Task DropDatabaseAsync()
+    //{
+    //    var masterConnString = new NpgsqlConnectionStringBuilder(_baseConnectionString)
+    //    {
+    //        Database = "postgres"
+    //    }.ToString();
 
-        await using var conn = new NpgsqlConnection(masterConnString);
-        await conn.OpenAsync();
+    //    await using var conn = new NpgsqlConnection(masterConnString);
+    //    await conn.OpenAsync();
 
-        var terminateSql = $@"
-            SELECT pg_terminate_backend(pid) 
-            FROM pg_stat_activity 
-            WHERE datname = '{_databaseName}' AND pid <> pg_backend_pid()";
+    //    var terminateSql = $@"
+    //        SELECT pg_terminate_backend(pid) 
+    //        FROM pg_stat_activity 
+    //        WHERE datname = '{_databaseName}' AND pid <> pg_backend_pid()";
 
-        await using var terminateCmd = new NpgsqlCommand(terminateSql, conn);
-        await terminateCmd.ExecuteNonQueryAsync();
+    //    await using var terminateCmd = new NpgsqlCommand(terminateSql, conn);
+    //    await terminateCmd.ExecuteNonQueryAsync();
 
-        var dropDbSql = $"DROP DATABASE IF EXISTS {_databaseName}";
-        await using var dropCmd = new NpgsqlCommand(dropDbSql, conn);
-        await dropCmd.ExecuteNonQueryAsync();
-    }
+    //    var dropDbSql = $"DROP DATABASE IF EXISTS {_databaseName}";
+    //    await using var dropCmd = new NpgsqlCommand(dropDbSql, conn);
+    //    await dropCmd.ExecuteNonQueryAsync();
+    //}
 
     private async Task ApplyScriptAsync(string scriptFile)
     {
@@ -130,13 +131,6 @@ public class DatabaseFixture : IAsyncLifetime
         }
     }
 
-    public async Task ResetDatabaseAsync()
-    {
-        await ApplyScriptAsync("03-drop.sql");
-        await ApplyScriptAsync("01-create.sql");
-        await ApplyScriptAsync("02-init_data.sql");
-    }
-
     public async Task<AppDbContext> CreateTransactionalContextAsync()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -165,14 +159,12 @@ public class DatabaseFixture : IAsyncLifetime
     {
         var repositoryType = typeof(TRepository);
 
-        // Создаем NullLogger для репозиториев, которые требуют ILogger
-        if (repositoryType == typeof(TheatreCenter.Data.Repositories.ActorRepository))
+        if (repositoryType == typeof(ActorRepository))
         {
-            var logger = NullLogger<TheatreCenter.Data.Repositories.ActorRepository>.Instance;
+            var logger = NullLogger<ActorRepository>.Instance;
             return Activator.CreateInstance(repositoryType, context, logger) as TRepository;
         }
 
-        // Для других репозиториев создаем с одним параметром
         return Activator.CreateInstance(repositoryType, context) as TRepository;
     }
 }

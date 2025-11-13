@@ -43,20 +43,15 @@ public class MusicalRepositoryIt : IntegrationTestBase
     [Fact]
     public async Task Musical_FullCycle_WithAgeRestriction()
     {
-        // Arrange - Создаем театр для мюзикла
-        var theatre = _theatreFixture.CreateTheatre(name: "Test Theatre");
-
         var context = await Fixture.CreateTransactionalContextAsync();
+        var theatre = _theatreFixture.CreateTheatre();
+
         context.Theatres.Add(theatre);
         await context.SaveChangesAsync();
         await context.Database.CommitTransactionAsync();
-        await context.DisposeAsync();
 
         // Act 1 - создать мюзикл
         var musical = _musicalFixture.CreateMusical(
-            title: "Test Musical",
-            description: "Test Description",
-            duration: TimeSpan.FromHours(2.5),
             ageRestriction: AgeRestriction.SixteenPlus,
             theatreId: theatre.Id);
 
@@ -65,18 +60,18 @@ public class MusicalRepositoryIt : IntegrationTestBase
         // Assert 1 - проверить создание
         var created = await _repository.GetByIdAsync(musical.Id);
         created.Should().NotBeNull();
-        created!.Title.Should().Be("Test Musical");
+        created!.Title.Should().Be(musical.Title);
         created.AgeRestriction.Should().Be(AgeRestriction.SixteenPlus);
         created.TheatreId.Should().Be(theatre.Id);
 
         // Act 2 - обновить мюзикл
-        created.Title = "Updated Musical";
+        created.Title = musical.Title + "123";
         created.AgeRestriction = AgeRestriction.EighteenPlus;
         await _repository.UpdateAsync(created);
 
         // Assert 2 - проверить обновление
         var updated = await _repository.GetByIdAsync(musical.Id);
-        updated!.Title.Should().Be("Updated Musical");
+        updated!.Title.Should().Be(musical.Title);
         updated.AgeRestriction.Should().Be(AgeRestriction.EighteenPlus);
 
         // Act 3 - получить мюзиклы по театру
@@ -97,5 +92,6 @@ public class MusicalRepositoryIt : IntegrationTestBase
         // Assert 5 - проверить удаление
         var deleted = await _repository.GetByIdAsync(musical.Id);
         deleted.Should().BeNull();
+
     }
 }

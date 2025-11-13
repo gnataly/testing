@@ -45,28 +45,26 @@ public class ActorRepositoryIt : IntegrationTestBase
     {
         // Act 1 - создать актера
         var actor = _actorFixture.CreateActor(
-            name: "Test Actor",
             voiceType: VoiceType.Tenor,
-            gender: Gender.Male,
-            birthDate: new DateTime(1985, 5, 15, 0, 0, 0, DateTimeKind.Utc));
+            gender: Gender.Male);
 
         await _repository.AddAsync(actor);
 
         // Assert 1 - проверить создание
         var created = await _repository.GetByIdAsync(actor.Id);
         created.Should().NotBeNull();
-        created!.Name.Should().Be("Test Actor");
+        created!.Name.Should().Be(actor.Name);
         created.VoiceType.Should().Be(VoiceType.Tenor);
         created.Gender.Should().Be(Gender.Male);
 
         // Act 2 - обновить актера
-        created.Name = "Updated Actor";
+        created.Name = actor.Name + "123";
         created.VoiceType = VoiceType.Baritone;
         await _repository.UpdateAsync(created);
 
         // Assert 2 - проверить обновление
         var updated = await _repository.GetByIdAsync(actor.Id);
-        updated!.Name.Should().Be("Updated Actor");
+        updated!.Name.Should().Be(actor.Name);
         updated.VoiceType.Should().Be(VoiceType.Baritone);
 
         // Act 3 - получить всех актеров

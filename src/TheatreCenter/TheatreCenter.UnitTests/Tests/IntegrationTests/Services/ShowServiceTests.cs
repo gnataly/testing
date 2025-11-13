@@ -50,20 +50,14 @@ public class ShowServiceIt : IntegrationTestBase
     [Fact]
     public async Task Show_FullCycle_WithFixtures()
     {
-        // Создаем театр и мюзикл для показа
-        var musical = _musicalFixture.CreateMusical(
-            title: "Test Musical"
-        );
+        //var context = await Fixture.CreateTransactionalContextAsync();
 
-        var context = await Fixture.CreateTransactionalContextAsync();
-        await context.Musicals.AddAsync(musical);
-        await context.SaveChangesAsync();
-        await context.Database.CommitTransactionAsync();
-        await context.DisposeAsync();
+        //var musical = _musicalFixture.CreateMusical();
+        //await context.Musicals.AddAsync(musical);
+        //await context.SaveChangesAsync();
+        //await context.Database.CommitTransactionAsync();
 
-        // Используем фикстуру для генерации показа
         var testShow = _showFixture.CreateShow(
-            musicalId: musical.Id,
             date: DateTime.UtcNow.AddDays(7)
         );
 
@@ -73,17 +67,17 @@ public class ShowServiceIt : IntegrationTestBase
         // Assert 1 — проверка создания
         createdShow.Should().NotBeNull();
         createdShow.Id.Should().BeGreaterThan(0);
-        createdShow.MusicalId.Should().Be(musical.Id);
+        createdShow.MusicalId.Should().Be(testShow.MusicalId);
 
         // Act 2 — получение показа по ID
         var retrievedShow = await _service.GetByIdAsync(createdShow.Id);
         retrievedShow.Should().NotBeNull();
-        retrievedShow.MusicalId.Should().Be(musical.Id);
+        retrievedShow.MusicalId.Should().Be(testShow.MusicalId);
 
         // Act 3 — обновление показа
         var updatedShow = _showFixture.CreateShow(
             id: createdShow.Id,
-            musicalId: musical.Id,
+            musicalId: testShow.MusicalId,
             date: DateTime.UtcNow.AddDays(14)
         );
 
@@ -92,7 +86,7 @@ public class ShowServiceIt : IntegrationTestBase
         updateResult.Date.Should().BeCloseTo(updatedShow.Date, TimeSpan.FromSeconds(1));
 
         // Act 4 — получение показов по мюзиклу
-        var showsByMusical = await _service.GetByMusicalIdAsync(musical.Id);
+        var showsByMusical = await _service.GetByMusicalIdAsync(testShow.MusicalId);
         showsByMusical.Should().Contain(s => s.Id == createdShow.Id);
 
         // Act 5 — получение предстоящих показов

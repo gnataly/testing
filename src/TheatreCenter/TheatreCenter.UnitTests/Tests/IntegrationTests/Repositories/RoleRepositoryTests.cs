@@ -20,6 +20,7 @@ public class RoleRepositoryIt : IntegrationTestBase
 {
     private readonly RoleFixture _roleFixture = new RoleFixture();
     private readonly MusicalFixture _musicalFixture = new MusicalFixture();
+    private readonly TheatreFixture _theatreFixture = new TheatreFixture();
     private RoleRepository _repository;
     private Func<Task> _commitTransaction;
     private Func<Task> _rollbackTransaction;
@@ -43,42 +44,45 @@ public class RoleRepositoryIt : IntegrationTestBase
     [Fact]
     public async Task Role_FullCycle_WithRoleType()
     {
-        // Arrange - Создаем мюзикл для роли
-        var musical = _musicalFixture.CreateMusical(title: "Test Musical");
+        //// Arrange - Создаем все необходимые сущности с нуля
+        //var context = await Fixture.CreateTransactionalContextAsync();
 
-        var context = await Fixture.CreateTransactionalContextAsync();
-        context.Musicals.Add(musical);
-        await context.SaveChangesAsync();
-        await context.Database.CommitTransactionAsync();
-        await context.DisposeAsync();
+        //// Создаем театр
+        //var theatre = _theatreFixture.CreateTheatre();
+        //context.Theatres.Add(theatre);
+        //await context.SaveChangesAsync();
+
+        //// Создаем мюзикл для роли
+        //var musical = _musicalFixture.CreateMusical(
+        //    theatreId: theatre.Id);
+        //context.Musicals.Add(musical);
+        //await context.SaveChangesAsync();
+        //await context.Database.CommitTransactionAsync();
 
         // Act 1 - создать роль
-        var role = _roleFixture.CreateRole(
-            name: "Test Role",
-            roleType: RoleType.Main,
-            musicalId: musical.Id);
+        var role = _roleFixture.CreateRole(roleType: RoleType.Main);
 
         await _repository.AddAsync(role);
 
         // Assert 1 - проверить создание
         var created = await _repository.GetByIdAsync(role.Id);
         created.Should().NotBeNull();
-        created!.Name.Should().Be("Test Role");
+        created!.Name.Should().Be(role.Name);
         created.RoleType.Should().Be(RoleType.Main);
-        created.MusicalId.Should().Be(musical.Id);
+        created.MusicalId.Should().Be(role.MusicalId);
 
         // Act 2 - обновить роль
-        created.Name = "Updated Role";
+        created.Name = role.Name + "123";
         created.RoleType = RoleType.Supporting;
         await _repository.UpdateAsync(created);
 
         // Assert 2 - проверить обновление
         var updated = await _repository.GetByIdAsync(role.Id);
-        updated!.Name.Should().Be("Updated Role");
+        updated!.Name.Should().Be(role.Name);
         updated.RoleType.Should().Be(RoleType.Supporting);
 
         // Act 3 - получить роли по мюзиклу
-        var musicalRoles = await _repository.GetByMusicalIdAsync(musical.Id);
+        var musicalRoles = await _repository.GetByMusicalIdAsync(role.MusicalId);
 
         // Assert 3 - проверить фильтрацию по мюзиклу
         musicalRoles.Should().ContainSingle(r => r.Id == role.Id);

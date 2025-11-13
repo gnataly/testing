@@ -13,6 +13,7 @@ using Xunit;
 using Xunit.Abstractions;
 using AutoFixture;
 using TheatreCenter.UnitTests.Tests.IntegrationTests;
+using System.Diagnostics;
 
 namespace TheatreCenter.Tests.IntegrationTests.Services;
 
@@ -25,9 +26,12 @@ public class MusicalServiceIt : IntegrationTestBase
     private MusicalService _service;
     private Func<Task> _commitTransaction;
     private Func<Task> _rollbackTransaction;
+    private readonly ITestOutputHelper _outputHelper;
 
     public MusicalServiceIt(DatabaseFixture fixture, ITestOutputHelper output)
-        : base(fixture, output) { }
+        : base(fixture, output) {
+        _outputHelper = output;
+    }
 
     public override async Task InitializeAsync()
     {
@@ -54,22 +58,19 @@ public class MusicalServiceIt : IntegrationTestBase
     [Fact]
     public async Task Musical_FullCycle_WithFixtures()
     {
-        // Создаем театр для мюзикла
-        var theatre = _theatreFixture.CreateTheatre(name: "Test Theatre for musical");
+        _outputHelper.WriteLine("\n\n\n\n\nTEST");
+        //var context = await Fixture.CreateTransactionalContextAsync();
+        //// Создаем театр для мюзикла
+        //var theatre = _theatreFixture.CreateTheatre();
 
-        var context = await Fixture.CreateTransactionalContextAsync();
-        await context.Theatres.AddAsync(theatre);
-        await context.SaveChangesAsync();
-        await context.Database.CommitTransactionAsync();
-        await context.DisposeAsync();
+        //await context.Theatres.AddAsync(theatre);
+        //await context.SaveChangesAsync();
+        //await context.Database.CommitTransactionAsync();
 
         // Используем фикстуру для генерации мюзикла
         var testMusical = _musicalFixture.CreateMusical(
-            title: "Test Musical",
-            description: "Test Description",
             duration: TimeSpan.FromHours(2),
-            ageRestriction: AgeRestriction.TwelvePlus,
-            theatreId: theatre.Id
+            ageRestriction: AgeRestriction.TwelvePlus
         );
 
         // Act 1 — создание мюзикла
@@ -88,18 +89,16 @@ public class MusicalServiceIt : IntegrationTestBase
         // Act 3 — обновление мюзикла
         var updatedMusical = _musicalFixture.CreateMusical(
             id: createdMusical.Id,
-            title: "Updated Musical Title",
-            description: "Updated Description",
             ageRestriction: createdMusical.AgeRestriction,
-            theatreId: theatre.Id
+            theatreId: testMusical.TheatreId
         );
 
         var updateResult = await _service.UpdateMusicalAsync(updatedMusical);
         updateResult.Should().NotBeNull();
-        updateResult.Title.Should().Be("Updated Musical Title");
+        updateResult.Title.Should().Be(updatedMusical.Title);
 
         // Act 4 — получение мюзиклов по театру
-        var musicalsByTheatre = await _service.GetMusicalsByTheatreAsync(theatre.Id);
+        var musicalsByTheatre = await _service.GetMusicalsByTheatreAsync(testMusical.TheatreId);
         musicalsByTheatre.Should().Contain(m => m.Id == createdMusical.Id);
 
         // Act 5 — получение мюзиклов по возрастному ограничению

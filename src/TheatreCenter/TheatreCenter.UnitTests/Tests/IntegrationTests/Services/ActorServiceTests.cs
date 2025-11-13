@@ -52,9 +52,7 @@ public class ActorServiceIt : IntegrationTestBase
     public async Task Actor_FullCycle_WithFixtures()
     {
         // Используем фикстуру для генерации актера
-        var testActor = _actorFixture.CreateActor(
-            name: "Test Actor"
-        );
+        var testActor = _actorFixture.CreateActor();
 
         // Act 1 — создание актера
         var createdActor = await _service.CreateActorAsync(testActor);
@@ -72,14 +70,13 @@ public class ActorServiceIt : IntegrationTestBase
         // Act 3 — обновление актера
         var updatedActor = _actorFixture.CreateActor(
             id: createdActor.Id,
-            name: "Updated Actor Name",
             voiceType: VoiceType.Baritone,
             gender: Gender.Male
         );
 
         var updateResult = await _service.UpdateActorAsync(updatedActor);
         updateResult.Should().NotBeNull();
-        updateResult.Name.Should().Be("Updated Actor Name");
+        updateResult.Name.Should().Be(updatedActor.Name);
         updateResult.VoiceType.Should().Be(VoiceType.Baritone);
 
         // Act 4 — получение актеров по типу голоса

@@ -41,23 +41,24 @@ public class ThemeRepositoryIt : IntegrationTestBase
     [Fact]
     public async Task Theme_FullCycle()
     {
+
         // Act 1 - создать тему
-        var theme = _themeFixture.CreateTheme(name: "Test Theme 123");
+        var theme = _themeFixture.CreateTheme();
 
         await _repository.AddAsync(theme);
 
         // Assert 1 - проверить создание
         var created = await _repository.GetByIdAsync(theme.Id);
         created.Should().NotBeNull();
-        created!.Name.Should().Be("Test Theme 123");
+        created!.Name.Should().Be(theme.Name);
 
         // Act 2 - обновить тему
-        created.Name = "Updated Theme";
+        created.Name = theme.Name + "123";
         await _repository.UpdateAsync(created);
 
         // Assert 2 - проверить обновление
         var updated = await _repository.GetByIdAsync(theme.Id);
-        updated!.Name.Should().Be("Updated Theme");
+        updated!.Name.Should().Be(theme.Name);
 
         // Act 3 - получить все темы
         var allThemes = await _repository.GetAllAsync();

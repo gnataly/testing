@@ -19,6 +19,7 @@ public class ShowRepositoryIt : IntegrationTestBase
 {
     private readonly ShowFixture _showFixture = new ShowFixture();
     private readonly MusicalFixture _musicalFixture = new MusicalFixture();
+    private readonly TheatreFixture _theatreFixture = new TheatreFixture();
     private ShowRepository _repository;
     private Func<Task> _commitTransaction;
     private Func<Task> _rollbackTransaction;
@@ -42,26 +43,30 @@ public class ShowRepositoryIt : IntegrationTestBase
     [Fact]
     public async Task Show_FullCycle_WithUpcomingShows()
     {
-        // Arrange - Создаем мюзикл для показа
-        var musical = _musicalFixture.CreateMusical(title: "Test Musical");
+        //// Arrange - Создаем все необходимые сущности с нуля
+        //var context = await Fixture.CreateTransactionalContextAsync();
 
-        var context = await Fixture.CreateTransactionalContextAsync();
-        context.Musicals.Add(musical);
-        await context.SaveChangesAsync();
-        await context.Database.CommitTransactionAsync();
-        await context.DisposeAsync();
+        //// Создаем театр
+        //var theatre = _theatreFixture.CreateTheatre();
+        //context.Theatres.Add(theatre);
+        //await context.SaveChangesAsync();
+
+        //// Создаем мюзикл для показа
+        //var musical = _musicalFixture.CreateMusical(
+        //    theatreId: theatre.Id);
+        //context.Musicals.Add(musical);
+        //await context.SaveChangesAsync();
+        //await context.Database.CommitTransactionAsync();
 
         // Act 1 - создать показ
-        var show = _showFixture.CreateShow(
-            musicalId: musical.Id,
-            date: DateTime.UtcNow.AddDays(7));
+        var show = _showFixture.CreateShow(date: DateTime.UtcNow.AddDays(7));
 
         await _repository.AddAsync(show);
 
         // Assert 1 - проверить создание
         var created = await _repository.GetByIdAsync(show.Id);
         created.Should().NotBeNull();
-        created!.MusicalId.Should().Be(musical.Id);
+        created!.MusicalId.Should().Be(show.MusicalId);
         created.Date.Should().BeCloseTo(DateTime.UtcNow.AddDays(7), TimeSpan.FromSeconds(1));
 
         // Act 2 - обновить показ
@@ -74,7 +79,7 @@ public class ShowRepositoryIt : IntegrationTestBase
         updated!.Date.Should().BeCloseTo(newDate, TimeSpan.FromSeconds(1));
 
         // Act 3 - получить показы по мюзиклу
-        var musicalShows = await _repository.GetByMusicalIdAsync(musical.Id);
+        var musicalShows = await _repository.GetByMusicalIdAsync(show.MusicalId);
 
         // Assert 3 - проверить фильтрацию по мюзиклу
         musicalShows.Should().ContainSingle(s => s.Id == show.Id);
