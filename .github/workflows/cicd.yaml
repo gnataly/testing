@@ -8,6 +8,9 @@ jobs:
     name: all
 
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
     - name: Run Unit Tests in Container
       run: |
         cd src/TheatreCenter
