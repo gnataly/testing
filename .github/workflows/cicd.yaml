@@ -15,7 +15,7 @@ jobs:
       run: |
         cd src
         docker compose build unit-test-runner
-        docker compose run --rm unit-test-runner
+        docker compose run --rm unit-test-runner /run-unit-tests.sh
 
     - name: Upload Unit Test Results
       uses: actions/upload-artifact@v4
@@ -44,7 +44,7 @@ jobs:
       run: |
         cd src
         docker compose build integration-test-runner
-        docker compose run --rm integration-test-runner
+        docker compose run --rm integration-test-runner /run-integration-tests.sh
 
     - name: Upload Integration Test Results
       uses: actions/upload-artifact@v4
@@ -79,7 +79,7 @@ jobs:
       run: |
         cd src
         docker compose build e2e-test-runner
-        docker compose run --rm e2e-test-runner
+        docker compose run --rm e2e-test-runner /run-e2e-tests.sh
 
     - name: Upload E2E Test Results
       uses: actions/upload-artifact@v4
