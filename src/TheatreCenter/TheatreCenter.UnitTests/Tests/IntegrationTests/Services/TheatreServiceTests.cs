@@ -12,7 +12,7 @@ using TheatreCenter.UnitTests;
 
 namespace TheatreCenter.UnitTests.Tests.IntegrationTests.Services;
 
-[Collection("Database collection")]
+[CollectionDefinition("Database collection")]
 [Trait("Category", TestCategories.Integration)]
 public class TheatreServiceIt : IntegrationTestBase
 {
@@ -26,6 +26,7 @@ public class TheatreServiceIt : IntegrationTestBase
 
     public override async Task InitializeAsync()
     {
+        //await Fixture.WaitForDatabaseReadyAsync(TimeSpan.FromSeconds(30));
         var context = await Fixture.CreateTransactionalContextAsync();
         var repository = Fixture.CreateRepository<TheatreRepository>(context);
         _service = new TheatreService(repository);

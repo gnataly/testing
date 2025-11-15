@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using System.Data;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Npgsql;
@@ -16,6 +17,11 @@ public class DatabaseFixture : IAsyncLifetime
     private readonly string _baseConnectionString;
     private readonly string _databaseName;
     private readonly string _scriptsPath;
+    private static readonly SemaphoreSlim _globalLock = new(1, 1);
+    private static readonly object _initLock = new object();
+
+    private static bool _isDatabaseInitialized = false;
+    private static int _initializationInProgress = 0;
 
     public string ConnectionString { get; private set; }
     public ITestOutputHelper Output { get; set; }
@@ -41,63 +47,182 @@ public class DatabaseFixture : IAsyncLifetime
         }
 
         var builder = new NpgsqlConnectionStringBuilder(_baseConnectionString);
+        var processId = Process.GetCurrentProcess().Id;
+        _databaseName = $"test_db_{Guid.NewGuid():N}";
+        builder.Database = _databaseName;
         ConnectionString = _baseConnectionString;
 
         _scriptsPath = Path.Combine(Directory.GetCurrentDirectory(), "Tests", "Database", "schemas");
 
     }
 
+
     public async Task InitializeAsync()
     {
-
-        
         //CreateDatabaseAsync();
         ApplyScriptAsync("01-create.sql");
-        ApplyScriptAsync("02-init_data.sql");
+        //ApplyScriptAsync("02-init_data.sql");
     }
+
+    //public async Task InitializeAsync()
+    //{
+    //    lock (_initLock)
+    //    {
+    //        if (_isDatabaseInitialized)
+    //            return;
+
+    //        CreateDatabaseAsync();
+    //        ApplyScriptAsync("01-create.sql").Wait();
+    //        ApplyScriptAsync("02-init_data.sql").Wait();
+
+    //        _isDatabaseInitialized = true;
+    //    }
+    //}
 
     public async Task DisposeAsync()
     {
-        await ApplyScriptAsync("03-drop.sql");
+        //ApplyScriptAsync("03-drop.sql");
+        //DropDatabaseAsync();
     }
 
-    //private async Task CreateDatabaseAsync()
+    //public async Task InitializeAsync()
     //{
-    //    var masterConnString = new NpgsqlConnectionStringBuilder(_baseConnectionString)
+    //    // Если инициализация уже идет, ждем
+    //    if (Interlocked.CompareExchange(ref _initializationInProgress, 1, 0) == 1)
     //    {
-    //        Database = "postgres"
-    //    }.ToString();
+    //        await WaitForInitializationAsync(TimeSpan.FromSeconds(30));
+    //        return;
+    //    }
 
-    //    await using var conn = new NpgsqlConnection(masterConnString);
-    //    await conn.OpenAsync();
-
-    //    var createDbSql = $"CREATE DATABASE {_databaseName}";
-    //    await using var cmd = new NpgsqlCommand(createDbSql, conn);
-    //    await cmd.ExecuteNonQueryAsync();
+    //    await _globalLock.WaitAsync();
+    //    try
+    //    {
+    //        if (!_isDatabaseInitialized)
+    //        {
+    //            await ApplyScriptAsync("01-create.sql");
+    //            await ApplyScriptAsync("02-init_data.sql");
+    //            _isDatabaseInitialized = true;
+    //        }
+    //    }
+    //    finally
+    //    {
+    //        Interlocked.Exchange(ref _initializationInProgress, 0);
+    //        _globalLock.Release();
+    //    }
     //}
 
-    //private async Task DropDatabaseAsync()
+    //private async Task WaitForInitializationAsync(TimeSpan timeout)
     //{
-    //    var masterConnString = new NpgsqlConnectionStringBuilder(_baseConnectionString)
+    //    var startTime = DateTime.UtcNow;
+
+    //    while (!_isDatabaseInitialized && (DateTime.UtcNow - startTime) < timeout)
     //    {
-    //        Database = "postgres"
-    //    }.ToString();
+    //        await Task.Delay(100);
+    //    }
 
-    //    await using var conn = new NpgsqlConnection(masterConnString);
-    //    await conn.OpenAsync();
-
-    //    var terminateSql = $@"
-    //        SELECT pg_terminate_backend(pid) 
-    //        FROM pg_stat_activity 
-    //        WHERE datname = '{_databaseName}' AND pid <> pg_backend_pid()";
-
-    //    await using var terminateCmd = new NpgsqlCommand(terminateSql, conn);
-    //    await terminateCmd.ExecuteNonQueryAsync();
-
-    //    var dropDbSql = $"DROP DATABASE IF EXISTS {_databaseName}";
-    //    await using var dropCmd = new NpgsqlCommand(dropDbSql, conn);
-    //    await dropCmd.ExecuteNonQueryAsync();
+    //    if (!_isDatabaseInitialized)
+    //        throw new TimeoutException("Database initialization timeout");
     //}
+
+    //public async Task InitializeAsync()
+    //{
+    //    await _globalLock.WaitAsync();
+    //    try
+    //    {
+    //        if (!_isDatabaseInitialized)
+    //        {
+    //            await CreateDatabaseAsync();
+    //            await ApplyScriptAsync("01-create.sql");
+    //            await ApplyScriptAsync("02-init_data.sql");
+    //            _isDatabaseInitialized = true;
+    //        }
+    //    }
+    //    finally
+    //    {
+    //        _globalLock.Release();
+    //    }
+    //}
+
+    //public async Task InitializeAsync()
+    //{
+
+
+    //CreateDatabaseAsync();
+    //ApplyScriptAsync("01-create.sql");
+    //ApplyScriptAsync("02-init_data.sql");
+    //}
+
+    //public async Task DisposeAsync()
+    //{
+    //ApplyScriptAsync("03-drop.sql");
+    //}
+
+    private async Task CreateDatabaseAsync()
+    {
+        var masterConnString = new NpgsqlConnectionStringBuilder(_baseConnectionString)
+        {
+            Database = "postgres"
+        }.ToString();
+
+        await using var conn = new NpgsqlConnection(masterConnString);
+        await conn.OpenAsync();
+
+        var createDbSql = $"CREATE DATABASE {_databaseName}";
+        await using var cmd = new NpgsqlCommand(createDbSql, conn);
+        await cmd.ExecuteNonQueryAsync();
+    }
+
+    private async Task DropDatabaseAsync()
+    {
+        var masterConnString = new NpgsqlConnectionStringBuilder(_baseConnectionString)
+        {
+            Database = "postgres"
+        }.ToString();
+
+        await using var conn = new NpgsqlConnection(masterConnString);
+        await conn.OpenAsync();
+
+        var terminateSql = $@"
+            SELECT pg_terminate_backend(pid) 
+            FROM pg_stat_activity 
+            WHERE datname = '{_databaseName}' AND pid <> pg_backend_pid()";
+
+        await using var terminateCmd = new NpgsqlCommand(terminateSql, conn);
+        await terminateCmd.ExecuteNonQueryAsync();
+
+        var dropDbSql = $"DROP DATABASE IF EXISTS {_databaseName}";
+        await using var dropCmd = new NpgsqlCommand(dropDbSql, conn);
+        await dropCmd.ExecuteNonQueryAsync();
+    }
+
+    //public async Task WaitForDatabaseReadyAsync(TimeSpan timeout)
+    //{
+    //    var startTime = DateTime.UtcNow;
+
+    //    while ((DateTime.UtcNow - startTime) < timeout)
+    //    {
+    //        try
+    //        {
+    //            await using var conn = new NpgsqlConnection(ConnectionString);
+    //            await conn.OpenAsync();
+
+    //            var checkTableSql = "SELECT 1 FROM \"Accounts\" LIMIT 1";
+    //            await using var cmd = new NpgsqlCommand(checkTableSql, conn);
+    //            await cmd.ExecuteScalarAsync();
+
+    //            return;
+    //        }
+    //        catch
+    //        {
+    //            await Task.Delay(100);
+    //        }
+    //    }
+
+    //    throw new TimeoutException("Database not ready within timeout");
+    //}
+
+
+
 
     private async Task ApplyScriptAsync(string scriptFile)
     {
@@ -131,6 +256,20 @@ public class DatabaseFixture : IAsyncLifetime
         }
     }
 
+
+
+
+    //public async Task<AppDbContext> CreateTransactionalContextAsync()
+    //{
+    //    var options = new DbContextOptionsBuilder<AppDbContext>()
+    //        .UseNpgsql(ConnectionString)
+    //        .Options;
+
+    //    var context = new AppDbContext(options);
+    //    await context.Database.BeginTransactionAsync();
+    //    return context;
+    //}
+
     public async Task<AppDbContext> CreateTransactionalContextAsync()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -138,21 +277,24 @@ public class DatabaseFixture : IAsyncLifetime
             .Options;
 
         var context = new AppDbContext(options);
-        await context.Database.BeginTransactionAsync();
+        await context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
         return context;
     }
 
-    public async Task<(TRepository repository, Func<Task> commit, Func<Task> rollback)> CreateTransactionalRepositoryAsync<TRepository>()
-        where TRepository : class
-    {
-        var context = await CreateTransactionalContextAsync();
-        var repository = CreateRepository<TRepository>(context);
+    //public async Task<(TRepository repository, Func<Task> commit, Func<Task> rollback, AppDbContext context)> CreateTransactionalRepositoryAsync<TRepository>(AppDbContext context = null)
+    //    where TRepository : class
+    //{
+    //    if (context == null)
+    //        context = await CreateTransactionalContextAsync();
+        
+    //    var repository = CreateRepository<TRepository>(context);
 
-        return (repository,
-            async () => { await context.Database.CommitTransactionAsync(); await context.DisposeAsync(); },
-            async () => { await context.Database.RollbackTransactionAsync(); await context.DisposeAsync(); }
-        );
-    }
+    //    return (repository,
+    //        async () => { await context.Database.CommitTransactionAsync(); await context.DisposeAsync(); },
+    //        async () => { await context.Database.RollbackTransactionAsync(); await context.DisposeAsync(); },
+    //        context
+    //    );
+    //}
 
     public TRepository CreateRepository<TRepository>(AppDbContext context)
         where TRepository : class

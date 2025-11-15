@@ -1,122 +1,98 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TestRun id="d0df51a6-c18f-4ff7-8aa0-a8e02d74258b" name="@9a8125b6a08f 2025-11-13 09:21:57" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
-  <Times creation="2025-11-13T09:21:57.1402448+00:00" queuing="2025-11-13T09:21:57.1402449+00:00" start="2025-11-13T09:21:51.4954219+00:00" finish="2025-11-13T09:22:00.1935994+00:00" />
-  <TestSettings name="default" id="fbeed8d1-1ec8-484e-b543-0516ed286a61">
-    <Deployment runDeploymentRoot="_9a8125b6a08f_2025-11-13_09_21_57" />
+<TestRun id="b1f0a4db-0207-4f9b-9514-c7f9f0bc21e2" name="@e5c1d6a4f9de 2025-11-15 03:42:30" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2025-11-15T03:42:30.2013178+00:00" queuing="2025-11-15T03:42:30.2013180+00:00" start="2025-11-15T03:42:23.6030295+00:00" finish="2025-11-15T03:42:30.8840780+00:00" />
+  <TestSettings name="default" id="78bd7862-fabc-47c1-9d8e-00d1834022e7">
+    <Deployment runDeploymentRoot="_e5c1d6a4f9de_2025-11-15_03_42_30" />
   </TestSettings>
   <Results>
-    <UnitTestResult executionId="d43ffda5-fa53-4080-b903-e9ba67285a8b" testId="77bcee64-9d94-459f-8dbb-1b20ea4567a8" testName="TheatreCenter.Tests.IntegrationTests.Repositories.ThemeRepositoryIt.Theme_FullCycle" computerName="9a8125b6a08f" duration="00:00:00.0838231" startTime="2025-11-13T09:21:58.2572072+00:00" endTime="2025-11-13T09:21:58.3538802+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d43ffda5-fa53-4080-b903-e9ba67285a8b" />
-    <UnitTestResult executionId="ad8fb489-6c91-460d-b2e3-45af5e530d18" testId="2f447320-9533-cd14-f92d-81ae735744ad" testName="TheatreCenter.Tests.IntegrationTests.Services.ActorServiceIt.Actor_FullCycle_WithFixtures" computerName="9a8125b6a08f" duration="00:00:00.1095129" startTime="2025-11-13T09:21:59.6918400+00:00" endTime="2025-11-13T09:21:59.8123072+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ad8fb489-6c91-460d-b2e3-45af5e530d18" />
-    <UnitTestResult executionId="37fc8839-cda5-4bc2-889d-c4c38463be5a" testId="873bff76-c662-ac75-9b8c-c3a8db84131f" testName="TheatreCenter.Tests.IntegrationTests.Repositories.MusicalRepositoryIt.Musical_FullCycle_WithAgeRestriction" computerName="9a8125b6a08f" duration="00:00:00.1204970" startTime="2025-11-13T09:21:58.5321455+00:00" endTime="2025-11-13T09:21:58.6604963+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="37fc8839-cda5-4bc2-889d-c4c38463be5a" />
-    <UnitTestResult executionId="3a9ed307-2daa-490a-bcd4-061e89f4346a" testId="7c0e6e0c-5ac5-7f0d-ba2f-19dced97aeba" testName="TheatreCenter.Tests.IntegrationTests.Repositories.ShowRepositoryIt.Show_FullCycle_WithUpcomingShows" computerName="9a8125b6a08f" duration="00:00:00.0477833" startTime="2025-11-13T09:21:58.4061267+00:00" endTime="2025-11-13T09:21:58.4609502+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3a9ed307-2daa-490a-bcd4-061e89f4346a" />
-    <UnitTestResult executionId="295443e2-98c1-4c74-85b6-25078b47b3e8" testId="1930936c-3d1d-e5b6-35e6-305c91e29d37" testName="TheatreCenter.UnitTests.Tests.IntegrationTests.Services.TheatreServiceIt.Theatre_FullCycle_WithFixtures" computerName="9a8125b6a08f" duration="00:00:01.3957981" startTime="2025-11-13T09:21:53.5855242+00:00" endTime="2025-11-13T09:21:57.0498787+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="295443e2-98c1-4c74-85b6-25078b47b3e8">
-      <Output>
-        <StdOut>Error executing command: CREATE TABLE "Accounts" (&#xD;
-    "Id" SERIAL PRIMARY KEY,&#xD;
-    "Username" VARCHAR(50) NOT NULL,&#xD;
-    "PasswordHash" VARCHAR(255) NOT NULL,&#xD;
-    "AccessLevel" TEXT NOT NULL,&#xD;
-    "LastFavoritesViewDate" TIMESTAMPTZ NOT NULL DEFAULT NOW(),&#xD;
-    "UpgradeRequest" BOOLEAN NOT NULL DEFAULT false&#xD;
-)
-Error: 23505: duplicate key value violates unique constraint "pg_type_typname_nsp_index"
-
-DETAIL: Detail redacted as it may contain sensitive data. Specify 'Include Error Detail' in the connection string to include this information.</StdOut>
-      </Output>
-    </UnitTestResult>
-    <UnitTestResult executionId="41811b2e-b51d-4f15-bf68-05ca5b361b7b" testId="f2cc76f7-8b8c-19ea-e2b2-9ff056b69c8c" testName="TheatreCenter.Tests.IntegrationTests.Services.MusicalServiceIt.Musical_FullCycle_WithFixtures" computerName="9a8125b6a08f" duration="00:00:00.1105480" startTime="2025-11-13T09:21:59.5695256+00:00" endTime="2025-11-13T09:21:59.6909481+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="41811b2e-b51d-4f15-bf68-05ca5b361b7b">
-      <Output>
-        <StdOut>TEST</StdOut>
-      </Output>
-    </UnitTestResult>
-    <UnitTestResult executionId="c9b7c641-9048-4c7a-8bc1-fbe923e3dbc6" testId="7cb21dcc-1369-98b9-8886-29960671bbfe" testName="TheatreCenter.Tests.IntegrationTests.Repositories.CastMemberRepositoryIt.CastMember_FullCycle_WithRelationships" computerName="9a8125b6a08f" duration="00:00:00.1684328" startTime="2025-11-13T09:21:58.6614559+00:00" endTime="2025-11-13T09:21:58.8390334+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c9b7c641-9048-4c7a-8bc1-fbe923e3dbc6" />
-    <UnitTestResult executionId="f16039a2-59fd-4487-ad02-a7e2bebbebdc" testId="c840e931-3763-7243-6256-c5229ee25766" testName="TheatreCenter.Tests.IntegrationTests.Repositories.ActorRepositoryIt.Actor_FullCycle_WithVoiceType" computerName="9a8125b6a08f" duration="00:00:00.2346766" startTime="2025-11-13T09:21:58.8399726+00:00" endTime="2025-11-13T09:21:59.0826708+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f16039a2-59fd-4487-ad02-a7e2bebbebdc" />
-    <UnitTestResult executionId="6bb5bdfa-e6ff-47a6-baeb-5a13c2674ea0" testId="caeecf7f-b166-0fcf-dc0e-781bc16af4c0" testName="TheatreCenter.UnitTests.Tests.IntegrationTests.Services.ShowServiceIt.Show_FullCycle_WithFixtures" computerName="9a8125b6a08f" duration="00:00:00.6131854" startTime="2025-11-13T09:21:57.1032208+00:00" endTime="2025-11-13T09:21:57.7307247+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6bb5bdfa-e6ff-47a6-baeb-5a13c2674ea0" />
-    <UnitTestResult executionId="b31068dc-126f-44dd-8ca9-c94c29fbbd72" testId="fb9f353c-6d12-02cf-d8a0-7bca03c75f32" testName="TheatreCenter.Tests.IntegrationTests.Repositories.AccountRepositoryIt.Account_FullCycle_WithUpgradeRequest" computerName="9a8125b6a08f" duration="00:00:00.4788962" startTime="2025-11-13T09:21:59.0831992+00:00" endTime="2025-11-13T09:21:59.5689010+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b31068dc-126f-44dd-8ca9-c94c29fbbd72" />
-    <UnitTestResult executionId="0eff72d5-ab33-404f-9842-20070cd05892" testId="ae9e9e55-8a10-ded4-4d8c-541506626770" testName="TheatreCenter.Tests.IntegrationTests.Repositories.TheatreRepositoryIt.Theatre_FullCycle_WithMusicals" computerName="9a8125b6a08f" duration="00:00:00.0440219" startTime="2025-11-13T09:21:58.3544349+00:00" endTime="2025-11-13T09:21:58.4055519+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0eff72d5-ab33-404f-9842-20070cd05892" />
-    <UnitTestResult executionId="5f372f4c-aa22-4078-bc81-fec09af0f0f3" testId="2078354a-9bbe-d0bf-653a-96b0c474a412" testName="TheatreCenter.UnitTests.Tests.IntegrationTests.Services.RoleServiceIt.Role_FullCycle_WithFixtures" computerName="9a8125b6a08f" duration="00:00:00.2899661" startTime="2025-11-13T09:21:57.7334801+00:00" endTime="2025-11-13T09:21:58.2553996+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5f372f4c-aa22-4078-bc81-fec09af0f0f3" />
-    <UnitTestResult executionId="b7da71b7-5b6a-4277-8ff2-ad08c53502d6" testId="252c3add-6d6c-3c95-1f3f-a643569a60da" testName="TheatreCenter.Tests.IntegrationTests.Repositories.RoleRepositoryIt.Role_FullCycle_WithRoleType" computerName="9a8125b6a08f" duration="00:00:00.0622965" startTime="2025-11-13T09:21:58.4617129+00:00" endTime="2025-11-13T09:21:58.5316085+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b7da71b7-5b6a-4277-8ff2-ad08c53502d6" />
+    <UnitTestResult executionId="1840f1bc-4a57-4bd0-b418-5346e86c4ef5" testId="873bff76-c662-ac75-9b8c-c3a8db84131f" testName="TheatreCenter.Tests.IntegrationTests.Repositories.MusicalRepositoryIt.Musical_FullCycle_WithAgeRestriction" computerName="e5c1d6a4f9de" duration="00:00:00.0482007" startTime="2025-11-15T03:42:30.4451806+00:00" endTime="2025-11-15T03:42:30.5030657+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1840f1bc-4a57-4bd0-b418-5346e86c4ef5" />
+    <UnitTestResult executionId="3cdd6805-edfe-4ea7-a038-d5ef2ba63cb3" testId="ae9e9e55-8a10-ded4-4d8c-541506626770" testName="TheatreCenter.Tests.IntegrationTests.Repositories.TheatreRepositoryIt.Theatre_FullCycle_WithMusicals" computerName="e5c1d6a4f9de" duration="00:00:00.0352526" startTime="2025-11-15T03:42:30.1687425+00:00" endTime="2025-11-15T03:42:30.3017278+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3cdd6805-edfe-4ea7-a038-d5ef2ba63cb3" />
+    <UnitTestResult executionId="6d54c691-5d7a-40b9-87dd-ed820facf6e6" testId="1930936c-3d1d-e5b6-35e6-305c91e29d37" testName="TheatreCenter.UnitTests.Tests.IntegrationTests.Services.TheatreServiceIt.Theatre_FullCycle_WithFixtures" computerName="e5c1d6a4f9de" duration="00:00:01.4136655" startTime="2025-11-15T03:42:25.4541100+00:00" endTime="2025-11-15T03:42:30.1270858+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6d54c691-5d7a-40b9-87dd-ed820facf6e6" />
+    <UnitTestResult executionId="344740e2-3a92-4287-9dfa-03bada967648" testId="2078354a-9bbe-d0bf-653a-96b0c474a412" testName="TheatreCenter.UnitTests.Tests.IntegrationTests.Services.RoleServiceIt.Role_FullCycle_WithFixtures" computerName="e5c1d6a4f9de" duration="00:00:01.4340406" startTime="2025-11-15T03:42:25.4474832+00:00" endTime="2025-11-15T03:42:30.1300842+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="344740e2-3a92-4287-9dfa-03bada967648" />
+    <UnitTestResult executionId="5b916579-8bb1-4694-abf0-0a6bae139e85" testId="252c3add-6d6c-3c95-1f3f-a643569a60da" testName="TheatreCenter.Tests.IntegrationTests.Repositories.RoleRepositoryIt.Role_FullCycle_WithRoleType" computerName="e5c1d6a4f9de" duration="00:00:00.0663266" startTime="2025-11-15T03:42:30.3682707+00:00" endTime="2025-11-15T03:42:30.4429758+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5b916579-8bb1-4694-abf0-0a6bae139e85" />
+    <UnitTestResult executionId="80b7c7cb-ef07-43f2-a0f8-a6648404f16b" testId="7cb21dcc-1369-98b9-8886-29960671bbfe" testName="TheatreCenter.Tests.IntegrationTests.Repositories.CastMemberRepositoryIt.CastMember_FullCycle_WithRelationships" computerName="e5c1d6a4f9de" duration="00:00:01.4942700" startTime="2025-11-15T03:42:25.4545409+00:00" endTime="2025-11-15T03:42:30.1272415+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="80b7c7cb-ef07-43f2-a0f8-a6648404f16b" />
+    <UnitTestResult executionId="fed8436b-0c6c-4015-a53a-218006b6f297" testId="77bcee64-9d94-459f-8dbb-1b20ea4567a8" testName="TheatreCenter.Tests.IntegrationTests.Repositories.ThemeRepositoryIt.Theme_FullCycle" computerName="e5c1d6a4f9de" duration="00:00:01.4938138" startTime="2025-11-15T03:42:25.4543778+00:00" endTime="2025-11-15T03:42:30.1180339+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fed8436b-0c6c-4015-a53a-218006b6f297" />
+    <UnitTestResult executionId="00e2aac3-2db2-49d4-88f0-d282ddd169e3" testId="2f447320-9533-cd14-f92d-81ae735744ad" testName="TheatreCenter.Tests.IntegrationTests.Services.ActorServiceIt.Actor_FullCycle_WithFixtures" computerName="e5c1d6a4f9de" duration="00:00:01.4135098" startTime="2025-11-15T03:42:25.4546841+00:00" endTime="2025-11-15T03:42:30.1268631+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="00e2aac3-2db2-49d4-88f0-d282ddd169e3" />
+    <UnitTestResult executionId="67fe9e32-e2c2-4746-b5bc-ecdfe1fa9002" testId="f2cc76f7-8b8c-19ea-e2b2-9ff056b69c8c" testName="TheatreCenter.Tests.IntegrationTests.Services.MusicalServiceIt.Musical_FullCycle_WithFixtures" computerName="e5c1d6a4f9de" duration="00:00:01.4343873" startTime="2025-11-15T03:42:25.4551228+00:00" endTime="2025-11-15T03:42:30.1266176+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="67fe9e32-e2c2-4746-b5bc-ecdfe1fa9002" />
+    <UnitTestResult executionId="c632ddde-5d4b-4e3a-9973-0d1fefa93192" testId="7c0e6e0c-5ac5-7f0d-ba2f-19dced97aeba" testName="TheatreCenter.Tests.IntegrationTests.Repositories.ShowRepositoryIt.Show_FullCycle_WithUpcomingShows" computerName="e5c1d6a4f9de" duration="00:00:00.0548318" startTime="2025-11-15T03:42:30.3029282+00:00" endTime="2025-11-15T03:42:30.3664517+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c632ddde-5d4b-4e3a-9973-0d1fefa93192" />
+    <UnitTestResult executionId="f3d69e73-ca63-4724-b6af-9d7a482bb073" testId="caeecf7f-b166-0fcf-dc0e-781bc16af4c0" testName="TheatreCenter.UnitTests.Tests.IntegrationTests.Services.ShowServiceIt.Show_FullCycle_WithFixtures" computerName="e5c1d6a4f9de" duration="00:00:01.4633494" startTime="2025-11-15T03:42:25.4548351+00:00" endTime="2025-11-15T03:42:30.1301795+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f3d69e73-ca63-4724-b6af-9d7a482bb073" />
+    <UnitTestResult executionId="65a6f968-e1fc-4622-9ba7-b40e1199c79f" testId="c840e931-3763-7243-6256-c5229ee25766" testName="TheatreCenter.Tests.IntegrationTests.Repositories.ActorRepositoryIt.Actor_FullCycle_WithVoiceType" computerName="e5c1d6a4f9de" duration="00:00:01.4944471" startTime="2025-11-15T03:42:25.4549781+00:00" endTime="2025-11-15T03:42:30.1271993+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="65a6f968-e1fc-4622-9ba7-b40e1199c79f" />
   </Results>
   <TestDefinitions>
+    <UnitTest name="TheatreCenter.Tests.IntegrationTests.Repositories.ShowRepositoryIt.Show_FullCycle_WithUpcomingShows" storage="/src/theatrecenter.unittests/bin/release/net8.0/theatrecenter.unittests.dll" id="7c0e6e0c-5ac5-7f0d-ba2f-19dced97aeba">
+      <Execution id="c632ddde-5d4b-4e3a-9973-0d1fefa93192" />
+      <TestMethod codeBase="/src/TheatreCenter.UnitTests/bin/Release/net8.0/TheatreCenter.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="TheatreCenter.Tests.IntegrationTests.Repositories.ShowRepositoryIt" name="Show_FullCycle_WithUpcomingShows" />
+    </UnitTest>
     <UnitTest name="TheatreCenter.Tests.IntegrationTests.Repositories.CastMemberRepositoryIt.CastMember_FullCycle_WithRelationships" storage="/src/theatrecenter.unittests/bin/release/net8.0/theatrecenter.unittests.dll" id="7cb21dcc-1369-98b9-8886-29960671bbfe">
-      <Execution id="c9b7c641-9048-4c7a-8bc1-fbe923e3dbc6" />
+      <Execution id="80b7c7cb-ef07-43f2-a0f8-a6648404f16b" />
       <TestMethod codeBase="/src/TheatreCenter.UnitTests/bin/Release/net8.0/TheatreCenter.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="TheatreCenter.Tests.IntegrationTests.Repositories.CastMemberRepositoryIt" name="CastMember_FullCycle_WithRelationships" />
     </UnitTest>
-    <UnitTest name="TheatreCenter.UnitTests.Tests.IntegrationTests.Services.RoleServiceIt.Role_FullCycle_WithFixtures" storage="/src/theatrecenter.unittests/bin/release/net8.0/theatrecenter.unittests.dll" id="2078354a-9bbe-d0bf-653a-96b0c474a412">
-      <Execution id="5f372f4c-aa22-4078-bc81-fec09af0f0f3" />
-      <TestMethod codeBase="/src/TheatreCenter.UnitTests/bin/Release/net8.0/TheatreCenter.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="TheatreCenter.UnitTests.Tests.IntegrationTests.Services.RoleServiceIt" name="Role_FullCycle_WithFixtures" />
+    <UnitTest name="TheatreCenter.Tests.IntegrationTests.Repositories.ThemeRepositoryIt.Theme_FullCycle" storage="/src/theatrecenter.unittests/bin/release/net8.0/theatrecenter.unittests.dll" id="77bcee64-9d94-459f-8dbb-1b20ea4567a8">
+      <Execution id="fed8436b-0c6c-4015-a53a-218006b6f297" />
+      <TestMethod codeBase="/src/TheatreCenter.UnitTests/bin/Release/net8.0/TheatreCenter.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="TheatreCenter.Tests.IntegrationTests.Repositories.ThemeRepositoryIt" name="Theme_FullCycle" />
+    </UnitTest>
+    <UnitTest name="TheatreCenter.Tests.IntegrationTests.Repositories.ActorRepositoryIt.Actor_FullCycle_WithVoiceType" storage="/src/theatrecenter.unittests/bin/release/net8.0/theatrecenter.unittests.dll" id="c840e931-3763-7243-6256-c5229ee25766">
+      <Execution id="65a6f968-e1fc-4622-9ba7-b40e1199c79f" />
+      <TestMethod codeBase="/src/TheatreCenter.UnitTests/bin/Release/net8.0/TheatreCenter.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="TheatreCenter.Tests.IntegrationTests.Repositories.ActorRepositoryIt" name="Actor_FullCycle_WithVoiceType" />
+    </UnitTest>
+    <UnitTest name="TheatreCenter.UnitTests.Tests.IntegrationTests.Services.ShowServiceIt.Show_FullCycle_WithFixtures" storage="/src/theatrecenter.unittests/bin/release/net8.0/theatrecenter.unittests.dll" id="caeecf7f-b166-0fcf-dc0e-781bc16af4c0">
+      <Execution id="f3d69e73-ca63-4724-b6af-9d7a482bb073" />
+      <TestMethod codeBase="/src/TheatreCenter.UnitTests/bin/Release/net8.0/TheatreCenter.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="TheatreCenter.UnitTests.Tests.IntegrationTests.Services.ShowServiceIt" name="Show_FullCycle_WithFixtures" />
+    </UnitTest>
+    <UnitTest name="TheatreCenter.Tests.IntegrationTests.Repositories.TheatreRepositoryIt.Theatre_FullCycle_WithMusicals" storage="/src/theatrecenter.unittests/bin/release/net8.0/theatrecenter.unittests.dll" id="ae9e9e55-8a10-ded4-4d8c-541506626770">
+      <Execution id="3cdd6805-edfe-4ea7-a038-d5ef2ba63cb3" />
+      <TestMethod codeBase="/src/TheatreCenter.UnitTests/bin/Release/net8.0/TheatreCenter.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="TheatreCenter.Tests.IntegrationTests.Repositories.TheatreRepositoryIt" name="Theatre_FullCycle_WithMusicals" />
+    </UnitTest>
+    <UnitTest name="TheatreCenter.Tests.IntegrationTests.Services.MusicalServiceIt.Musical_FullCycle_WithFixtures" storage="/src/theatrecenter.unittests/bin/release/net8.0/theatrecenter.unittests.dll" id="f2cc76f7-8b8c-19ea-e2b2-9ff056b69c8c">
+      <Execution id="67fe9e32-e2c2-4746-b5bc-ecdfe1fa9002" />
+      <TestMethod codeBase="/src/TheatreCenter.UnitTests/bin/Release/net8.0/TheatreCenter.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="TheatreCenter.Tests.IntegrationTests.Services.MusicalServiceIt" name="Musical_FullCycle_WithFixtures" />
+    </UnitTest>
+    <UnitTest name="TheatreCenter.UnitTests.Tests.IntegrationTests.Services.TheatreServiceIt.Theatre_FullCycle_WithFixtures" storage="/src/theatrecenter.unittests/bin/release/net8.0/theatrecenter.unittests.dll" id="1930936c-3d1d-e5b6-35e6-305c91e29d37">
+      <Execution id="6d54c691-5d7a-40b9-87dd-ed820facf6e6" />
+      <TestMethod codeBase="/src/TheatreCenter.UnitTests/bin/Release/net8.0/TheatreCenter.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="TheatreCenter.UnitTests.Tests.IntegrationTests.Services.TheatreServiceIt" name="Theatre_FullCycle_WithFixtures" />
     </UnitTest>
     <UnitTest name="TheatreCenter.Tests.IntegrationTests.Services.ActorServiceIt.Actor_FullCycle_WithFixtures" storage="/src/theatrecenter.unittests/bin/release/net8.0/theatrecenter.unittests.dll" id="2f447320-9533-cd14-f92d-81ae735744ad">
-      <Execution id="ad8fb489-6c91-460d-b2e3-45af5e530d18" />
+      <Execution id="00e2aac3-2db2-49d4-88f0-d282ddd169e3" />
       <TestMethod codeBase="/src/TheatreCenter.UnitTests/bin/Release/net8.0/TheatreCenter.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="TheatreCenter.Tests.IntegrationTests.Services.ActorServiceIt" name="Actor_FullCycle_WithFixtures" />
     </UnitTest>
     <UnitTest name="TheatreCenter.Tests.IntegrationTests.Repositories.RoleRepositoryIt.Role_FullCycle_WithRoleType" storage="/src/theatrecenter.unittests/bin/release/net8.0/theatrecenter.unittests.dll" id="252c3add-6d6c-3c95-1f3f-a643569a60da">
-      <Execution id="b7da71b7-5b6a-4277-8ff2-ad08c53502d6" />
+      <Execution id="5b916579-8bb1-4694-abf0-0a6bae139e85" />
       <TestMethod codeBase="/src/TheatreCenter.UnitTests/bin/Release/net8.0/TheatreCenter.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="TheatreCenter.Tests.IntegrationTests.Repositories.RoleRepositoryIt" name="Role_FullCycle_WithRoleType" />
     </UnitTest>
-    <UnitTest name="TheatreCenter.UnitTests.Tests.IntegrationTests.Services.ShowServiceIt.Show_FullCycle_WithFixtures" storage="/src/theatrecenter.unittests/bin/release/net8.0/theatrecenter.unittests.dll" id="caeecf7f-b166-0fcf-dc0e-781bc16af4c0">
-      <Execution id="6bb5bdfa-e6ff-47a6-baeb-5a13c2674ea0" />
-      <TestMethod codeBase="/src/TheatreCenter.UnitTests/bin/Release/net8.0/TheatreCenter.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="TheatreCenter.UnitTests.Tests.IntegrationTests.Services.ShowServiceIt" name="Show_FullCycle_WithFixtures" />
-    </UnitTest>
-    <UnitTest name="TheatreCenter.Tests.IntegrationTests.Repositories.ActorRepositoryIt.Actor_FullCycle_WithVoiceType" storage="/src/theatrecenter.unittests/bin/release/net8.0/theatrecenter.unittests.dll" id="c840e931-3763-7243-6256-c5229ee25766">
-      <Execution id="f16039a2-59fd-4487-ad02-a7e2bebbebdc" />
-      <TestMethod codeBase="/src/TheatreCenter.UnitTests/bin/Release/net8.0/TheatreCenter.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="TheatreCenter.Tests.IntegrationTests.Repositories.ActorRepositoryIt" name="Actor_FullCycle_WithVoiceType" />
-    </UnitTest>
-    <UnitTest name="TheatreCenter.UnitTests.Tests.IntegrationTests.Services.TheatreServiceIt.Theatre_FullCycle_WithFixtures" storage="/src/theatrecenter.unittests/bin/release/net8.0/theatrecenter.unittests.dll" id="1930936c-3d1d-e5b6-35e6-305c91e29d37">
-      <Execution id="295443e2-98c1-4c74-85b6-25078b47b3e8" />
-      <TestMethod codeBase="/src/TheatreCenter.UnitTests/bin/Release/net8.0/TheatreCenter.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="TheatreCenter.UnitTests.Tests.IntegrationTests.Services.TheatreServiceIt" name="Theatre_FullCycle_WithFixtures" />
-    </UnitTest>
-    <UnitTest name="TheatreCenter.Tests.IntegrationTests.Services.MusicalServiceIt.Musical_FullCycle_WithFixtures" storage="/src/theatrecenter.unittests/bin/release/net8.0/theatrecenter.unittests.dll" id="f2cc76f7-8b8c-19ea-e2b2-9ff056b69c8c">
-      <Execution id="41811b2e-b51d-4f15-bf68-05ca5b361b7b" />
-      <TestMethod codeBase="/src/TheatreCenter.UnitTests/bin/Release/net8.0/TheatreCenter.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="TheatreCenter.Tests.IntegrationTests.Services.MusicalServiceIt" name="Musical_FullCycle_WithFixtures" />
-    </UnitTest>
     <UnitTest name="TheatreCenter.Tests.IntegrationTests.Repositories.MusicalRepositoryIt.Musical_FullCycle_WithAgeRestriction" storage="/src/theatrecenter.unittests/bin/release/net8.0/theatrecenter.unittests.dll" id="873bff76-c662-ac75-9b8c-c3a8db84131f">
-      <Execution id="37fc8839-cda5-4bc2-889d-c4c38463be5a" />
+      <Execution id="1840f1bc-4a57-4bd0-b418-5346e86c4ef5" />
       <TestMethod codeBase="/src/TheatreCenter.UnitTests/bin/Release/net8.0/TheatreCenter.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="TheatreCenter.Tests.IntegrationTests.Repositories.MusicalRepositoryIt" name="Musical_FullCycle_WithAgeRestriction" />
     </UnitTest>
-    <UnitTest name="TheatreCenter.Tests.IntegrationTests.Repositories.TheatreRepositoryIt.Theatre_FullCycle_WithMusicals" storage="/src/theatrecenter.unittests/bin/release/net8.0/theatrecenter.unittests.dll" id="ae9e9e55-8a10-ded4-4d8c-541506626770">
-      <Execution id="0eff72d5-ab33-404f-9842-20070cd05892" />
-      <TestMethod codeBase="/src/TheatreCenter.UnitTests/bin/Release/net8.0/TheatreCenter.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="TheatreCenter.Tests.IntegrationTests.Repositories.TheatreRepositoryIt" name="Theatre_FullCycle_WithMusicals" />
-    </UnitTest>
-    <UnitTest name="TheatreCenter.Tests.IntegrationTests.Repositories.AccountRepositoryIt.Account_FullCycle_WithUpgradeRequest" storage="/src/theatrecenter.unittests/bin/release/net8.0/theatrecenter.unittests.dll" id="fb9f353c-6d12-02cf-d8a0-7bca03c75f32">
-      <Execution id="b31068dc-126f-44dd-8ca9-c94c29fbbd72" />
-      <TestMethod codeBase="/src/TheatreCenter.UnitTests/bin/Release/net8.0/TheatreCenter.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="TheatreCenter.Tests.IntegrationTests.Repositories.AccountRepositoryIt" name="Account_FullCycle_WithUpgradeRequest" />
-    </UnitTest>
-    <UnitTest name="TheatreCenter.Tests.IntegrationTests.Repositories.ShowRepositoryIt.Show_FullCycle_WithUpcomingShows" storage="/src/theatrecenter.unittests/bin/release/net8.0/theatrecenter.unittests.dll" id="7c0e6e0c-5ac5-7f0d-ba2f-19dced97aeba">
-      <Execution id="3a9ed307-2daa-490a-bcd4-061e89f4346a" />
-      <TestMethod codeBase="/src/TheatreCenter.UnitTests/bin/Release/net8.0/TheatreCenter.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="TheatreCenter.Tests.IntegrationTests.Repositories.ShowRepositoryIt" name="Show_FullCycle_WithUpcomingShows" />
-    </UnitTest>
-    <UnitTest name="TheatreCenter.Tests.IntegrationTests.Repositories.ThemeRepositoryIt.Theme_FullCycle" storage="/src/theatrecenter.unittests/bin/release/net8.0/theatrecenter.unittests.dll" id="77bcee64-9d94-459f-8dbb-1b20ea4567a8">
-      <Execution id="d43ffda5-fa53-4080-b903-e9ba67285a8b" />
-      <TestMethod codeBase="/src/TheatreCenter.UnitTests/bin/Release/net8.0/TheatreCenter.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="TheatreCenter.Tests.IntegrationTests.Repositories.ThemeRepositoryIt" name="Theme_FullCycle" />
+    <UnitTest name="TheatreCenter.UnitTests.Tests.IntegrationTests.Services.RoleServiceIt.Role_FullCycle_WithFixtures" storage="/src/theatrecenter.unittests/bin/release/net8.0/theatrecenter.unittests.dll" id="2078354a-9bbe-d0bf-653a-96b0c474a412">
+      <Execution id="344740e2-3a92-4287-9dfa-03bada967648" />
+      <TestMethod codeBase="/src/TheatreCenter.UnitTests/bin/Release/net8.0/TheatreCenter.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="TheatreCenter.UnitTests.Tests.IntegrationTests.Services.RoleServiceIt" name="Role_FullCycle_WithFixtures" />
     </UnitTest>
   </TestDefinitions>
   <TestEntries>
-    <TestEntry testId="77bcee64-9d94-459f-8dbb-1b20ea4567a8" executionId="d43ffda5-fa53-4080-b903-e9ba67285a8b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="2f447320-9533-cd14-f92d-81ae735744ad" executionId="ad8fb489-6c91-460d-b2e3-45af5e530d18" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="873bff76-c662-ac75-9b8c-c3a8db84131f" executionId="37fc8839-cda5-4bc2-889d-c4c38463be5a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="7c0e6e0c-5ac5-7f0d-ba2f-19dced97aeba" executionId="3a9ed307-2daa-490a-bcd4-061e89f4346a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="1930936c-3d1d-e5b6-35e6-305c91e29d37" executionId="295443e2-98c1-4c74-85b6-25078b47b3e8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="f2cc76f7-8b8c-19ea-e2b2-9ff056b69c8c" executionId="41811b2e-b51d-4f15-bf68-05ca5b361b7b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="7cb21dcc-1369-98b9-8886-29960671bbfe" executionId="c9b7c641-9048-4c7a-8bc1-fbe923e3dbc6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="c840e931-3763-7243-6256-c5229ee25766" executionId="f16039a2-59fd-4487-ad02-a7e2bebbebdc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="caeecf7f-b166-0fcf-dc0e-781bc16af4c0" executionId="6bb5bdfa-e6ff-47a6-baeb-5a13c2674ea0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="fb9f353c-6d12-02cf-d8a0-7bca03c75f32" executionId="b31068dc-126f-44dd-8ca9-c94c29fbbd72" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="ae9e9e55-8a10-ded4-4d8c-541506626770" executionId="0eff72d5-ab33-404f-9842-20070cd05892" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="2078354a-9bbe-d0bf-653a-96b0c474a412" executionId="5f372f4c-aa22-4078-bc81-fec09af0f0f3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="252c3add-6d6c-3c95-1f3f-a643569a60da" executionId="b7da71b7-5b6a-4277-8ff2-ad08c53502d6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="873bff76-c662-ac75-9b8c-c3a8db84131f" executionId="1840f1bc-4a57-4bd0-b418-5346e86c4ef5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ae9e9e55-8a10-ded4-4d8c-541506626770" executionId="3cdd6805-edfe-4ea7-a038-d5ef2ba63cb3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1930936c-3d1d-e5b6-35e6-305c91e29d37" executionId="6d54c691-5d7a-40b9-87dd-ed820facf6e6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2078354a-9bbe-d0bf-653a-96b0c474a412" executionId="344740e2-3a92-4287-9dfa-03bada967648" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="252c3add-6d6c-3c95-1f3f-a643569a60da" executionId="5b916579-8bb1-4694-abf0-0a6bae139e85" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7cb21dcc-1369-98b9-8886-29960671bbfe" executionId="80b7c7cb-ef07-43f2-a0f8-a6648404f16b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="77bcee64-9d94-459f-8dbb-1b20ea4567a8" executionId="fed8436b-0c6c-4015-a53a-218006b6f297" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2f447320-9533-cd14-f92d-81ae735744ad" executionId="00e2aac3-2db2-49d4-88f0-d282ddd169e3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f2cc76f7-8b8c-19ea-e2b2-9ff056b69c8c" executionId="67fe9e32-e2c2-4746-b5bc-ecdfe1fa9002" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7c0e6e0c-5ac5-7f0d-ba2f-19dced97aeba" executionId="c632ddde-5d4b-4e3a-9973-0d1fefa93192" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="caeecf7f-b166-0fcf-dc0e-781bc16af4c0" executionId="f3d69e73-ca63-4724-b6af-9d7a482bb073" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c840e931-3763-7243-6256-c5229ee25766" executionId="65a6f968-e1fc-4622-9ba7-b40e1199c79f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
   </TestEntries>
   <TestLists>
     <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
     <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
   </TestLists>
   <ResultSummary outcome="Completed">
-    <Counters total="13" executed="13" passed="13" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Counters total="12" executed="12" passed="12" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
     <Output>
       <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 8.0.22)
-[xUnit.net 00:00:00.26]   Discovering: TheatreCenter.UnitTests
-[xUnit.net 00:00:00.50]   Discovered:  TheatreCenter.UnitTests
-[xUnit.net 00:00:00.59]   Starting:    TheatreCenter.UnitTests
+[xUnit.net 00:00:00.28]   Discovering: TheatreCenter.UnitTests
+[xUnit.net 00:00:00.48]   Discovered:  TheatreCenter.UnitTests
+[xUnit.net 00:00:00.53]   Starting:    TheatreCenter.UnitTests
      Warning:
      The component "Fluent Assertions" is governed by the rules defined in the Xceed License Agreement and
      the Xceed Fluent Assertions Community License. You may use Fluent Assertions free of charge for
@@ -126,7 +102,7 @@ DETAIL: Detail redacted as it may contain sensitive data. Specify 'Include Error
      Fluent Assertions users under both commercial and community licenses. Help us
      keep Fluent Assertions at the forefront of unit testing.
      For more information, visit https://xceed.com/products/unit-testing/fluent-assertions/
-[xUnit.net 00:00:06.98]   Finished:    TheatreCenter.UnitTests
+[xUnit.net 00:00:04.47]   Finished:    TheatreCenter.UnitTests
 </StdOut>
     </Output>
   </ResultSummary>

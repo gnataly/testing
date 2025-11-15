@@ -17,12 +17,13 @@ using System.Diagnostics;
 
 namespace TheatreCenter.Tests.IntegrationTests.Services;
 
-[Collection("Database collection")]
+[CollectionDefinition("Database collection")]
 [Trait("Category", TestCategories.Integration)]
 public class MusicalServiceIt : IntegrationTestBase
 {
     private readonly MusicalFixture _musicalFixture = new MusicalFixture();
     private readonly TheatreFixture _theatreFixture = new TheatreFixture();
+    private TheatreRepository _theatreRepository;
     private MusicalService _service;
     private Func<Task> _commitTransaction;
     private Func<Task> _rollbackTransaction;
@@ -35,10 +36,11 @@ public class MusicalServiceIt : IntegrationTestBase
 
     public override async Task InitializeAsync()
     {
+        //await Fixture.WaitForDatabaseReadyAsync(TimeSpan.FromSeconds(30));
         var context = await Fixture.CreateTransactionalContextAsync();
         var musicalRepository = Fixture.CreateRepository<MusicalRepository>(context);
-        var theatreRepository = Fixture.CreateRepository<TheatreRepository>(context);
-        _service = new MusicalService(musicalRepository, theatreRepository);
+        _theatreRepository = Fixture.CreateRepository<TheatreRepository>(context);
+        _service = new MusicalService(musicalRepository, _theatreRepository);
 
         _commitTransaction = async () => {
             await context.Database.CommitTransactionAsync();
@@ -58,10 +60,11 @@ public class MusicalServiceIt : IntegrationTestBase
     [Fact]
     public async Task Musical_FullCycle_WithFixtures()
     {
-        _outputHelper.WriteLine("\n\n\n\n\nTEST");
+        //_outputHelper.WriteLine("\n\n\n\n\nTEST");
         //var context = await Fixture.CreateTransactionalContextAsync();
         //// Создаем театр для мюзикла
-        //var theatre = _theatreFixture.CreateTheatre();
+        var theatre = _theatreFixture.CreateTheatre();
+        await _theatreRepository.AddAsync(theatre);
 
         //await context.Theatres.AddAsync(theatre);
         //await context.SaveChangesAsync();
@@ -70,7 +73,8 @@ public class MusicalServiceIt : IntegrationTestBase
         // Используем фикстуру для генерации мюзикла
         var testMusical = _musicalFixture.CreateMusical(
             duration: TimeSpan.FromHours(2),
-            ageRestriction: AgeRestriction.TwelvePlus
+            ageRestriction: AgeRestriction.TwelvePlus,
+            theatreId: theatre.Id
         );
 
         // Act 1 — создание мюзикла

@@ -1,4 +1,4 @@
-﻿-- Drop tables in correct order to avoid foreign key constraints
+﻿---- Drop tables in correct order to avoid foreign key constraints
 --DROP TABLE IF EXISTS "AccountActorFavorites" CASCADE;
 --DROP TABLE IF EXISTS "AccountMusicalFavorites" CASCADE;
 --DROP TABLE IF EXISTS "AccountTheatreFavorites" CASCADE;

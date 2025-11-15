@@ -18,7 +18,7 @@ namespace TheatreCenter.Tests.IntegrationTests.Repositories;
 public class ThemeRepositoryIt : IntegrationTestBase
 {
     private readonly ThemeFixture _themeFixture = new ThemeFixture();
-    private ThemeRepository _repository;
+    private ThemeRepository _themeRepository;
     private Func<Task> _commitTransaction;
     private Func<Task> _rollbackTransaction;
 
@@ -27,10 +27,12 @@ public class ThemeRepositoryIt : IntegrationTestBase
 
     public override async Task InitializeAsync()
     {
-        var (repository, commit, rollback) = await Fixture.CreateTransactionalRepositoryAsync<ThemeRepository>();
-        _repository = repository;
-        _commitTransaction = commit;
-        _rollbackTransaction = rollback;
+        var context = await Fixture.CreateTransactionalContextAsync();
+
+        _themeRepository = Fixture.CreateRepository<ThemeRepository>(context);
+
+        _commitTransaction = async () => { await context.Database.CommitTransactionAsync(); await context.DisposeAsync(); };
+        _rollbackTransaction = async () => { await context.Database.RollbackTransactionAsync(); await context.DisposeAsync(); };
     }
 
     public override async Task DisposeAsync()
@@ -41,33 +43,34 @@ public class ThemeRepositoryIt : IntegrationTestBase
     [Fact]
     public async Task Theme_FullCycle()
     {
-
         // Act 1 - создать тему
         var theme = _themeFixture.CreateTheme();
-
-        await _repository.AddAsync(theme);
+        await _themeRepository.AddAsync(theme);
 
         // Assert 1 - проверить создание
-        var created = await _repository.GetByIdAsync(theme.Id);
+        var created = await _themeRepository.GetByIdAsync(theme.Id);
         created.Should().NotBeNull();
         created!.Name.Should().Be(theme.Name);
 
         // Act 2 - обновить тему
         created.Name = theme.Name + "123";
-        await _repository.UpdateAsync(created);
+        await _themeRepository.UpdateAsync(created);
 
         // Assert 2 - проверить обновление
-        var updated = await _repository.GetByIdAsync(theme.Id);
+        var updated = await _themeRepository.GetByIdAsync(theme.Id);
         updated!.Name.Should().Be(theme.Name);
 
         // Act 3 - получить все темы
-        var allThemes = await _repository.GetAllAsync();
+        var allThemes = await _themeRepository.GetAllAsync();
+
+        // Assert 3 - проверить наличие созданной темы
+        allThemes.Should().Contain(t => t.Id == theme.Id);
 
         // Act 4 - удалить тему
-        await _repository.RemoveAsync(updated);
+        await _themeRepository.RemoveAsync(updated);
 
         // Assert 4 - проверить удаление
-        var deleted = await _repository.GetByIdAsync(theme.Id);
+        var deleted = await _themeRepository.GetByIdAsync(theme.Id);
         deleted.Should().BeNull();
     }
 }

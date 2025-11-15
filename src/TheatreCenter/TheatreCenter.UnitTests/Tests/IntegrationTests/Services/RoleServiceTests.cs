@@ -13,12 +13,15 @@ using TheatreCenter.UnitTests;
 
 namespace TheatreCenter.UnitTests.Tests.IntegrationTests.Services;
 
-[Collection("Database collection")]
+[CollectionDefinition("Database collection")]
 [Trait("Category", TestCategories.Integration)]
 public class RoleServiceIt : IntegrationTestBase
 {
     private readonly RoleFixture _roleFixture = new RoleFixture();
     private readonly MusicalFixture _musicalFixture = new MusicalFixture();
+    private readonly TheatreFixture _theatreFixture = new TheatreFixture();
+    private MusicalRepository _musicalRepository;
+    private TheatreRepository _theatreRepository;
     private RoleService _service;
     private Func<Task> _commitTransaction;
     private Func<Task> _rollbackTransaction;
@@ -28,10 +31,12 @@ public class RoleServiceIt : IntegrationTestBase
 
     public override async Task InitializeAsync()
     {
+        //await Fixture.WaitForDatabaseReadyAsync(TimeSpan.FromSeconds(30));
         var context = await Fixture.CreateTransactionalContextAsync();
         var roleRepository = Fixture.CreateRepository<RoleRepository>(context);
-        var musicalRepository = Fixture.CreateRepository<MusicalRepository>(context);
-        _service = new RoleService(roleRepository, musicalRepository);
+        _musicalRepository = Fixture.CreateRepository<MusicalRepository>(context);
+        _theatreRepository = Fixture.CreateRepository<TheatreRepository>(context);
+        _service = new RoleService(roleRepository, _musicalRepository);
 
         _commitTransaction = async () => {
             await context.Database.CommitTransactionAsync();
@@ -51,15 +56,18 @@ public class RoleServiceIt : IntegrationTestBase
     [Fact]
     public async Task Role_FullCycle_WithFixtures()
     {
-        //var musical = _musicalFixture.CreateMusical();
 
-        //var context = await Fixture.CreateTransactionalContextAsync();
-        //await context.Musicals.AddAsync(musical);
-        //await context.SaveChangesAsync();
-        //await context.Database.CommitTransactionAsync();
+        var theatre = _theatreFixture.CreateTheatre();
+        await _theatreRepository.AddAsync(theatre);
+
+        var musical = _musicalFixture.CreateMusical(
+            theatreId: theatre.Id);
+        await _musicalRepository.AddAsync(musical);
+
 
         var testRole = _roleFixture.CreateRole(
-            roleType: RoleType.Main
+            roleType: RoleType.Main,
+            musicalId: musical.Id
         );
 
         // Act 1 — создание роли

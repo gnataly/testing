@@ -9,15 +9,19 @@ using Xunit;
 using FluentAssertions;
 using Xunit.Abstractions;
 using TheatreCenter.UnitTests;
+using TheatreCenter.Domain.Interfaces.Repositories;
 
 namespace TheatreCenter.UnitTests.Tests.IntegrationTests.Services;
 
-[Collection("Database collection")]
+[CollectionDefinition("Database collection")]
 [Trait("Category", TestCategories.Integration)]
 public class ShowServiceIt : IntegrationTestBase
 {
     private readonly ShowFixture _showFixture = new ShowFixture();
     private readonly MusicalFixture _musicalFixture = new MusicalFixture();
+    private readonly TheatreFixture _theatreFixture = new TheatreFixture();
+    private MusicalRepository _musicalRepository;
+    private TheatreRepository _theatreRepository;
     private ShowService _service;
     private Func<Task> _commitTransaction;
     private Func<Task> _rollbackTransaction;
@@ -27,10 +31,12 @@ public class ShowServiceIt : IntegrationTestBase
 
     public override async Task InitializeAsync()
     {
+        //await Fixture.WaitForDatabaseReadyAsync(TimeSpan.FromSeconds(30));
         var context = await Fixture.CreateTransactionalContextAsync();
         var showRepository = Fixture.CreateRepository<ShowRepository>(context);
-        var musicalRepository = Fixture.CreateRepository<MusicalRepository>(context);
-        _service = new ShowService(showRepository, musicalRepository);
+        _musicalRepository = Fixture.CreateRepository<MusicalRepository>(context);
+        _theatreRepository = Fixture.CreateRepository<TheatreRepository>(context);
+        _service = new ShowService(showRepository, _musicalRepository);
 
         _commitTransaction = async () => {
             await context.Database.CommitTransactionAsync();
@@ -50,15 +56,16 @@ public class ShowServiceIt : IntegrationTestBase
     [Fact]
     public async Task Show_FullCycle_WithFixtures()
     {
-        //var context = await Fixture.CreateTransactionalContextAsync();
+        var theatre = _theatreFixture.CreateTheatre();
+        await _theatreRepository.AddAsync(theatre);
 
-        //var musical = _musicalFixture.CreateMusical();
-        //await context.Musicals.AddAsync(musical);
-        //await context.SaveChangesAsync();
-        //await context.Database.CommitTransactionAsync();
+        var musical = _musicalFixture.CreateMusical(
+            theatreId: theatre.Id);
+        await _musicalRepository.AddAsync(musical);
 
         var testShow = _showFixture.CreateShow(
-            date: DateTime.UtcNow.AddDays(7)
+            date: DateTime.UtcNow.AddDays(7),
+            musicalId: musical.Id
         );
 
         // Act 1 — создание показа

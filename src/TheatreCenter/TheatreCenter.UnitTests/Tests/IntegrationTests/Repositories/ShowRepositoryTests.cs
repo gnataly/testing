@@ -20,7 +20,9 @@ public class ShowRepositoryIt : IntegrationTestBase
     private readonly ShowFixture _showFixture = new ShowFixture();
     private readonly MusicalFixture _musicalFixture = new MusicalFixture();
     private readonly TheatreFixture _theatreFixture = new TheatreFixture();
-    private ShowRepository _repository;
+    private ShowRepository _showRepository;
+    private MusicalRepository _musicalRepository;
+    private TheatreRepository _theatreRepository;
     private Func<Task> _commitTransaction;
     private Func<Task> _rollbackTransaction;
 
@@ -29,10 +31,14 @@ public class ShowRepositoryIt : IntegrationTestBase
 
     public override async Task InitializeAsync()
     {
-        var (repository, commit, rollback) = await Fixture.CreateTransactionalRepositoryAsync<ShowRepository>();
-        _repository = repository;
-        _commitTransaction = commit;
-        _rollbackTransaction = rollback;
+        var context = await Fixture.CreateTransactionalContextAsync();
+
+        _showRepository = Fixture.CreateRepository<ShowRepository>(context);
+        _musicalRepository = Fixture.CreateRepository<MusicalRepository>(context);
+        _theatreRepository = Fixture.CreateRepository<TheatreRepository>(context);
+
+        _commitTransaction = async () => { await context.Database.CommitTransactionAsync(); await context.DisposeAsync(); };
+        _rollbackTransaction = async () => { await context.Database.RollbackTransactionAsync(); await context.DisposeAsync(); };
     }
 
     public override async Task DisposeAsync()
@@ -43,28 +49,22 @@ public class ShowRepositoryIt : IntegrationTestBase
     [Fact]
     public async Task Show_FullCycle_WithUpcomingShows()
     {
-        //// Arrange - Создаем все необходимые сущности с нуля
-        //var context = await Fixture.CreateTransactionalContextAsync();
+        // Arrange - создаем все необходимые сущности
+        var theatre = _theatreFixture.CreateTheatre();
+        await _theatreRepository.AddAsync(theatre);
 
-        //// Создаем театр
-        //var theatre = _theatreFixture.CreateTheatre();
-        //context.Theatres.Add(theatre);
-        //await context.SaveChangesAsync();
-
-        //// Создаем мюзикл для показа
-        //var musical = _musicalFixture.CreateMusical(
-        //    theatreId: theatre.Id);
-        //context.Musicals.Add(musical);
-        //await context.SaveChangesAsync();
-        //await context.Database.CommitTransactionAsync();
+        var musical = _musicalFixture.CreateMusical(theatreId: theatre.Id);
+        await _musicalRepository.AddAsync(musical);
 
         // Act 1 - создать показ
-        var show = _showFixture.CreateShow(date: DateTime.UtcNow.AddDays(7));
+        var show = _showFixture.CreateShow(
+            musicalId: musical.Id,
+            date: DateTime.UtcNow.AddDays(7));
 
-        await _repository.AddAsync(show);
+        await _showRepository.AddAsync(show);
 
         // Assert 1 - проверить создание
-        var created = await _repository.GetByIdAsync(show.Id);
+        var created = await _showRepository.GetByIdAsync(show.Id);
         created.Should().NotBeNull();
         created!.MusicalId.Should().Be(show.MusicalId);
         created.Date.Should().BeCloseTo(DateTime.UtcNow.AddDays(7), TimeSpan.FromSeconds(1));
@@ -72,29 +72,29 @@ public class ShowRepositoryIt : IntegrationTestBase
         // Act 2 - обновить показ
         var newDate = DateTime.UtcNow.AddDays(14);
         created.Date = newDate;
-        await _repository.UpdateAsync(created);
+        await _showRepository.UpdateAsync(created);
 
         // Assert 2 - проверить обновление
-        var updated = await _repository.GetByIdAsync(show.Id);
+        var updated = await _showRepository.GetByIdAsync(show.Id);
         updated!.Date.Should().BeCloseTo(newDate, TimeSpan.FromSeconds(1));
 
         // Act 3 - получить показы по мюзиклу
-        var musicalShows = await _repository.GetByMusicalIdAsync(show.MusicalId);
+        var musicalShows = await _showRepository.GetByMusicalIdAsync(show.MusicalId);
 
         // Assert 3 - проверить фильтрацию по мюзиклу
         musicalShows.Should().ContainSingle(s => s.Id == show.Id);
 
         // Act 4 - получить предстоящие показы
-        var upcomingShows = await _repository.GetUpcomingShowsAsync();
+        var upcomingShows = await _showRepository.GetUpcomingShowsAsync();
 
         // Assert 4 - проверить получение предстоящих показов
         upcomingShows.Should().ContainSingle(s => s.Id == show.Id);
 
         // Act 5 - удалить показ
-        await _repository.RemoveAsync(updated);
+        await _showRepository.RemoveAsync(updated);
 
         // Assert 5 - проверить удаление
-        var deleted = await _repository.GetByIdAsync(show.Id);
+        var deleted = await _showRepository.GetByIdAsync(show.Id);
         deleted.Should().BeNull();
     }
 }

@@ -4,8 +4,9 @@ using Xunit;
 
 namespace TheatreCenter.UnitTests.Tests.IntegrationTests;
 
-[Collection("Database collection")]
-public abstract class IntegrationTestBase : IAsyncLifetime
+[CollectionDefinition("Database collection")]
+[Trait("Category", TestCategories.Integration)]
+public abstract class IntegrationTestBase : IClassFixture<DatabaseFixture>, IAsyncLifetime
 {
     protected readonly DatabaseFixture Fixture;
     protected readonly ITestOutputHelper Output;

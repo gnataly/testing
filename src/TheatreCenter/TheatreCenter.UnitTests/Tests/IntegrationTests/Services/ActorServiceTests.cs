@@ -12,10 +12,11 @@ using Xunit;
 using Xunit.Abstractions;
 using AutoFixture;
 using TheatreCenter.UnitTests.Tests.IntegrationTests;
+using TheatreCenter.Data.Repositories;
 
 namespace TheatreCenter.Tests.IntegrationTests.Services;
 
-[Collection("Database collection")]
+[CollectionDefinition("Database collection")]
 [Trait("Category", TestCategories.Integration)]
 public class ActorServiceIt : IntegrationTestBase
 {
@@ -29,8 +30,9 @@ public class ActorServiceIt : IntegrationTestBase
 
     public override async Task InitializeAsync()
     {
+        //await Fixture.WaitForDatabaseReadyAsync(TimeSpan.FromSeconds(30));
         var context = await Fixture.CreateTransactionalContextAsync();
-        var repository = Fixture.CreateRepository<Data.Repositories.ActorRepository>(context);
+        var repository = Fixture.CreateRepository<ActorRepository>(context);
         _service = new ActorService(repository, new NullLogger<ActorService>());
 
         _commitTransaction = async () => {

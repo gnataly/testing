@@ -10,10 +10,11 @@ using Xunit.Abstractions;
 using TheatreCenter.Tests.Fixtures;
 using System.Diagnostics;
 using TheatreCenter.UnitTests.Tests.Database;
+using AutoFixture;
 
 namespace TheatreCenter.UnitTests.Tests.E2ETests;
 
-[Collection("Database collection")]
+[CollectionDefinition("Database collection")]
 [Trait("Category", TestCategories.E2E)]
 public class TheatreServiceE2ETests : IClassFixture<DatabaseFixture>, IAsyncLifetime
 {
@@ -50,6 +51,8 @@ public class TheatreServiceE2ETests : IClassFixture<DatabaseFixture>, IAsyncLife
 
     public async Task InitializeAsync()
     {
+        //await _fixture.WaitForDatabaseReadyAsync(TimeSpan.FromSeconds(30));
+
         AppDbContext context = await _fixture.CreateTransactionalContextAsync();
 
         // Initialize repositories
