@@ -55,7 +55,6 @@ public class TheatreServiceE2ETests : IClassFixture<DatabaseFixture>, IAsyncLife
 
         AppDbContext context = await _fixture.CreateTransactionalContextAsync();
 
-        // Initialize repositories
         var accountRepository = new AccountRepository(context);
         var actorRepository = new ActorRepository(context, new NullLogger<ActorRepository>());
         var musicalRepository = new MusicalRepository(context);
@@ -64,7 +63,6 @@ public class TheatreServiceE2ETests : IClassFixture<DatabaseFixture>, IAsyncLife
         var roleRepository = new RoleRepository(context);
         var castMemberRepository = new CastMemberRepository(context);
 
-        // Initialize services
         _accountService = new AccountService(accountRepository);
         _actorService = new ActorService(actorRepository, new NullLogger<ActorService>());
         _musicalService = new MusicalService(musicalRepository, theatreRepository);
@@ -340,10 +338,6 @@ public class TheatreServiceE2ETests : IClassFixture<DatabaseFixture>, IAsyncLife
     [Fact]
     public async Task ScenarioE2E_MusicalAndRolesManagement()
     {
-        _output.WriteLine("=== Starting Musical and Roles Management E2E Test ===");
-
-        // Step 1: Create theatre and musical
-        _output.WriteLine("Step 1: Creating theatre and musical...");
 
         var theatre = _theatreFixture.CreateTheatre(name: "Test Theatre Roles");
         var createdTheatre = await _theatreService.CreateTheatreAsync(theatre);
@@ -353,11 +347,6 @@ public class TheatreServiceE2ETests : IClassFixture<DatabaseFixture>, IAsyncLife
             theatreId: createdTheatre.Id
         );
         var createdMusical = await _musicalService.CreateMusicalAsync(musical);
-
-        _output.WriteLine($"Created theatre: {createdTheatre.Name}, musical: {createdMusical.Title}");
-
-        // Step 2: Create multiple roles
-        _output.WriteLine("Step 2: Creating multiple roles...");
 
         var role1 = _roleFixture.CreateRole(
             name: "Test Role Alpha",
@@ -382,10 +371,6 @@ public class TheatreServiceE2ETests : IClassFixture<DatabaseFixture>, IAsyncLife
         Assert.NotNull(createdRole1);
         Assert.NotNull(createdRole2);
         Assert.NotNull(createdRole3);
-        _output.WriteLine($"Created 3 roles: {createdRole1.Name}, {createdRole2.Name}, {createdRole3.Name}");
-
-        // Step 3: Get roles by type
-        _output.WriteLine("Step 3: Getting roles by type...");
 
         var mainRoles = await _roleService.GetByRoleTypeAsync(RoleType.Main);
         var supportingRoles = await _roleService.GetByRoleTypeAsync(RoleType.Supporting);
@@ -394,17 +379,9 @@ public class TheatreServiceE2ETests : IClassFixture<DatabaseFixture>, IAsyncLife
         Assert.Contains(mainRoles, r => r.Name == "Test Role Alpha");
         Assert.Contains(supportingRoles, r => r.Name == "Test Role Beta");
         Assert.Contains(ensembleRoles, r => r.Name == "Test Role Gamma");
-        _output.WriteLine("Roles filtered by type successfully");
-
-        // Step 4: Get roles by musical
-        _output.WriteLine("Step 4: Getting roles by musical...");
 
         var musicalRoles = await _roleService.GetByMusicalIdAsync(createdMusical.Id);
         Assert.Equal(3, musicalRoles.Count());
-        _output.WriteLine($"Musical has {musicalRoles.Count()} roles");
-
-        // Step 5: Update role
-        _output.WriteLine("Step 5: Updating role...");
 
         var updatedRole = _roleFixture.CreateRole(
             id: createdRole1.Id,
@@ -414,19 +391,13 @@ public class TheatreServiceE2ETests : IClassFixture<DatabaseFixture>, IAsyncLife
         );
         var resultRole = await _roleService.UpdateAsync(updatedRole);
         Assert.Equal("Test Role Alpha Updated", resultRole.Name);
-        _output.WriteLine($"Updated role name to: {resultRole.Name}");
 
-        // Step 6: Delete role
-        _output.WriteLine("Step 6: Deleting role...");
 
         var deleteResult = await _roleService.DeleteAsync(createdRole3.Id);
         Assert.True(deleteResult);
 
         var remainingRoles = await _roleService.GetByMusicalIdAsync(createdMusical.Id);
         Assert.Equal(2, remainingRoles.Count());
-        _output.WriteLine("Role deleted successfully");
-
-        _output.WriteLine("=== Musical and Roles Management E2E Test Completed Successfully ===");
     }
 }
 

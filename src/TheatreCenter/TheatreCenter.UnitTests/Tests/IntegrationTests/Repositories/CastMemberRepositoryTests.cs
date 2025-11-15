@@ -66,35 +66,26 @@ public class CastMemberRepositoryIt : IntegrationTestBase
     public async Task CastMember_FullCycle_WithRelationships()
     {
 
-        //// Arrange - Создаем все необходимые сущности с нуля
-
-        // Создаем театр
         var theatre = _theatreFixture.CreateTheatre();
         await _theatreRepository.AddAsync(theatre);;
 
-        // Создаем мюзикл
         var musical = _musicalFixture.CreateMusical(
             theatreId: theatre.Id);
         await _musicalRepository.AddAsync(musical);
 
-        // Создаем актера
         var actor = _actorFixture.CreateActor();
         await _actorRepository.AddAsync(actor);
 
-        // Создаем роль
         var role = _roleFixture.CreateRole(
             musicalId: musical.Id);
         await _roleRepository.AddAsync(role);
 
-        // Создаем показ
         var show = _showFixture.CreateShow(
             musicalId: musical.Id,
             date: DateTime.UtcNow.AddDays(7));
         await _showRepository.AddAsync(show);
 
 
-
-        // Act 1 - создать участника каста
         var castMember = _castMemberFixture.CreateCastMember(
             actorId: actor.Id,
             roleId: role.Id,
@@ -102,7 +93,6 @@ public class CastMemberRepositoryIt : IntegrationTestBase
 
         await _castMemberRepository.AddAsync(castMember);
 
-        // Assert 1 - проверить создание
         var created = await _castMemberRepository.GetByIdAsync(castMember.Id);
         created.Should().NotBeNull();
         created!.ShowId.Should().Be(castMember.ShowId);
@@ -110,30 +100,22 @@ public class CastMemberRepositoryIt : IntegrationTestBase
         created.ActorId.Should().Be(castMember.ActorId);
         created.Comment.Should().Be(castMember.Comment);
 
-        // Act 2 - обновить участника каста
         created.Comment = castMember.Comment + "123";
         await _castMemberRepository.UpdateAsync(created);
 
-        // Assert 2 - проверить обновление
         var updated = await _castMemberRepository.GetByIdAsync(castMember.Id);
         updated!.Comment.Should().Be(castMember.Comment);
 
-        // Act 3 - получить участников каста по показу
         var showCast = await _castMemberRepository.GetByShowIdAsync(castMember.ShowId);
 
-        // Assert 3 - проверить фильтрацию по показу
         showCast.Should().ContainSingle(cm => cm.Id == castMember.Id);
 
-        // Act 4 - получить участников каста по актеру
         var actorCast = await _castMemberRepository.GetByActorIdAsync(castMember.ActorId);
 
-        // Assert 4 - проверить фильтрацию по актеру
         actorCast.Should().ContainSingle(cm => cm.Id == castMember.Id);
 
-        // Act 6 - удалить участника каста
         await _castMemberRepository.RemoveAsync(updated);
 
-        // Assert 6 - проверить удаление
         var deleted = await _castMemberRepository.GetByIdAsync(castMember.Id);
         deleted.Should().BeNull();
 

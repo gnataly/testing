@@ -157,43 +157,43 @@ public class DatabaseFixture : IAsyncLifetime
     //ApplyScriptAsync("03-drop.sql");
     //}
 
-    private async Task CreateDatabaseAsync()
-    {
-        var masterConnString = new NpgsqlConnectionStringBuilder(_baseConnectionString)
-        {
-            Database = "postgres"
-        }.ToString();
+    //private async Task CreateDatabaseAsync()
+    //{
+    //    var masterConnString = new NpgsqlConnectionStringBuilder(_baseConnectionString)
+    //    {
+    //        Database = "postgres"
+    //    }.ToString();
 
-        await using var conn = new NpgsqlConnection(masterConnString);
-        await conn.OpenAsync();
+    //    await using var conn = new NpgsqlConnection(masterConnString);
+    //    await conn.OpenAsync();
 
-        var createDbSql = $"CREATE DATABASE {_databaseName}";
-        await using var cmd = new NpgsqlCommand(createDbSql, conn);
-        await cmd.ExecuteNonQueryAsync();
-    }
+    //    var createDbSql = $"CREATE DATABASE {_databaseName}";
+    //    await using var cmd = new NpgsqlCommand(createDbSql, conn);
+    //    await cmd.ExecuteNonQueryAsync();
+    //}
 
-    private async Task DropDatabaseAsync()
-    {
-        var masterConnString = new NpgsqlConnectionStringBuilder(_baseConnectionString)
-        {
-            Database = "postgres"
-        }.ToString();
+    //private async Task DropDatabaseAsync()
+    //{
+    //    var masterConnString = new NpgsqlConnectionStringBuilder(_baseConnectionString)
+    //    {
+    //        Database = "postgres"
+    //    }.ToString();
 
-        await using var conn = new NpgsqlConnection(masterConnString);
-        await conn.OpenAsync();
+    //    await using var conn = new NpgsqlConnection(masterConnString);
+    //    await conn.OpenAsync();
 
-        var terminateSql = $@"
-            SELECT pg_terminate_backend(pid) 
-            FROM pg_stat_activity 
-            WHERE datname = '{_databaseName}' AND pid <> pg_backend_pid()";
+    //    var terminateSql = $@"
+    //        SELECT pg_terminate_backend(pid) 
+    //        FROM pg_stat_activity 
+    //        WHERE datname = '{_databaseName}' AND pid <> pg_backend_pid()";
 
-        await using var terminateCmd = new NpgsqlCommand(terminateSql, conn);
-        await terminateCmd.ExecuteNonQueryAsync();
+    //    await using var terminateCmd = new NpgsqlCommand(terminateSql, conn);
+    //    await terminateCmd.ExecuteNonQueryAsync();
 
-        var dropDbSql = $"DROP DATABASE IF EXISTS {_databaseName}";
-        await using var dropCmd = new NpgsqlCommand(dropDbSql, conn);
-        await dropCmd.ExecuteNonQueryAsync();
-    }
+    //    var dropDbSql = $"DROP DATABASE IF EXISTS {_databaseName}";
+    //    await using var dropCmd = new NpgsqlCommand(dropDbSql, conn);
+    //    await dropCmd.ExecuteNonQueryAsync();
+    //}
 
     //public async Task WaitForDatabaseReadyAsync(TimeSpan timeout)
     //{

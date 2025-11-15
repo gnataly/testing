@@ -52,46 +52,36 @@ public class ActorRepositoryIt : IntegrationTestBase
     [Fact]
     public async Task Actor_FullCycle_WithVoiceType()
     {
-        // Act 1 - создать актера
         var actor = _actorFixture.CreateActor(
             voiceType: VoiceType.Tenor,
             gender: Gender.Male);
 
         await _actorRepository.AddAsync(actor);
 
-        // Assert 1 - проверить создание
         var created = await _actorRepository.GetByIdAsync(actor.Id);
         created.Should().NotBeNull();
         created!.Name.Should().Be(actor.Name);
         created.VoiceType.Should().Be(VoiceType.Tenor);
         created.Gender.Should().Be(Gender.Male);
 
-        // Act 2 - обновить актера
         created.Name = actor.Name + "123";
         created.VoiceType = VoiceType.Baritone;
         await _actorRepository.UpdateAsync(created);
 
-        // Assert 2 - проверить обновление
         var updated = await _actorRepository.GetByIdAsync(actor.Id);
         updated!.Name.Should().Be(actor.Name);
         updated.VoiceType.Should().Be(VoiceType.Baritone);
 
-        // Act 3 - получить всех актеров
         var allActors = await _actorRepository.GetAllAsync();
 
-        // Assert 3 - проверить получение всех
         allActors.Should().Contain(a => a.Id == actor.Id);
 
-        // Act 4 - получить актеров по типу голоса
         var tenors = await _actorRepository.GetByVoiceTypeAsync(VoiceType.Baritone);
 
-        // Assert 4 - проверить фильтрацию
         tenors.Should().ContainSingle(a => a.Id == actor.Id);
 
-        // Act 5 - удалить актера
         await _actorRepository.RemoveAsync(updated);
 
-        // Assert 5 - проверить удаление
         var deleted = await _actorRepository.GetByIdAsync(actor.Id);
         deleted.Should().BeNull();
     }

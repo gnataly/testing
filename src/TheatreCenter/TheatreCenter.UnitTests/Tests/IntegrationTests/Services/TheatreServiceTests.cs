@@ -50,28 +50,18 @@ public class TheatreServiceIt : IntegrationTestBase
     public async Task Theatre_FullCycle_WithFixtures()
     {
 
-        // Используем фикстуру для генерации театра
         var testTheatre = _theatreFixture.CreateTheatre();
 
-        // Act 1 — создание театра
         var createdTheatre = await _service.CreateTheatreAsync(testTheatre);
 
-        // Assert 1 — проверка создания
         createdTheatre.Should().NotBeNull();
         createdTheatre.Id.Should().BeGreaterThan(0);
         createdTheatre.Name.Should().Be(testTheatre.Name);
 
-        // Act 2 — получение театра по ID
         var retrievedTheatre = await _service.GetTheatreByIdAsync(createdTheatre.Id);
         retrievedTheatre.Should().NotBeNull();
         retrievedTheatre.Name.Should().Be(testTheatre.Name);
 
-        // Act 3 — обновление театра
-        //var updatedTheatre = _theatreFixture.CreateTheatre(
-        //    id: createdTheatre.Id,
-        //    name: "Updated Theatre Name",
-        //    addInfo: "Updated additional info"
-        //);
 
         createdTheatre.Name = createdTheatre.Name + "123";
 
@@ -79,11 +69,9 @@ public class TheatreServiceIt : IntegrationTestBase
         updateResult.Should().NotBeNull();
         updateResult.Name.Should().Be(createdTheatre.Name);
 
-        // Act 4 — получение всех театров
         var allTheatres = await _service.GetAllTheatresAsync();
         allTheatres.Should().Contain(t => t.Id == createdTheatre.Id);
 
-        // Act 5 — удаление театра
         var deleteResult = await _service.DeleteTheatreAsync(createdTheatre.Id);
         deleteResult.Should().BeTrue();
     }

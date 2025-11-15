@@ -49,51 +49,40 @@ public class ShowRepositoryIt : IntegrationTestBase
     [Fact]
     public async Task Show_FullCycle_WithUpcomingShows()
     {
-        // Arrange - создаем все необходимые сущности
         var theatre = _theatreFixture.CreateTheatre();
         await _theatreRepository.AddAsync(theatre);
 
         var musical = _musicalFixture.CreateMusical(theatreId: theatre.Id);
         await _musicalRepository.AddAsync(musical);
 
-        // Act 1 - создать показ
         var show = _showFixture.CreateShow(
             musicalId: musical.Id,
             date: DateTime.UtcNow.AddDays(7));
 
         await _showRepository.AddAsync(show);
 
-        // Assert 1 - проверить создание
         var created = await _showRepository.GetByIdAsync(show.Id);
         created.Should().NotBeNull();
         created!.MusicalId.Should().Be(show.MusicalId);
         created.Date.Should().BeCloseTo(DateTime.UtcNow.AddDays(7), TimeSpan.FromSeconds(1));
 
-        // Act 2 - обновить показ
         var newDate = DateTime.UtcNow.AddDays(14);
         created.Date = newDate;
         await _showRepository.UpdateAsync(created);
 
-        // Assert 2 - проверить обновление
         var updated = await _showRepository.GetByIdAsync(show.Id);
         updated!.Date.Should().BeCloseTo(newDate, TimeSpan.FromSeconds(1));
 
-        // Act 3 - получить показы по мюзиклу
         var musicalShows = await _showRepository.GetByMusicalIdAsync(show.MusicalId);
 
-        // Assert 3 - проверить фильтрацию по мюзиклу
         musicalShows.Should().ContainSingle(s => s.Id == show.Id);
 
-        // Act 4 - получить предстоящие показы
         var upcomingShows = await _showRepository.GetUpcomingShowsAsync();
 
-        // Assert 4 - проверить получение предстоящих показов
         upcomingShows.Should().ContainSingle(s => s.Id == show.Id);
 
-        // Act 5 - удалить показ
         await _showRepository.RemoveAsync(updated);
 
-        // Assert 5 - проверить удаление
         var deleted = await _showRepository.GetByIdAsync(show.Id);
         deleted.Should().BeNull();
     }

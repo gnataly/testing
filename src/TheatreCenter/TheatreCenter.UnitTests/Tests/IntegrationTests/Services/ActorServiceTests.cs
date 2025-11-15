@@ -53,23 +53,18 @@ public class ActorServiceIt : IntegrationTestBase
     [Fact]
     public async Task Actor_FullCycle_WithFixtures()
     {
-        // Используем фикстуру для генерации актера
         var testActor = _actorFixture.CreateActor();
 
-        // Act 1 — создание актера
         var createdActor = await _service.CreateActorAsync(testActor);
 
-        // Assert 1 — проверка создания
         createdActor.Should().NotBeNull();
         createdActor.Id.Should().BeGreaterThan(0);
         createdActor.Name.Should().Be(testActor.Name);
 
-        // Act 2 — получение актера по ID
         var retrievedActor = await _service.GetActorByIdAsync(createdActor.Id);
         retrievedActor.Should().NotBeNull();
         retrievedActor.Name.Should().Be(testActor.Name);
 
-        // Act 3 — обновление актера
         var updatedActor = _actorFixture.CreateActor(
             id: createdActor.Id,
             voiceType: VoiceType.Baritone,
@@ -81,15 +76,12 @@ public class ActorServiceIt : IntegrationTestBase
         updateResult.Name.Should().Be(updatedActor.Name);
         updateResult.VoiceType.Should().Be(VoiceType.Baritone);
 
-        // Act 4 — получение актеров по типу голоса
         var actorsByVoice = await _service.GetActorsByVoiceTypeAsync(VoiceType.Baritone);
         actorsByVoice.Should().Contain(a => a.Id == createdActor.Id);
 
-        // Act 5 — получение всех актеров
         var allActors = await _service.GetAllActorsAsync();
         allActors.Should().Contain(a => a.Id == createdActor.Id);
 
-        // Act 6 — удаление актера
         var deleteResult = await _service.DeleteActorAsync(createdActor.Id);
         deleteResult.Should().BeTrue();
     }

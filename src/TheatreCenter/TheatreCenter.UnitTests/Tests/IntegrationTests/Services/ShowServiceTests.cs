@@ -68,20 +68,16 @@ public class ShowServiceIt : IntegrationTestBase
             musicalId: musical.Id
         );
 
-        // Act 1 — создание показа
         var createdShow = await _service.CreateAsync(testShow);
 
-        // Assert 1 — проверка создания
         createdShow.Should().NotBeNull();
         createdShow.Id.Should().BeGreaterThan(0);
         createdShow.MusicalId.Should().Be(testShow.MusicalId);
 
-        // Act 2 — получение показа по ID
         var retrievedShow = await _service.GetByIdAsync(createdShow.Id);
         retrievedShow.Should().NotBeNull();
         retrievedShow.MusicalId.Should().Be(testShow.MusicalId);
 
-        // Act 3 — обновление показа
         var updatedShow = _showFixture.CreateShow(
             id: createdShow.Id,
             musicalId: testShow.MusicalId,
@@ -92,19 +88,15 @@ public class ShowServiceIt : IntegrationTestBase
         updateResult.Should().NotBeNull();
         updateResult.Date.Should().BeCloseTo(updatedShow.Date, TimeSpan.FromSeconds(1));
 
-        // Act 4 — получение показов по мюзиклу
         var showsByMusical = await _service.GetByMusicalIdAsync(testShow.MusicalId);
         showsByMusical.Should().Contain(s => s.Id == createdShow.Id);
 
-        // Act 5 — получение предстоящих показов
         var upcomingShows = await _service.GetUpcomingShowsAsync();
         upcomingShows.Should().Contain(s => s.Id == createdShow.Id);
 
-        // Act 6 — получение всех показов
         var allShows = await _service.GetAllAsync();
         allShows.Should().Contain(s => s.Id == createdShow.Id);
 
-        // Act 7 — удаление показа
         var deleteResult = await _service.DeleteAsync(createdShow.Id);
         deleteResult.Should().BeTrue();
     }
