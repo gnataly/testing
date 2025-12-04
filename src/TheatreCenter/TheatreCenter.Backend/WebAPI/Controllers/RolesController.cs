@@ -1,197 +1,247 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using TheatreCenter.Domain.Models;
-using TheatreCenter.DTOs.Role;
+using TheatreCenter.DTOs;
 using TheatreCenter.Services.Interfaces.Services;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using TheatreCenter.Domain.Models;
+using System.ComponentModel.DataAnnotations;
+using TheatreCenter.Domain.Enums;
 
-namespace TheatreCenter.Backend.WebAPI.Controllers
+namespace TheatreCenter.Backend.WebAPI.Controllers;
+
+[ApiController]
+[Route("/api/v1/roles")]
+public class RolesController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class RolesController : ControllerBase
+    private readonly IRoleService _roleService;
+    private readonly ILogger<RolesController> _logger;
+
+    public RolesController(IRoleService roleService, ILogger<RolesController> logger)
     {
-        private readonly IRoleService _roleService;
+        _roleService = roleService;
+        _logger = logger;
+    }
 
-        public RolesController(IRoleService roleService)
+    [HttpGet]
+    [SwaggerOperation(
+        OperationId = "GetAllRoles",
+        Summary = "Получить все роли с фильтрацией",
+        Description = "Получить пагинированный список ролей с возможностью фильтрации по различным параметрам")]
+    [SwaggerResponse(200, "Успешное получение списка ролей", typeof(RoleListDto))]
+    [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+    [SwaggerResponse(400, "Ошибка валидации", typeof(ErrorDto))]
+    public async Task<IActionResult> GetAllRoles(
+        [FromQuery] RoleType? roleType,
+        [FromQuery] int? musicalId,
+        [FromQuery] int? actorId,
+        [FromQuery] string? search,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] SortType sort = SortType.id_asc)
+    {
+        try
         {
-            _roleService = roleService;
+            var filter = new RoleFilter
+            {
+                Page = page,
+                PageSize = pageSize,
+                Search = search,
+                RoleType = roleType.HasValue ? roleType.Value : null,
+                MusicalId = musicalId,
+                ActorId = actorId,
+                Sort = sort.ToString()
+            };
+
+            var result = await _roleService.GetAllAsync(filter);
+
+            var totalCount = result.Count();
+            var items = result
+                .OrderBy(a => a.Id)
+                .Skip((filter.Page - 1) * filter.PageSize)
+                .Take(filter.PageSize)
+                .ToList();
+
+            var roleDtos = items.Select(r => new RoleDto
+            {
+                Id = r.Id,
+                Name = r.Name,
+                MusicalId = r.MusicalId,
+                RoleType = r.RoleType
+            }).ToList();
+
+            var response = new RoleListDto
+            {
+                Items = roleDtos,
+                Pagination = new PaginationDto
+                {
+                    Page =  filter.Page,
+                    PageSize = filter.PageSize,
+                    TotalCount = totalCount
+                }
+            };
+
+            return Ok(response);
         }
-
-        [HttpGet("{id}")]
-        [SwaggerOperation(
-            OperationId = "GetRoleById",
-            Summary = "Get role by ID",
-            Description = "Returns a single role with the specified ID")]
-        [SwaggerResponse(200, "Role found", typeof(RoleDTO))]
-        [SwaggerResponse(404, "Role not found")]
-        [SwaggerResponse(500, "Server error")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetById(int id)
+        catch (Exception ex)
         {
-            try
-            {
-                var role = await _roleService.GetByIdAsync(id);
-                var roleDto = new RoleDTO(
-                    role.Id,
-                    role.Name,
-                    role.MusicalId,
-                    role.RoleType
-                );
-                return Ok(roleDto);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound();
-            }
+            _logger.LogError(ex, "Internal Server Error");
+            return StatusCode(500, new ErrorDto("InternalServerError", "Internal server error"));
         }
+    }
 
-        [HttpGet]
-        [SwaggerOperation(
-            OperationId = "GetAllRoles",
-            Summary = "Get all roles",
-            Description = "Returns a list of all roles")]
-        [SwaggerResponse(200, "List of roles", typeof(IEnumerable<RoleDTO>))]
-        [SwaggerResponse(500, "Server error")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetAll()
+    [HttpPost]
+    [Authorize(Policy = "AdminOnly")]
+    [SwaggerOperation(
+        OperationId = "CreateRole",
+        Summary = "Создать новую роль",
+        Description = "Создать новую роль (только для администраторов)")]
+    [SwaggerResponse(201, "Роль успешно создана", typeof(RoleDto))]
+    [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+    [SwaggerResponse(403, "Запрещено", typeof(ErrorDto))]
+    [SwaggerResponse(400, "Ошибка валидации", typeof(ErrorDto))]
+    public async Task<IActionResult> CreateRole([Required][FromBody] CreateRoleRequestDto createRoleRequestDto)
+    {
+        try
         {
-            var roles = await _roleService.GetAllAsync();
-            var roleDtos = roles.Select(r => new RoleDTO(
-                r.Id,
-                r.Name,
-                r.MusicalId,
-                r.RoleType
-            ));
-            return Ok(roleDtos);
+            var role = new Role(
+                id: 0,
+                name: createRoleRequestDto.Name,
+                musicalId: createRoleRequestDto.MusicalId,
+                roleType: createRoleRequestDto.RoleType
+            );
+
+            var createdRole = await _roleService.CreateAsync(role);
+
+            var roleDto = new RoleDto
+            {
+                Id = createdRole.Id,
+                Name = createdRole.Name,
+                MusicalId = createdRole.MusicalId,
+                RoleType = createdRole.RoleType
+            };
+
+            return CreatedAtAction(nameof(GetRoleByRoleId), new { roleId = roleDto.Id }, roleDto);
         }
-
-        [HttpGet("musical/{musicalId}")]
-        [SwaggerOperation(
-            OperationId = "GetRolesByMusical",
-            Summary = "Get roles by musical",
-            Description = "Returns roles for a specific musical")]
-        [SwaggerResponse(200, "List of roles", typeof(IEnumerable<RoleDTO>))]
-        [SwaggerResponse(500, "Server error")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetByMusical(int musicalId)
+        catch (Exception ex)
         {
-            try
-            {
-                var roles = await _roleService.GetByMusicalIdAsync(musicalId);
-                var roleDtos = roles.Select(r => new RoleDTO(
-                    r.Id,
-                    r.Name,
-                    r.MusicalId,
-                    r.RoleType
-                ));
-                return Ok(roleDtos);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            _logger.LogError(ex, "Internal Server Error");
+            return BadRequest(new ErrorDto("ValidationError", ex.Message));
         }
+    }
 
-        [HttpPost]
-        [SwaggerOperation(
-            OperationId = "CreateRole",
-            Summary = "Create new role",
-            Description = "Creates a new role with the provided data")]
-        [SwaggerResponse(201, "Role created", typeof(RoleDTO))]
-        [SwaggerResponse(400, "Invalid input")]
-        [SwaggerResponse(500, "Server error")]
-        [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> Create([FromBody] CreateRoleDTO createDto)
+    [HttpGet("{roleId}")]
+    [SwaggerOperation(
+        OperationId = "GetRoleByRoleId",
+        Summary = "Получить роль по ID",
+        Description = "Получить информацию о роли по ее ID")]
+    [SwaggerResponse(200, "Успешное получение роли", typeof(RoleDto))]
+    [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+    [SwaggerResponse(404, "Ресурс не найден", typeof(ErrorDto))]
+    public async Task<IActionResult> GetRoleByRoleId([Required][FromRoute] int roleId)
+    {
+        try
         {
-            try
-            {
-                var role = new Role(
-                    0,
-                    createDto.Name,
-                    createDto.MusicalId,
-                    createDto.RoleType
-                );
+            var role = await _roleService.GetByIdAsync(roleId);
 
-                var createdRole = await _roleService.CreateAsync(role);
-                var roleDto = new RoleDTO(
-                    createdRole.Id,
-                    createdRole.Name,
-                    createdRole.MusicalId,
-                    createdRole.RoleType
-                );
-
-                return CreatedAtAction(nameof(GetById), new { id = roleDto.Id }, roleDto);
-            }
-            catch (Exception ex)
+            var roleDto = new RoleDto
             {
-                return BadRequest(ex.Message);
-            }
+                Id = role.Id,
+                Name = role.Name,
+                MusicalId = role.MusicalId,
+                RoleType = role.RoleType
+            };
+
+            return Ok(roleDto);
         }
-
-        [HttpPut("{id}")]
-        [SwaggerOperation(
-            OperationId = "UpdateRole",
-            Summary = "Update role",
-            Description = "Updates an existing role with the provided data")]
-        [SwaggerResponse(200, "Role updated", typeof(RoleDTO))]
-        [SwaggerResponse(400, "Invalid input")]
-        [SwaggerResponse(404, "Role not found")]
-        [SwaggerResponse(500, "Server error")]
-        [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateRoleDTO updateDto)
+        catch (KeyNotFoundException ex)
         {
-            try
-            {
-                var existingRole = await _roleService.GetByIdAsync(id);
-
-                existingRole.RoleType = updateDto.RoleType;
-
-                var updatedRole = await _roleService.UpdateAsync(existingRole);
-                var roleDto = new RoleDTO(
-                    updatedRole.Id,
-                    updatedRole.Name,
-                    updatedRole.MusicalId,
-                    updatedRole.RoleType
-                );
-
-                return Ok(roleDto);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return NotFound(new ErrorDto("NotFound", ex.Message));
         }
-
-        [HttpDelete("{id}")]
-        [SwaggerOperation(
-            OperationId = "DeleteRole",
-            Summary = "Delete role",
-            Description = "Deletes a role with the specified ID")]
-        [SwaggerResponse(204, "Role deleted")]
-        [SwaggerResponse(400, "Cannot delete role")]
-        [SwaggerResponse(404, "Role not found")]
-        [SwaggerResponse(500, "Server error")]
-        [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> Delete(int id)
+        catch (Exception ex)
         {
-            try
+            _logger.LogError(ex, "Internal Server Error");
+            return StatusCode(500, new ErrorDto("InternalServerError", "Internal server error"));
+        }
+    }
+
+    [HttpPut("{roleId}")]
+    [Authorize(Policy = "AdminOnly")]
+    [SwaggerOperation(
+        OperationId = "UpdateRoleByRoleId",
+        Summary = "Обновить роль",
+        Description = "Обновить информацию о роли (только для администраторов)")]
+    [SwaggerResponse(200, "Роль успешно обновлена", typeof(RoleDto))]
+    [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+    [SwaggerResponse(403, "Запрещено", typeof(ErrorDto))]
+    [SwaggerResponse(400, "Ошибка валидации", typeof(ErrorDto))]
+    [SwaggerResponse(404, "Ресурс не найден", typeof(ErrorDto))]
+    public async Task<IActionResult> UpdateRoleByRoleId([Required][FromRoute] int roleId, [Required][FromBody] UpdateRoleRequestDto updateRoleRequestDto)
+    {
+        try
+        {
+            var existingRole = await _roleService.GetByIdAsync(roleId);
+
+            var role = new Role(
+                id: roleId,
+                name: updateRoleRequestDto.Name ?? existingRole.Name,
+                musicalId: existingRole.MusicalId,
+                roleType: updateRoleRequestDto.RoleType
+            );
+
+            var updatedRole = await _roleService.UpdateAsync(role);
+
+            var roleDto = new RoleDto
             {
-                await _roleService.DeleteAsync(id);
-                return NoContent();
-            }
-            catch (KeyNotFoundException)
+                Id = updatedRole.Id,
+                Name = updatedRole.Name,
+                MusicalId = updatedRole.MusicalId,
+                RoleType = updatedRole.RoleType
+            };
+
+            return Ok(roleDto);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new ErrorDto("NotFound", ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Internal Server Error");
+            return BadRequest(new ErrorDto("ValidationError", ex.Message));
+        }
+    }
+
+    [HttpDelete("{roleId}")]
+    [Authorize(Policy = "AdminOnly")]
+    [SwaggerOperation(
+        OperationId = "DeleteRoleByRoleId",
+        Summary = "Удалить роль",
+        Description = "Удалить роль (только для администраторов)")]
+    [SwaggerResponse(204, "Роль успешно удалена")]
+    [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+    [SwaggerResponse(403, "Запрещено", typeof(ErrorDto))]
+    [SwaggerResponse(404, "Ресурс не найден", typeof(ErrorDto))]
+    public async Task<IActionResult> DeleteRoleByRoleId([Required][FromRoute] int roleId)
+    {
+        try
+        {
+            var result = await _roleService.DeleteAsync(roleId);
+            if (!result)
             {
-                return NotFound();
+                return NotFound(new ErrorDto("NotFound", "Role not found"));
             }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new ErrorDto("ValidationError", ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Internal Server Error");
+            return StatusCode(500, new ErrorDto("InternalServerError", "Internal server error"));
         }
     }
 }

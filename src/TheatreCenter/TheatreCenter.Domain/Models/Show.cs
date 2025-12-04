@@ -30,13 +30,13 @@ namespace TheatreCenter.Domain.Models
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            if (Date < DateTime.UtcNow.AddYears(-1))
+            if (Date < DateTime.Now.AddYears(-1))
             {
                 yield return new ValidationResult("Дата показа не может быть более чем год назад",
                     new[] { nameof(Date) });
             }
 
-            if (Date > DateTime.UtcNow.AddYears(2))
+            if (Date > DateTime.Now.AddYears(2))
             {
                 yield return new ValidationResult("Дата показа не может быть более чем через 2 года",
                     new[] { nameof(Date) });

@@ -6,7 +6,6 @@ using TheatreCenter.Domain.Enums;
 
 namespace TheatreCenter.Domain.Models
 {
-
     public class Actor : IValidatableObject
     {
         public Actor(int id, string name, VoiceType voiceType, Gender gender,
@@ -47,6 +46,9 @@ namespace TheatreCenter.Domain.Models
         [StringLength(500, ErrorMessage = "Дополнительная информация не должна превышать 500 символов")]
         public string AddInfo { get; set; }
 
+        [NotMapped]
+        public bool IsFavorite { get; set; }
+
         public ICollection<ActorRole> ActorRoles { get; set; } = new List<ActorRole>();
         public ICollection<CastMember> CastMembers { get; set; } = new List<CastMember>();
 
@@ -72,14 +74,14 @@ namespace TheatreCenter.Domain.Models
             }
 
             // Валидация даты рождения
-            if (BirthDate > DateTime.UtcNow)
+            if (BirthDate > DateTime.Now)
             {
                 yield return new ValidationResult(
                     "Дата рождения не может быть в будущем",
                     new[] { nameof(BirthDate) });
             }
 
-            if (BirthDate < DateTime.UtcNow.AddYears(-120))
+            if (BirthDate < DateTime.Now.AddYears(-120))
             {
                 yield return new ValidationResult(
                     "Дата рождения слишком далеко в прошлом",

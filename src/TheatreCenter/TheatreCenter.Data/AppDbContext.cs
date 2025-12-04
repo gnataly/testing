@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TheatreCenter.Domain.Models;
 using TheatreCenter.Domain.Enums;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace TheatreCenter.Data
 {
@@ -33,23 +32,8 @@ namespace TheatreCenter.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-            {
-                foreach (var property in entityType.GetProperties())
-                {
-                    if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?))
-                    {
-                        property.SetValueConverter(
-                            new ValueConverter<DateTime, DateTime>(
-                                v => v.Kind == DateTimeKind.Utc ? v : v.ToUniversalTime(),
-                                v => DateTime.SpecifyKind(v, DateTimeKind.Utc)));
-                    }
-                }
-            }
-
-
-                // Конфигурация для Account
-                modelBuilder.Entity<Account>(entity =>
+            // Конфигурация для Account
+            modelBuilder.Entity<Account>(entity =>
             {
                 entity.HasKey(a => a.Id);
                 entity.Property(a => a.Username)
@@ -63,6 +47,18 @@ namespace TheatreCenter.Data
                 entity.Property(a => a.UpgradeRequest)
                     .IsRequired()
                     .HasDefaultValue(false);
+                entity.Property(a => a.LastPasswordChangedAt);
+                entity.Property(a => a.FailedLoginAttempts);
+                entity.Property(a => a.FailedTwoFactorAttempts);
+                entity.Property(a => a.LockedUntil);
+                entity.Property(a => a.PendingTwoFactorCodeHash)
+                    .HasMaxLength(255);
+                entity.Property(a => a.PendingTwoFactorExpiresAt);
+                entity.Property(a => a.PendingTwoFactorChallengeId)
+                    .HasMaxLength(64);
+                entity.Property(a => a.PendingUnlockCodeHash)
+                    .HasMaxLength(255);
+                entity.Property(a => a.PendingUnlockCodeExpiresAt);
                 entity.HasIndex(a => a.Username).IsUnique();
             });
 
@@ -263,12 +259,12 @@ namespace TheatreCenter.Data
             modelBuilder.Entity<Role>()
                 .Property(r => r.RoleType)
                 .HasConversion<string>()
-                .HasMaxLength(20);
+                .HasMaxLength(25);
 
             modelBuilder.Entity<Musical>()
                 .Property(m => m.AgeRestriction)
                 .HasConversion<string>()
-                .HasMaxLength(10);
+                .HasMaxLength(25);
 
             // Индексы для улучшения производительности
             modelBuilder.Entity<Show>()

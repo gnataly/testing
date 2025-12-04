@@ -15,6 +15,7 @@ namespace TheatreCenter.Domain.Models
             PasswordHash = passwordHash;
             LastFavoritesViewDate = DateTime.UtcNow;
             AccessLevel = accessLevel;
+            LastPasswordChangedAt = DateTime.UtcNow;
         }
 
         public Account(int id, string username, string passwordHash, DateTime lastFavoritesViewDate, AccessLevel accessLevel)
@@ -24,6 +25,7 @@ namespace TheatreCenter.Domain.Models
             PasswordHash = passwordHash;
             LastFavoritesViewDate = lastFavoritesViewDate;
             AccessLevel = accessLevel;
+            LastPasswordChangedAt = DateTime.UtcNow;
         }
 
         public Account(int id, string username, string passwordHash)
@@ -56,6 +58,28 @@ namespace TheatreCenter.Domain.Models
         [Required]
         public bool UpgradeRequest { get; set; } = false;
 
+        [DataType(DataType.DateTime)]
+        public DateTime? LastPasswordChangedAt { get; set; } = DateTime.UtcNow;
+
+        public int FailedLoginAttempts { get; set; }
+
+        public int FailedTwoFactorAttempts { get; set; }
+
+        public DateTime? LockedUntil { get; set; }
+
+        [StringLength(255)]
+        public string? PendingTwoFactorCodeHash { get; set; }
+
+        public DateTime? PendingTwoFactorExpiresAt { get; set; }
+
+        [StringLength(64)]
+        public string? PendingTwoFactorChallengeId { get; set; }
+
+        [StringLength(255)]
+        public string? PendingUnlockCodeHash { get; set; }
+
+        public DateTime? PendingUnlockCodeExpiresAt { get; set; }
+
         // Навигационные свойства для избранного
         public ICollection<AccountTheatreFavorite> FavoriteTheatres { get; set; } = new List<AccountTheatreFavorite>();
         public ICollection<AccountMusicalFavorite> FavoriteMusicals { get; set; } = new List<AccountMusicalFavorite>();
@@ -78,6 +102,7 @@ namespace TheatreCenter.Domain.Models
                 throw new ArgumentException("Некорректный хэш пароля");
 
             PasswordHash = newHash;
+            LastPasswordChangedAt = DateTime.UtcNow;
         }
     }
 }

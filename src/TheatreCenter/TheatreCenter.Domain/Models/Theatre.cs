@@ -24,6 +24,9 @@ namespace TheatreCenter.Domain.Models
         [StringLength(1000, ErrorMessage = "Доп. информация не должна превышать 1000 символов")]
         public string AddInfo { get; set; }
 
+        [NotMapped]
+        public bool IsFavorite { get; set; }
+
         public ICollection<Musical> Musicals { get; set; } = new List<Musical>();
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

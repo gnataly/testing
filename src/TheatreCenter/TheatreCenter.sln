@@ -29,7 +29,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheatreCenter.DTOs", "Theat
 		{DAAB81A1-4640-4193-9F22-3ECF9F9E5B66} = {DAAB81A1-4640-4193-9F22-3ECF9F9E5B66}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheatreCenter.UnitTests", "TheatreCenter.UnitTests\TheatreCenter.UnitTests.csproj", "{D0FE09F2-A7DB-40D8-91D6-7B8E2A758C8F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheatreCenter.E2ETests", "TheatreCenter.E2ETests\TheatreCenter.E2ETests.csproj", "{8C38945B-FE20-4870-9223-E0AE700C6179}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,10 +57,10 @@ Global
 		{A464FDB4-D9C5-4E93-A3B3-88B5CC2FC610}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A464FDB4-D9C5-4E93-A3B3-88B5CC2FC610}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A464FDB4-D9C5-4E93-A3B3-88B5CC2FC610}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D0FE09F2-A7DB-40D8-91D6-7B8E2A758C8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D0FE09F2-A7DB-40D8-91D6-7B8E2A758C8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D0FE09F2-A7DB-40D8-91D6-7B8E2A758C8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D0FE09F2-A7DB-40D8-91D6-7B8E2A758C8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C38945B-FE20-4870-9223-E0AE700C6179}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C38945B-FE20-4870-9223-E0AE700C6179}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C38945B-FE20-4870-9223-E0AE700C6179}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C38945B-FE20-4870-9223-E0AE700C6179}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

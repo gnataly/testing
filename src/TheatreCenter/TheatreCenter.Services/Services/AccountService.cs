@@ -1,19 +1,20 @@
 ﻿using TheatreCenter.Services.Interfaces.Services;
 using TheatreCenter.Domain.Interfaces.Repositories;
 using TheatreCenter.Domain.Models;
+using Microsoft.Extensions.Configuration;
 using TheatreCenter.Domain.Enums;
-using TheatreCenter.Domain.Models;
 
 namespace TheatreCenter.Services.Services
 {
     public class AccountService : IAccountService
     {
         private readonly IAccountRepository _accountRepository;
+        private readonly IConfiguration _configuration;
 
-        public AccountService(
-            IAccountRepository accountRepository)
+        public AccountService(IAccountRepository accountRepository, IConfiguration configuration)
         {
             _accountRepository = accountRepository;
+            _configuration = configuration;
         }
 
         public async Task<Account?> GetByIdAsync(int id)
@@ -21,25 +22,27 @@ namespace TheatreCenter.Services.Services
             return await _accountRepository.GetByIdAsync(id);
         }
 
-        public async Task<IEnumerable<Account>> GetAllAsync()
+        public async Task<Account?> GetByUsernameAsync(string username)
         {
-            return await _accountRepository.GetAllAsync();
+            return await _accountRepository.GetByUsernameAsync(username);
+        }
+
+        public async Task<IEnumerable<Account>> GetAllAsync(AccountFilter filter)
+        {
+            return await _accountRepository.GetAllAsync(filter);
         }
 
         public async Task<Account> AuthenticateAsync(string username, string passwordHash)
         {
             var account = await _accountRepository.AuthenticateAsync(username, passwordHash);
-            if (account == null || account.PasswordHash != passwordHash)
+            if (account == null)
                 throw new UnauthorizedAccessException("Invalid username or password");
 
             return account;
         }
 
-
         public async Task<Account> RegisterAsync(string username, string passwordHash, AccessLevel accessLevel = AccessLevel.User)
         {
-            // Проверка существования пользователя
-
             var existingAccount = await _accountRepository.GetByUsernameAsync(username);
             if (existingAccount != null)
             {
@@ -50,22 +53,11 @@ namespace TheatreCenter.Services.Services
                 id: 0,
                 username: username,
                 passwordHash: passwordHash,
-                lastFavoritesViewDate: DateTime.UtcNow,
                 accessLevel: accessLevel);
 
-
             await _accountRepository.CreateAsync(account);
+            await _accountRepository.SaveChangesAsync();
             return account;
-        }
-
-        public async Task LogoutAsync(int accountId)
-        {
-            var account = await _accountRepository.GetByIdAsync(accountId);
-            if (account != null)
-            {
-                account.UpdateLastViewDate();
-                await _accountRepository.UpdateAsync(account);
-            }
         }
 
         public async Task UpdateAsync(Account account)
@@ -74,44 +66,78 @@ namespace TheatreCenter.Services.Services
             if (existingAccount == null)
                 throw new KeyNotFoundException($"Account with id {account.Id} not found");
 
-            await _accountRepository.UpdateAsync(account);
+            existingAccount.Username = account.Username;
+            existingAccount.PasswordHash = account.PasswordHash;
+
+            await _accountRepository.UpdateAsync(existingAccount);
+            await _accountRepository.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(int accountId)
         {
             await _accountRepository.DeleteAsync(accountId);
+            await _accountRepository.SaveChangesAsync();
         }
 
+        public async Task<bool> AddFavoriteActorAsync(int accountId, int actorId)
+        {
+            var result = await _accountRepository.AddFavoriteActorAsync(accountId, actorId);
+            if (result)
+            {
+                await _accountRepository.SaveChangesAsync();
+            }
+            return result;
+        }
 
-        //public async Task<bool> AddFavoriteActorAsync(int accountId, int actorId)
-        //{
-        //    var account = await _accountRepository.GetByIdAsync(accountId);
-        //    var actor = await _actorRepository.GetByIdAsync(actorId);
+        public async Task<bool> RemoveFavoriteActorAsync(int accountId, int actorId)
+        {
+            var result = await _accountRepository.RemoveFavoriteActorAsync(accountId, actorId);
+            if (result)
+            {
+                await _accountRepository.SaveChangesAsync();
+            }
+            return result;
+        }
 
-        //    if (account == null || actor == null)
-        //        return false;
+        public async Task<bool> AddFavoriteMusicalAsync(int accountId, int musicalId)
+        {
+            var result = await _accountRepository.AddFavoriteMusicalAsync(accountId, musicalId);
+            if (result)
+            {
+                await _accountRepository.SaveChangesAsync();
+            }
+            return result;
+        }
 
-        //    if (account.FavoriteActors.Any(f => f.ActorId == actorId))
-        //        return false;
+        public async Task<bool> RemoveFavoriteMusicalAsync(int accountId, int musicalId)
+        {
+            var result = await _accountRepository.RemoveFavoriteMusicalAsync(accountId, musicalId);
+            if (result)
+            {
+                await _accountRepository.SaveChangesAsync();
+            }
+            return result;
+        }
 
-        //    account.FavoriteActors.Add(new AccountActorFavorite(accountId, actorId));
-        //    account.UpdateLastViewDate();
-        //    await _accountRepository.SaveChangesAsync();
-        //    return true;
-        //}
+        public async Task<bool> AddFavoriteTheatreAsync(int accountId, int theatreId)
+        {
+            var result = await _accountRepository.AddFavoriteTheatreAsync(accountId, theatreId);
+            if (result)
+            {
+                await _accountRepository.SaveChangesAsync();
+            }
+            return result;
+        }
 
-        //public async Task<bool> RemoveFavoriteActorAsync(int accountId, int actorId)
-        //{
-        //    var account = await _accountRepository.GetByIdAsync(accountId);
-        //    if (account == null) return false;
-
-        //    var favorite = account.FavoriteActors.FirstOrDefault(f => f.ActorId == actorId);
-        //    if (favorite == null) return false;
-
-        //    account.FavoriteActors.Remove(favorite);
-        //    await _accountRepository.SaveChangesAsync();
-        //    return true;
-        //}
+        public async Task<bool> RemoveFavoriteTheatreAsync(int accountId, int theatreId)
+        {
+            var result = await _accountRepository.RemoveFavoriteTheatreAsync(accountId, theatreId);
+            if (result)
+            {
+                await _accountRepository.SaveChangesAsync();
+            }
+            return result;
+        }
 
         public async Task ChangePasswordAsync(int accountId, string newPasswordHash)
         {
@@ -133,97 +159,6 @@ namespace TheatreCenter.Services.Services
             }
         }
 
-        //public async Task<bool> AddFavoriteMusicalAsync(int accountId, int musicalId)
-        //{
-        //    var account = await _accountRepository.GetByIdAsync(accountId);
-        //    var musical = await _musicalRepository.GetByIdAsync(musicalId);
-
-        //    if (account == null || musical == null)
-        //        return false;
-
-        //    if (account.FavoriteMusicals.Any(f => f.MusicalId == musicalId))
-        //        return false;
-
-        //    account.FavoriteMusicals.Add(new AccountMusicalFavorite(accountId, musicalId));
-        //    account.UpdateLastViewDate();
-        //    await _accountRepository.SaveChangesAsync();
-        //    return true;
-        //}
-
-        //public async Task<bool> RemoveFavoriteMusicalAsync(int accountId, int musicalId)
-        //{
-        //    var account = await _accountRepository.GetByIdAsync(accountId);
-        //    if (account == null) return false;
-
-        //    var favorite = account.FavoriteMusicals.FirstOrDefault(f => f.MusicalId == musicalId);
-        //    if (favorite == null) return false;
-
-        //    account.FavoriteMusicals.Remove(favorite);
-        //    await _accountRepository.SaveChangesAsync();
-        //    return true;
-        //}
-
-        //public async Task<bool> AddFavoriteTheatreAsync(int accountId, int theatreId)
-        //{
-        //    var account = await _accountRepository.GetByIdAsync(accountId);
-        //    var theatre = await _theatreRepository.GetByIdAsync(theatreId);
-
-        //    if (account == null || theatre == null)
-        //        return false;
-
-        //    if (account.FavoriteTheatres.Any(f => f.TheatreId == theatreId))
-        //        return false;
-
-        //    account.FavoriteTheatres.Add(new AccountTheatreFavorite(accountId, theatreId));
-        //    account.UpdateLastViewDate();
-        //    await _accountRepository.SaveChangesAsync();
-        //    return true;
-        //}
-
-        //public async Task<bool> RemoveFavoriteTheatreAsync(int accountId, int theatreId)
-        //{
-        //    var account = await _accountRepository.GetByIdAsync(accountId);
-        //    if (account == null) return false;
-
-        //    var favorite = account.FavoriteTheatres.FirstOrDefault(f => f.TheatreId == theatreId);
-        //    if (favorite == null) return false;
-
-        //    account.FavoriteTheatres.Remove(favorite);
-        //    await _accountRepository.SaveChangesAsync();
-        //    return true;
-        //}
-
-
-        public async Task<bool> AddFavoriteActorAsync(int accountId, int actorId)
-        {
-            return await _accountRepository.AddFavoriteActorAsync(accountId, actorId);
-        }
-
-        public async Task<bool> RemoveFavoriteActorAsync(int accountId, int actorId)
-        {
-            return await _accountRepository.RemoveFavoriteActorAsync(accountId, actorId);
-        }
-
-        public async Task<bool> AddFavoriteMusicalAsync(int accountId, int musicalId)
-        {
-            return await _accountRepository.AddFavoriteMusicalAsync(accountId, musicalId);
-        }
-
-        public async Task<bool> RemoveFavoriteMusicalAsync(int accountId, int musicalId)
-        {
-            return await _accountRepository.RemoveFavoriteMusicalAsync(accountId, musicalId);
-        }
-
-        public async Task<bool> AddFavoriteTheatreAsync(int accountId, int theatreId)
-        {
-            return await _accountRepository.AddFavoriteTheatreAsync(accountId, theatreId);
-        }
-
-        public async Task<bool> RemoveFavoriteTheatreAsync(int accountId, int theatreId)
-        {
-            return await _accountRepository.RemoveFavoriteTheatreAsync(accountId, theatreId);
-        }
-
         public async Task<AccountFavorites> GetFavoritesAsync(int accountId)
         {
             return await _accountRepository.GetFavoritesAsync(accountId);
@@ -236,6 +171,7 @@ namespace TheatreCenter.Services.Services
 
             account.UpgradeRequest = true;
             await _accountRepository.UpdateAsync(account);
+            await _accountRepository.SaveChangesAsync();
             return true;
         }
 
@@ -248,5 +184,6 @@ namespace TheatreCenter.Services.Services
         {
             return await _accountRepository.ProcessUpgradeRequestAsync(accountId, isApproved);
         }
+
     }
 }

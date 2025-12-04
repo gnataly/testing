@@ -1,14 +1,14 @@
-﻿using System.Text.Json.Serialization;
+﻿//using System.Text.Json.Serialization;
 
-namespace TheatreCenter.DTOs.Show;
+//namespace TheatreCenter.DTOs;
 
-public class UpdateShowDTO
-{
-    public UpdateShowDTO(DateTime date)
-    {
-        Date = date;
-    }
+//public class UpdateShowDto
+//{
+//    public UpdateShowDto(DateTime date)
+//    {
+//        Date = date;
+//    }
 
-    [JsonPropertyName("date")]
-    public DateTime Date { get; }
-}
+//    [JsonPropertyName("date")]
+//    public DateTime Date { get; }
+//}
