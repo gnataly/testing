@@ -28,10 +28,16 @@ jobs:
           fi
 
       - name: Restore
-        run: dotnet restore TheatreCenter.sln
+        run: |
+          cd src/TheatreCenter
+          dotnet restore TheatreCenter.sln
 
       - name: Build
-        run: dotnet build TheatreCenter.sln --no-restore
+        run: |
+          cd src/TheatreCenter
+          dotnet build TheatreCenter.sln --no-restore
 
       - name: Run BDD E2E tests (2FA + lockout)
-        run: dotnet test TheatreCenter.E2ETests/TheatreCenter.E2ETests.csproj --filter AuthFlowFeature --no-build
+        run: |
+          cd src/TheatreCenter
+          dotnet test TheatreCenter.E2ETests/TheatreCenter.E2ETests.csproj --filter AuthFlowFeature --no-build
