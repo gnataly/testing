@@ -21,7 +21,6 @@ public class AccountFixture
         string? username = null,
         string? passwordHash = null,
         AccessLevel accessLevel = AccessLevel.User,
-        bool upgradeRequest = false,
         DateTime? lastFavoritesViewDate = null)
     {
         var account = _fixture.Build<Account>()
@@ -29,7 +28,6 @@ public class AccountFixture
             .With(a => a.Username, username ?? $"user{_fixture.Create<int>()}")
             .With(a => a.PasswordHash, passwordHash ?? $"hash{_fixture.Create<int>()}")
             .With(a => a.AccessLevel, accessLevel)
-            .With(a => a.UpgradeRequest, upgradeRequest)
             .With(a => a.LastFavoritesViewDate, lastFavoritesViewDate ?? DateTime.UtcNow)
             .Without(a => a.FavoriteTheatres)
             .Without(a => a.FavoriteMusicals)

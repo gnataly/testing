@@ -23,9 +23,9 @@ namespace TheatreCenter.Services.Interfaces.Services
         Task UpdateLastFavoritesViewDateAsync(int accountId);
         Task ChangePasswordAsync(int accountId, string newPasswordHash);
         Task<AccountFavorites> GetFavoritesAsync(int accountId);
-        Task<bool> SubmitUpgradeRequestAsync(int accountId);
-        Task<IEnumerable<Account>> GetAccountsWithUpgradeRequestAsync();
-        Task<bool> ProcessUpgradeRequestAsync(int accountId, bool isApproved);
+        //Task<bool> SubmitUpgradeRequestAsync(int accountId);
+        //Task<IEnumerable<Account>> GetAccountsWithUpgradeRequestAsync();
+        //Task<bool> ProcessUpgradeRequestAsync(int accountId, bool isApproved);
 
     }
 }

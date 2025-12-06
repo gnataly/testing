@@ -53,8 +53,6 @@ namespace TheatreCenter.Domain.Models
         [DataType(DataType.DateTime)]
         public DateTime LastFavoritesViewDate { get; set; } = DateTime.UtcNow;
 
-        [Required]
-        public bool UpgradeRequest { get; set; } = false;
 
         // Навигационные свойства для избранного
         public ICollection<AccountTheatreFavorite> FavoriteTheatres { get; set; } = new List<AccountTheatreFavorite>();

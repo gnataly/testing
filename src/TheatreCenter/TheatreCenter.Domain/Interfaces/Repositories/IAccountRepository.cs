@@ -20,8 +20,9 @@ namespace TheatreCenter.Domain.Interfaces.Repositories
         Task<bool> AddFavoriteTheatreAsync(int accountId, int theatreId);
         Task<bool> RemoveFavoriteTheatreAsync(int accountId, int theatreId);
         Task<AccountFavorites> GetFavoritesAsync(int accountId);
-        Task<IEnumerable<Account>> GetAccountsWithUpgradeRequestAsync();
-        Task<bool> ProcessUpgradeRequestAsync(int accountId, bool isApproved);
+        //Task<IEnumerable<Account>> GetAccountsWith
+        //Async();
+        //Task<bool> ProcessUpgradeRequestAsync(int accountId, bool isApproved);
 
     }
 }

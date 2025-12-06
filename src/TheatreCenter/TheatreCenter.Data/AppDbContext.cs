@@ -60,9 +60,6 @@ namespace TheatreCenter.Data
                 entity.Property(a => a.AccessLevel)
                     .HasConversion<string>() 
                     .IsRequired();
-                entity.Property(a => a.UpgradeRequest)
-                    .IsRequired()
-                    .HasDefaultValue(false);
                 entity.HasIndex(a => a.Username).IsUnique();
             });
 

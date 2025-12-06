@@ -45,8 +45,7 @@ namespace TheatreCenter.Backend.WebAPI.Controllers
                         account.Id,
                         account.Username,
                         account.LastFavoritesViewDate,
-                        account.AccessLevel,
-                        false)
+                        account.AccessLevel)
                 });
             }
             catch (Exception ex)
@@ -75,8 +74,7 @@ namespace TheatreCenter.Backend.WebAPI.Controllers
                         account.Id,
                         account.Username,
                         account.LastFavoritesViewDate,
-                        account.AccessLevel,
-                        false)
+                        account.AccessLevel)
                 });
             }
             catch (Exception ex)
@@ -99,8 +97,7 @@ namespace TheatreCenter.Backend.WebAPI.Controllers
                     account.Id,
                     account.Username,
                     account.LastFavoritesViewDate,
-                    account.AccessLevel,
-                    false));
+                    account.AccessLevel));
             }
             catch (Exception ex)
             {
@@ -119,8 +116,7 @@ namespace TheatreCenter.Backend.WebAPI.Controllers
                     a.Id,
                     a.Username,
                     a.LastFavoritesViewDate,
-                    a.AccessLevel,
-                    false));
+                    a.AccessLevel));
 
                 return Ok(accountDtos);
             }
@@ -155,8 +151,7 @@ namespace TheatreCenter.Backend.WebAPI.Controllers
                     account.Id,
                     account.Username,
                     account.LastFavoritesViewDate,
-                    account.AccessLevel,
-                    false));
+                    account.AccessLevel));
             }
             catch (Exception ex)
             {
@@ -363,62 +358,62 @@ namespace TheatreCenter.Backend.WebAPI.Controllers
         }
 
 
-        [HttpPost("{id}/upgrade-request")]
-        [Authorize(Policy = "AdminOrUser")]
-        public async Task<IActionResult> SubmitUpgradeRequest(int id)
-        {
-            try
-            {
-                var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-                if (currentUserId != id)
-                {
-                    return Forbid();
-                }
+        //[HttpPost("{id}/upgrade-request")]
+        //[Authorize(Policy = "AdminOrUser")]
+        //public async Task<IActionResult> SubmitUpgradeRequest(int id)
+        //{
+        //    try
+        //    {
+        //        var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+        //        if (currentUserId != id)
+        //        {
+        //            return Forbid();
+        //        }
 
-                var result = await _accountService.SubmitUpgradeRequestAsync(id);
-                return result ? Ok() : NotFound();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        //        var result = await _accountService.SubmitUpgradeRequestAsync(id);
+        //        return result ? Ok() : NotFound();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}
 
-        [HttpGet("upgrade-requests")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetUpgradeRequests()
-        {
-            try
-            {
-                var accounts = await _accountService.GetAccountsWithUpgradeRequestAsync();
-                var accountDtos = accounts.Select(a => new AccountDTO(
-                    a.Id,
-                    a.Username,
-                    a.LastFavoritesViewDate,
-                    a.AccessLevel,
-                    a.UpgradeRequest));
+        //[HttpGet("upgrade-requests")]
+        //[Authorize(Roles = "Admin")]
+        //public async Task<IActionResult> GetUpgradeRequests()
+        //{
+        //    try
+        //    {
+        //        var accounts = await _accountService.GetAccountsWithUpgradeRequestAsync();
+        //        var accountDtos = accounts.Select(a => new AccountDTO(
+        //            a.Id,
+        //            a.Username,
+        //            a.LastFavoritesViewDate,
+        //            a.AccessLevel,
+        //            a.UpgradeRequest));
 
-                return Ok(accountDtos);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        //        return Ok(accountDtos);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}
 
-        [HttpPost("{id}/process-upgrade")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> ProcessUpgradeRequest(int id, [FromBody] bool isApproved)
-        {
-            try
-            {
-                var result = await _accountService.ProcessUpgradeRequestAsync(id, isApproved);
-                return result ? Ok() : NotFound();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        //[HttpPost("{id}/process-upgrade")]
+        //[Authorize(Roles = "Admin")]
+        //public async Task<IActionResult> ProcessUpgradeRequest(int id, [FromBody] bool isApproved)
+        //{
+        //    try
+        //    {
+        //        var result = await _accountService.ProcessUpgradeRequestAsync(id, isApproved);
+        //        return result ? Ok() : NotFound();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}
     }
 }

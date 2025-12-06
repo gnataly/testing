@@ -21,8 +21,7 @@ namespace TheatreCenter.Data.Migrations
                     Username = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     PasswordHash = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     AccessLevel = table.Column<string>(type: "text", nullable: false),
-                    LastFavoritesViewDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpgradeRequest = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false)
+                    LastFavoritesViewDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {

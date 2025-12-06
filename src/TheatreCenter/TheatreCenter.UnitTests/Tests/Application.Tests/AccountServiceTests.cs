@@ -284,49 +284,49 @@ public class AccountServiceMockTests : IClassFixture<AccountFixture>
         _accountRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Never);
     }
 
-    [Fact]
-    [AllureFeature("SubmitUpgradeRequestAsync")]
-    [AllureStory("Positive case - upgrade request submitted")]
-    public async Task SubmitUpgradeRequestAsync_ValidAccount_ReturnsTrue()
-    {
+    //[Fact]
+    //[AllureFeature("SubmitUpgradeRequestAsync")]
+    //[AllureStory("Positive case - upgrade request submitted")]
+    //public async Task SubmitUpgradeRequestAsync_ValidAccount_ReturnsTrue()
+    //{
         
-        var accountId = 1;
-        var account = _fixture.CreateAccount(id: accountId);
+    //    var accountId = 1;
+    //    var account = _fixture.CreateAccount(id: accountId);
 
-        _accountRepositoryMock
-            .Setup(repo => repo.GetByIdAsync(accountId))
-            .ReturnsAsync(account);
-        _accountRepositoryMock
-            .Setup(repo => repo.UpdateAsync(account))
-            .Returns(Task.CompletedTask);
-
-        
-        var result = await _sut.SubmitUpgradeRequestAsync(accountId);
+    //    _accountRepositoryMock
+    //        .Setup(repo => repo.GetByIdAsync(accountId))
+    //        .ReturnsAsync(account);
+    //    _accountRepositoryMock
+    //        .Setup(repo => repo.UpdateAsync(account))
+    //        .Returns(Task.CompletedTask);
 
         
-        result.Should().BeTrue();
-        account.UpgradeRequest.Should().BeTrue();
-        _accountRepositoryMock.Verify(repo => repo.GetByIdAsync(accountId), Times.Once);
-        _accountRepositoryMock.Verify(repo => repo.UpdateAsync(account), Times.Once);
-    }
-
-    [Fact]
-    [AllureFeature("SubmitUpgradeRequestAsync")]
-    [AllureStory("Negative case - account not found")]
-    public async Task SubmitUpgradeRequestAsync_AccountNotFound_ReturnsFalse()
-    {
-        
-        var accountId = 1;
-
-        _accountRepositoryMock
-            .Setup(repo => repo.GetByIdAsync(accountId))
-            .ReturnsAsync((Account?)null);
+    //    var result = await _sut.SubmitUpgradeRequestAsync(accountId);
 
         
-        var result = await _sut.SubmitUpgradeRequestAsync(accountId);
+    //    result.Should().BeTrue();
+    //    account.UpgradeRequest.Should().BeTrue();
+    //    _accountRepositoryMock.Verify(repo => repo.GetByIdAsync(accountId), Times.Once);
+    //    _accountRepositoryMock.Verify(repo => repo.UpdateAsync(account), Times.Once);
+    //}
+
+    //[Fact]
+    //[AllureFeature("SubmitUpgradeRequestAsync")]
+    //[AllureStory("Negative case - account not found")]
+    //public async Task SubmitUpgradeRequestAsync_AccountNotFound_ReturnsFalse()
+    //{
+        
+    //    var accountId = 1;
+
+    //    _accountRepositoryMock
+    //        .Setup(repo => repo.GetByIdAsync(accountId))
+    //        .ReturnsAsync((Account?)null);
 
         
-        result.Should().BeFalse();
-        _accountRepositoryMock.Verify(repo => repo.UpdateAsync(It.IsAny<Account>()), Times.Never);
-    }
+    //    var result = await _sut.SubmitUpgradeRequestAsync(accountId);
+
+        
+    //    result.Should().BeFalse();
+    //    _accountRepositoryMock.Verify(repo => repo.UpdateAsync(It.IsAny<Account>()), Times.Never);
+    //}
 }

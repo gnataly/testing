@@ -6,13 +6,12 @@ namespace TheatreCenter.DTOs.Account
 {
     public class AccountDTO
     {
-        public AccountDTO(int id, string username, DateTime lastFavoritesViewDate, AccessLevel accessLevel, bool upgradeRequest)
+        public AccountDTO(int id, string username, DateTime lastFavoritesViewDate, AccessLevel accessLevel)
         {
             Id = id;
             Username = username;
             LastFavoritesViewDate = lastFavoritesViewDate;
             AccessLevel = accessLevel;
-            UpgradeRequest = upgradeRequest;
         }
 
         [JsonPropertyName("id")]
@@ -26,8 +25,5 @@ namespace TheatreCenter.DTOs.Account
 
         [JsonPropertyName("accessLevel")]
         public AccessLevel AccessLevel { get; }
-
-        [JsonPropertyName("upgradeRequest")]
-        public bool UpgradeRequest { get; }
     }
 }

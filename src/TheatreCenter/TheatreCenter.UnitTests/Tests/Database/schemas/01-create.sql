@@ -3,8 +3,7 @@
     "Username" VARCHAR(50) NOT NULL,
     "PasswordHash" VARCHAR(255) NOT NULL,
     "AccessLevel" TEXT NOT NULL,
-    "LastFavoritesViewDate" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    "UpgradeRequest" BOOLEAN NOT NULL DEFAULT false
+    "LastFavoritesViewDate" TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS "Actors" (

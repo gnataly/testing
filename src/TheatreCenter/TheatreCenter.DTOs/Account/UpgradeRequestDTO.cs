@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace TheatreCenter.DTOs.Account
 {
-    public class UpgradeRequestDTO
-    {
-        [JsonPropertyName("isApproved")]
-        public bool IsApproved { get; set; }
-    }
+    //public class UpgradeRequestDTO
+    //{
+    //    [JsonPropertyName("isApproved")]
+    //    public bool IsApproved { get; set; }
+    //}
 }

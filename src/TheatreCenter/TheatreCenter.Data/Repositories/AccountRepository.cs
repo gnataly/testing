@@ -193,25 +193,26 @@ public class AccountRepository : IAccountRepository
         };
     }
 
-    public async Task<IEnumerable<Account>> GetAccountsWithUpgradeRequestAsync()
-    {
-        return await _context.Accounts
-            .Where(a => a.UpgradeRequest)
-            .ToListAsync();
-    }
+    //public async Task<IEnumerable<Account>> GetAccountsWith
+    //Async()
+    //{
+    //    return await _context.Accounts
+    //        .Where(a => a.UpgradeRequest)
+    //        .ToListAsync();
+    //}
 
-    public async Task<bool> ProcessUpgradeRequestAsync(int accountId, bool isApproved)
-    {
-        var account = await _context.Accounts.FindAsync(accountId);
-        if (account == null) return false;
+    //public async Task<bool> ProcessUpgradeRequestAsync(int accountId, bool isApproved)
+    //{
+    //    var account = await _context.Accounts.FindAsync(accountId);
+    //    if (account == null) return false;
 
-        account.UpgradeRequest = false;
-        if (isApproved)
-        {
-            account.AccessLevel = AccessLevel.Admin;
-        }
+    //    account.UpgradeRequest = false;
+    //    if (isApproved)
+    //    {
+    //        account.AccessLevel = AccessLevel.Admin;
+    //    }
 
-        await _context.SaveChangesAsync();
-        return true;
-    }
+    //    await _context.SaveChangesAsync();
+    //    return true;
+    //}
 }

@@ -1,63 +1,82 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
-using System;
+using Serilog.Core;
+using Serilog.Enrichers.Span;
+using Serilog.Events;
+using Serilog.Sinks.SystemConsole.Themes;
 using System.Reflection;
+using System.Text;
 using System.Text.Json.Serialization;
+using TheatreCenter.Backend.WebAPI.Telemetry;
 using TheatreCenter.Data;
 using TheatreCenter.Data.Repositories;
 using TheatreCenter.Domain.Enums;
 using TheatreCenter.Domain.Interfaces.Repositories;
 using TheatreCenter.Services.Interfaces.Services;
 using TheatreCenter.Services.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Serilog.Sinks.SystemConsole.Themes;
-
-
 
 namespace TheatreCenter.Backend.WebAPI;
+
 public class Program
 {
     public static void Main(string[] args)
     {
-        //var builder = WebApplication.CreateBuilder(args);
+        var builder = WebApplication.CreateBuilder(args);
 
-        //// Минимальная конфигурация
-        //builder.Services.AddDbContext<AppDbContext>(options =>
-        //    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+        var loggingOptions = builder.Configuration.GetSection(LoggingOptions.SectionName).Get<LoggingOptions>() ?? new LoggingOptions();
+        var loggingLevelSwitch = new LoggingLevelSwitch(loggingOptions.Extended ? LogEventLevel.Debug : LogEventLevel.Information);
 
-        //var app = builder.Build();
-        //app.Run();
-        //return;
+        var serilogConfiguration = new LoggerConfiguration()
+            .MinimumLevel.ControlledBy(loggingLevelSwitch)
+            .Enrich.FromLogContext()
+            .Enrich.WithSpan()
+            .WriteTo.Console(theme: AnsiConsoleTheme.Code, restrictedToMinimumLevel: LogEventLevel.Information)
+            .WriteTo.File("logs/theatrecenter-.txt", rollingInterval: RollingInterval.Day);
 
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Information()
-            .WriteTo.Console(theme: AnsiConsoleTheme.Code)
-            .WriteTo.File("logs/theatrecenter-.txt", rollingInterval: RollingInterval.Day)
-            .CreateLogger();
+        if (loggingOptions.Extended)
+        {
+            serilogConfiguration.WriteTo.File(
+                loggingOptions.ExtendedFilePath ?? "logs/theatrecenter-extended-.txt",
+                rollingInterval: RollingInterval.Day,
+                restrictedToMinimumLevel: LogEventLevel.Debug);
+        }
 
-
+        Log.Logger = serilogConfiguration.CreateLogger();
 
         try
         {
             Log.Information("Starting web application");
 
-            var builder = WebApplication.CreateBuilder(args);
-
-
-
-            builder.Host.UseSerilog();
-
-            builder.Services.AddControllers();
-
-            builder.Services.AddControllers().AddJsonOptions(options =>
+            builder.Host.UseSerilog((context, services, configuration) =>
             {
-                options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-                options.JsonSerializerOptions.WriteIndented = true;
+                configuration
+                    .MinimumLevel.ControlledBy(loggingLevelSwitch)
+                    .Enrich.FromLogContext()
+                    .Enrich.WithSpan()
+                    .WriteTo.Console(theme: AnsiConsoleTheme.Code)
+                    .WriteTo.File("logs/theatrecenter-.txt", rollingInterval: RollingInterval.Day);
+
+                if (loggingOptions.Extended)
+                {
+                    configuration.WriteTo.File(
+                        loggingOptions.ExtendedFilePath ?? "logs/theatrecenter-extended-.txt",
+                        rollingInterval: RollingInterval.Day,
+                        restrictedToMinimumLevel: LogEventLevel.Debug);
+                }
             });
 
+            builder.Services.AddHttpContextAccessor();
+
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+                    options.JsonSerializerOptions.WriteIndented = true;
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                });
 
             builder.Services.AddEndpointsApiExplorer();
 
@@ -76,7 +95,6 @@ public class Program
                 });
                 c.EnableAnnotations();
 
-
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 if (File.Exists(xmlPath))
@@ -85,19 +103,12 @@ public class Program
                 }
             });
 
-            //var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-            //?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-
-
-            builder.Services.AddHttpContextAccessor();
-            //builder.Services.AddScoped<IConnectionResolver, ConnectionResolver>();
-
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+            var connectionString = builder.Configuration["DB_CONNECTION_STRING"]
+                ?? builder.Configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
             builder.Services.AddDbContext<AppDbContext>(options =>
-                options.UseNpgsql(connectionString,
-                    npgsqlOptions => npgsqlOptions.EnableRetryOnFailure()));
+                options.UseNpgsql(connectionString, npgsqlOptions => npgsqlOptions.EnableRetryOnFailure()));
 
             builder.Services.AddScoped<IActorRepository, ActorRepository>();
             builder.Services.AddScoped<IMusicalRepository, MusicalRepository>();
@@ -108,7 +119,6 @@ public class Program
             builder.Services.AddScoped<IShowRepository, ShowRepository>();
             builder.Services.AddScoped<IThemeRepository, ThemeRepository>();
 
-
             builder.Services.AddScoped<IActorService, ActorService>();
             builder.Services.AddScoped<IMusicalService, MusicalService>();
             builder.Services.AddScoped<ITheatreService, TheatreService>();
@@ -117,7 +127,6 @@ public class Program
             builder.Services.AddScoped<IRoleService, RoleService>();
             builder.Services.AddScoped<IShowService, ShowService>();
             builder.Services.AddScoped<IThemeService, ThemeService>();
-
 
             builder.Services.AddAuthentication(options =>
             {
@@ -129,8 +138,7 @@ public class Program
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Secret"])),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Secret"])),
                     ValidateIssuer = false,
                     ValidateAudience = false,
                     ValidateLifetime = true,
@@ -140,25 +148,11 @@ public class Program
 
             builder.Services.AddAuthorization(options =>
             {
-                options.AddPolicy("AdminOnly", policy =>
-                    policy.RequireRole(AccessLevel.Admin.ToString()));
-
-                options.AddPolicy("UserOnly", policy =>
-                    policy.RequireRole(AccessLevel.User.ToString()));
-
-                options.AddPolicy("AdminOrUser", policy =>
-                    policy.RequireRole(AccessLevel.Admin.ToString(), AccessLevel.User.ToString()));
+                options.AddPolicy("AdminOnly", policy => policy.RequireRole(AccessLevel.Admin.ToString()));
+                options.AddPolicy("UserOnly", policy => policy.RequireRole(AccessLevel.User.ToString()));
+                options.AddPolicy("AdminOrUser", policy => policy.RequireRole(AccessLevel.Admin.ToString(), AccessLevel.User.ToString()));
             });
 
-            builder.Services.AddControllers()
-                .AddJsonOptions(options =>
-                {
-                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-                });
-
-            //var app = builder.Build();
-
-            //builder.Services.AddCors();
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("ReactPolicy", policy =>
@@ -168,14 +162,13 @@ public class Program
                           .AllowAnyHeader();
                 });
             });
+
+            builder.Services.AddTheatreCenterTelemetry(builder.Configuration, Log.Logger);
+
             var app = builder.Build();
-
-
-
 
             if (app.Environment.IsDevelopment())
             {
-
                 app.UseSwagger();
                 app.UseSwaggerUI(c =>
                 {
@@ -185,21 +178,17 @@ public class Program
                     c.DisplayRequestDuration();
                     c.ConfigObject.DisplayRequestDuration = true;
                 });
-                //app.UseSwaggerUI(c =>
-                //{
-                //    c.SwaggerEndpoint("/swagger/v1/swagger.json", "TheatreCenter API V1");
-                //    c.DisplayOperationId();
-                //    c.DisplayRequestDuration();
-                //});
             }
             else
             {
                 app.UseExceptionHandler("/error");
             }
 
-
-
-            app.UseHttpsRedirection();
+            // HTTPS редирект отключен в Dev, чтобы не ловить 307 при обращении к http://localhost:5000
+            if (!app.Environment.IsDevelopment())
+            {
+                app.UseHttpsRedirection();
+            }
             app.UseCors("ReactPolicy");
             app.UseRouting();
             app.UseAuthentication();
@@ -207,10 +196,8 @@ public class Program
             app.UseStatusCodePages();
             app.MapControllers();
 
-
             using (var scope = app.Services.CreateScope())
             {
-
                 try
                 {
                     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -218,8 +205,6 @@ public class Program
                 }
                 catch (Exception ex)
                 {
-                    //var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-                    //logger.LogError(ex, "An error occurred while migrating the database.");
                     Log.Error(ex, "An error occurred while migrating the database.");
                 }
             }
@@ -235,7 +220,5 @@ public class Program
         {
             Log.CloseAndFlush();
         }
-
-
     }
 }

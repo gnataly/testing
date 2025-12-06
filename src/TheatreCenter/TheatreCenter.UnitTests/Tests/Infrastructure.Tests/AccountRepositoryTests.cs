@@ -280,78 +280,80 @@ public class AccountRepositoryTests : IClassFixture<AccountFixture>
         result.Should().BeNull();
     }
 
-    [Fact]
-    [AllureFeature("GetAccountsWithUpgradeRequestAsync")]
-    [AllureStory("Positive case - returns accounts with requests")]
-    public async Task GetAccountsWithUpgradeRequestAsync_AccountsExist_ReturnsAccounts()
-    {
+    //[Fact]
+    //[AllureFeature("GetAccountsWith
+    //Async")]
+    //[AllureStory("Positive case - returns accounts with requests")]
+    //public async Task GetAccountsWith
+    //Async_AccountsExist_ReturnsAccounts()
+    //{
         
-        var repository = GetInMemoryRepository();
-        var account1 = _fixture.CreateAccount(upgradeRequest: true);
-        var account2 = _fixture.CreateAccount(upgradeRequest: false);
+    //    var repository = GetInMemoryRepository();
+    //    var account1 = _fixture.CreateAccount(upgradeRequest: true);
+    //    var account2 = _fixture.CreateAccount(upgradeRequest: false);
 
-        await repository.CreateAsync(account1);
-        await repository.CreateAsync(account2);
+    //    await repository.CreateAsync(account1);
+    //    await repository.CreateAsync(account2);
          
 
         
-        var result = await repository.GetAccountsWithUpgradeRequestAsync();
+    //    var result = await repository.GetAccountsWithUpgradeRequestAsync();
 
         
-        result.Should().HaveCount(1);
-        result.First().UpgradeRequest.Should().BeTrue();
-    }
+    //    result.Should().HaveCount(1);
+    //    result.First().UpgradeRequest.Should().BeTrue();
+    //}
 
-    [Fact]
-    [AllureFeature("GetAccountsWithUpgradeRequestAsync")]
-    [AllureStory("Negative case - no upgrade requests")]
-    public async Task GetAccountsWithUpgradeRequestAsync_NoRequests_ReturnsEmpty()
-    {
+    //[Fact]
+    //[AllureFeature("GetAccountsWithUpgradeRequestAsync")]
+    //[AllureStory("Negative case - no upgrade requests")]
+    //public async Task GetAccountsWithUpgradeRequestAsync_NoRequests_ReturnsEmpty()
+    //{
         
-        var repository = GetInMemoryRepository();
-        var account = _fixture.CreateAccount(upgradeRequest: false);
+    //    var repository = GetInMemoryRepository();
+    //    var account = _fixture.CreateAccount(upgradeRequest: false);
 
-        await repository.CreateAsync(account);
+    //    await repository.CreateAsync(account);
          
 
         
-        var result = await repository.GetAccountsWithUpgradeRequestAsync();
+    //    var result = await repository.GetAccountsWithUpgradeRequestAsync();
 
         
-        result.Should().BeEmpty();
-    }
+    //    result.Should().BeEmpty();
+    //}
 
-    [Fact]
-    [AllureFeature("ProcessUpgradeRequestAsync")]
-    [AllureStory("Positive case - processes upgrade request")]
-    public async Task ProcessUpgradeRequestAsync_ValidAccount_ReturnsTrue()
-    {
+    //[Fact]
+    //[AllureFeature("ProcessUpgradeRequestAsync")]
+    //[AllureStory("Positive case - processes upgrade request")]
+    //public async Task ProcessUpgradeRequestAsync_ValidAccount_ReturnsTrue()
+    //{
         
-        var repository = GetInMemoryRepository();
-        var account = _fixture.CreateAccount(upgradeRequest: true, accessLevel: AccessLevel.User);
+    //    var repository = GetInMemoryRepository();
+    //    var account = _fixture.CreateAccount(upgradeRequest: true, accessLevel: AccessLevel.User);
 
-        await repository.CreateAsync(account);
+    //    await repository.CreateAsync(account);
          
 
         
-        var result = await repository.ProcessUpgradeRequestAsync(account.Id, true);
+    //    var result = await repository.ProcessUpgradeRequestAsync(account.Id, true);
 
         
-        result.Should().BeTrue();
-    }
+    //    result.Should().BeTrue();
+    //}
 
-    [Fact]
-    [AllureFeature("ProcessUpgradeRequestAsync")]
-    [AllureStory("Negative case - account not found")]
-    public async Task ProcessUpgradeRequestAsync_AccountNotExists_ReturnsFalse()
-    {
+    //[Fact]
+    //[AllureFeature("ProcessUpgradeRequestAsync")]
+    //[AllureStory("Negative case - account not found")]
+    //public async Task ProcessUpgradeRequestAsync_AccountNotExists_ReturnsFalse()
+    //{
         
-        var repository = GetInMemoryRepository();
-
-        
-        var result = await repository.ProcessUpgradeRequestAsync(999, true);
+    //    var repository = GetInMemoryRepository();
 
         
-        result.Should().BeFalse();
-    }
+    //    var result = await repository.ProcessUpgradeRequestAsync(999, true);
+
+        
+    //    result.Should().BeFalse();
+    //}
 }

@@ -99,11 +99,6 @@ namespace TheatreCenter.Data.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.Property<bool>("UpgradeRequest")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(50)

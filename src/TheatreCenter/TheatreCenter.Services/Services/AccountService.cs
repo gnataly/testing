@@ -229,24 +229,24 @@ namespace TheatreCenter.Services.Services
             return await _accountRepository.GetFavoritesAsync(accountId);
         }
 
-        public async Task<bool> SubmitUpgradeRequestAsync(int accountId)
-        {
-            var account = await _accountRepository.GetByIdAsync(accountId);
-            if (account == null) return false;
+        //public async Task<bool> SubmitUpgradeRequestAsync(int accountId)
+        //{
+        //    var account = await _accountRepository.GetByIdAsync(accountId);
+        //    if (account == null) return false;
 
-            account.UpgradeRequest = true;
-            await _accountRepository.UpdateAsync(account);
-            return true;
-        }
+        //    account.UpgradeRequest = true;
+        //    await _accountRepository.UpdateAsync(account);
+        //    return true;
+        //}
 
-        public async Task<IEnumerable<Account>> GetAccountsWithUpgradeRequestAsync()
-        {
-            return await _accountRepository.GetAccountsWithUpgradeRequestAsync();
-        }
+        //public async Task<IEnumerable<Account>> GetAccountsWithUpgradeRequestAsync()
+        //{
+        //    return await _accountRepository.GetAccountsWithUpgradeRequestAsync();
+        //}
 
-        public async Task<bool> ProcessUpgradeRequestAsync(int accountId, bool isApproved)
-        {
-            return await _accountRepository.ProcessUpgradeRequestAsync(accountId, isApproved);
-        }
+        //public async Task<bool> ProcessUpgradeRequestAsync(int accountId, bool isApproved)
+        //{
+        //    return await _accountRepository.ProcessUpgradeRequestAsync(accountId, isApproved);
+        //}
     }
 }
