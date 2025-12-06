@@ -9,6 +9,7 @@ COPY TheatreCenter.Domain/*.csproj TheatreCenter.Domain/
 COPY TheatreCenter.Data/*.csproj TheatreCenter.Data/
 COPY TheatreCenter.DTOs/*.csproj TheatreCenter.DTOs/
 COPY TheatreCenter.Services/*.csproj TheatreCenter.Services/
+COPY tools/CodeQuality/*.csproj tools/CodeQuality/
 
 RUN dotnet restore
 
