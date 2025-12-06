@@ -1,4 +1,4 @@
-﻿using Allure.Xunit.Attributes;
+using Allure.Xunit.Attributes;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using TheatreCenter.Data;
@@ -37,16 +37,17 @@ public class AccountRepositoryTests : IClassFixture<AccountFixture>
     [AllureStory("Positive case - account exists")]
     public async Task GetByIdAsync_AccountExists_ReturnsAccount()
     {
-        
+
         var repository = GetInMemoryRepository();
         var account = _fixture.CreateAccount();
 
         await repository.CreateAsync(account);
+        await repository.SaveChangesAsync();
 
-        
+
         var result = await repository.GetByIdAsync(account.Id);
 
-        
+
         result.Should().NotBeNull();
         result.Id.Should().Be(account.Id);
         result.Username.Should().Be(account.Username);
@@ -57,13 +58,13 @@ public class AccountRepositoryTests : IClassFixture<AccountFixture>
     [AllureStory("Negative case - account not found")]
     public async Task GetByIdAsync_AccountNotExists_ReturnsNull()
     {
-        
+
         var repository = GetInMemoryRepository();
 
-        
+
         var result = await repository.GetByIdAsync(999);
 
-        
+
         result.Should().BeNull();
     }
 
@@ -72,16 +73,17 @@ public class AccountRepositoryTests : IClassFixture<AccountFixture>
     [AllureStory("Positive case - username exists")]
     public async Task GetByUsernameAsync_UsernameExists_ReturnsAccount()
     {
-        
+
         var repository = GetInMemoryRepository();
         var account = _fixture.CreateAccount(username: "testuser");
 
         await repository.CreateAsync(account);
+        await repository.SaveChangesAsync();
 
-        
+
         var result = await repository.GetByUsernameAsync("testuser");
 
-        
+
         result.Should().NotBeNull();
         result.Username.Should().Be("testuser");
     }
@@ -91,13 +93,13 @@ public class AccountRepositoryTests : IClassFixture<AccountFixture>
     [AllureStory("Negative case - username not found")]
     public async Task GetByUsernameAsync_UsernameNotExists_ReturnsNull()
     {
-        
+
         var repository = GetInMemoryRepository();
 
-        
+
         var result = await repository.GetByUsernameAsync("nonexistent");
 
-        
+
         result.Should().BeNull();
     }
 
@@ -106,18 +108,19 @@ public class AccountRepositoryTests : IClassFixture<AccountFixture>
     [AllureStory("Positive case - returns all accounts")]
     public async Task GetAllAsync_AccountsExist_ReturnsAccounts()
     {
-        
+
         var repository = GetInMemoryRepository();
         var account1 = _fixture.CreateAccount(username: "user1");
         var account2 = _fixture.CreateAccount(username: "user2");
 
         await repository.CreateAsync(account1);
         await repository.CreateAsync(account2);
+        await repository.SaveChangesAsync();
 
-        
-        var result = await repository.GetAllAsync();
 
-        
+        var result = await repository.GetAllAsync(new AccountFilter());
+
+
         result.Should().HaveCount(2);
         result.Should().Contain(a => a.Username == "user1");
         result.Should().Contain(a => a.Username == "user2");
@@ -128,13 +131,13 @@ public class AccountRepositoryTests : IClassFixture<AccountFixture>
     [AllureStory("Negative case - no accounts")]
     public async Task GetAllAsync_NoAccounts_ReturnsEmpty()
     {
-        
+
         var repository = GetInMemoryRepository();
 
-        
-        var result = await repository.GetAllAsync();
 
-        
+        var result = await repository.GetAllAsync(new AccountFilter());
+
+
         result.Should().BeEmpty();
     }
 
@@ -143,14 +146,15 @@ public class AccountRepositoryTests : IClassFixture<AccountFixture>
     [AllureStory("Positive case - creates account")]
     public async Task CreateAsync_ValidAccount_AddsToDatabase()
     {
-        
+
         var repository = GetInMemoryRepository();
         var account = _fixture.CreateAccount();
 
-        
-        await repository.CreateAsync(account);
 
-        
+        await repository.CreateAsync(account);
+        await repository.SaveChangesAsync();
+
+
         var result = await repository.GetByIdAsync(account.Id);
         result.Should().NotBeNull();
     }
@@ -160,19 +164,21 @@ public class AccountRepositoryTests : IClassFixture<AccountFixture>
     [AllureStory("Positive case - updates account")]
     public async Task UpdateAsync_ValidAccount_UpdatesSuccessfully()
     {
-        
+
         var repository = GetInMemoryRepository();
         var account = _fixture.CreateAccount(username: "original");
 
         await repository.CreateAsync(account);
+        await repository.SaveChangesAsync();
 
         var existingAccount = await repository.GetByIdAsync(account.Id);
         existingAccount.Username = "updated";
 
-        
-        await repository.UpdateAsync(existingAccount);
 
-        
+        await repository.UpdateAsync(existingAccount);
+        await repository.SaveChangesAsync();
+
+
         var result = await repository.GetByIdAsync(account.Id);
         result.Username.Should().Be("updated");
     }
@@ -182,16 +188,18 @@ public class AccountRepositoryTests : IClassFixture<AccountFixture>
     [AllureStory("Positive case - deletes account")]
     public async Task DeleteAsync_AccountExists_RemovesAccount()
     {
-        
+
         var repository = GetInMemoryRepository();
         var account = _fixture.CreateAccount();
 
         await repository.CreateAsync(account);
+        await repository.SaveChangesAsync();
 
-        
+
         await repository.DeleteAsync(account.Id);
+        await repository.SaveChangesAsync();
 
-        
+
         var result = await repository.GetByIdAsync(account.Id);
         result.Should().BeNull();
     }
@@ -201,10 +209,10 @@ public class AccountRepositoryTests : IClassFixture<AccountFixture>
     [AllureStory("Negative case - account not found")]
     public async Task DeleteAsync_AccountNotExists_DoesNothing()
     {
-        
+
         var repository = GetInMemoryRepository();
 
-        
+
         await repository.Invoking(async r => await r.DeleteAsync(999))
             .Should().NotThrowAsync();
     }
@@ -214,16 +222,17 @@ public class AccountRepositoryTests : IClassFixture<AccountFixture>
     [AllureStory("Positive case - valid credentials")]
     public async Task AuthenticateAsync_ValidCredentials_ReturnsAccount()
     {
-        
+
         var repository = GetInMemoryRepository();
         var account = _fixture.CreateAccount(username: "testuser", passwordHash: "correcthash");
 
         await repository.CreateAsync(account);
+        await repository.SaveChangesAsync();
 
-        
+
         var result = await repository.AuthenticateAsync("testuser", "correcthash");
 
-        
+
         result.Should().NotBeNull();
         result.Username.Should().Be("testuser");
     }
@@ -233,16 +242,17 @@ public class AccountRepositoryTests : IClassFixture<AccountFixture>
     [AllureStory("Negative case - invalid credentials")]
     public async Task AuthenticateAsync_InvalidCredentials_ReturnsNull()
     {
-        
+
         var repository = GetInMemoryRepository();
         var account = _fixture.CreateAccount(username: "testuser", passwordHash: "correcthash");
 
         await repository.CreateAsync(account);
+        await repository.SaveChangesAsync();
 
-        
+
         var result = await repository.AuthenticateAsync("testuser", "wronghash");
 
-        
+
         result.Should().BeNull();
     }
 
@@ -251,17 +261,18 @@ public class AccountRepositoryTests : IClassFixture<AccountFixture>
     [AllureStory("Positive case - returns favorites")]
     public async Task GetFavoritesAsync_AccountExists_ReturnsFavorites()
     {
-        
+
         var repository = GetInMemoryRepository();
         var account = _fixture.CreateAccount();
 
         await repository.CreateAsync(account);
-         
+        await repository.SaveChangesAsync();
 
-        
+
+
         var result = await repository.GetFavoritesAsync(account.Id);
 
-        
+
         result.Should().NotBeNull();
     }
 
@@ -270,13 +281,13 @@ public class AccountRepositoryTests : IClassFixture<AccountFixture>
     [AllureStory("Negative case - account not found")]
     public async Task GetFavoritesAsync_AccountNotExists_ReturnsNull()
     {
-        
+
         var repository = GetInMemoryRepository();
 
-        
+
         var result = await repository.GetFavoritesAsync(999);
 
-        
+
         result.Should().BeNull();
     }
 
@@ -285,19 +296,20 @@ public class AccountRepositoryTests : IClassFixture<AccountFixture>
     [AllureStory("Positive case - returns accounts with requests")]
     public async Task GetAccountsWithUpgradeRequestAsync_AccountsExist_ReturnsAccounts()
     {
-        
+
         var repository = GetInMemoryRepository();
         var account1 = _fixture.CreateAccount(upgradeRequest: true);
         var account2 = _fixture.CreateAccount(upgradeRequest: false);
 
         await repository.CreateAsync(account1);
         await repository.CreateAsync(account2);
-         
+        await repository.SaveChangesAsync();
 
-        
+
+
         var result = await repository.GetAccountsWithUpgradeRequestAsync();
 
-        
+
         result.Should().HaveCount(1);
         result.First().UpgradeRequest.Should().BeTrue();
     }
@@ -307,17 +319,18 @@ public class AccountRepositoryTests : IClassFixture<AccountFixture>
     [AllureStory("Negative case - no upgrade requests")]
     public async Task GetAccountsWithUpgradeRequestAsync_NoRequests_ReturnsEmpty()
     {
-        
+
         var repository = GetInMemoryRepository();
         var account = _fixture.CreateAccount(upgradeRequest: false);
 
         await repository.CreateAsync(account);
-         
+        await repository.SaveChangesAsync();
 
-        
+
+
         var result = await repository.GetAccountsWithUpgradeRequestAsync();
 
-        
+
         result.Should().BeEmpty();
     }
 
@@ -326,17 +339,18 @@ public class AccountRepositoryTests : IClassFixture<AccountFixture>
     [AllureStory("Positive case - processes upgrade request")]
     public async Task ProcessUpgradeRequestAsync_ValidAccount_ReturnsTrue()
     {
-        
+
         var repository = GetInMemoryRepository();
         var account = _fixture.CreateAccount(upgradeRequest: true, accessLevel: AccessLevel.User);
 
         await repository.CreateAsync(account);
-         
+        await repository.SaveChangesAsync();
 
-        
+
+
         var result = await repository.ProcessUpgradeRequestAsync(account.Id, true);
 
-        
+
         result.Should().BeTrue();
     }
 
@@ -345,13 +359,13 @@ public class AccountRepositoryTests : IClassFixture<AccountFixture>
     [AllureStory("Negative case - account not found")]
     public async Task ProcessUpgradeRequestAsync_AccountNotExists_ReturnsFalse()
     {
-        
+
         var repository = GetInMemoryRepository();
 
-        
+
         var result = await repository.ProcessUpgradeRequestAsync(999, true);
 
-        
+
         result.Should().BeFalse();
     }
 }

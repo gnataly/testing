@@ -1,14 +1,14 @@
-﻿namespace TheatreCenter.DTOs.Role;
-using System.Text.Json.Serialization;
-using TheatreCenter.Domain.Enums;
+﻿//namespace TheatreCenter.DTOs;
+//using System.Text.Json.Serialization;
+//using TheatreCenter.Domain.Enums;
 
-public class UpdateRoleDTO
-{
-    public UpdateRoleDTO(RoleType roleType)
-    {
-        RoleType = roleType;
-    }
+//public class UpdateRoleDto
+//{
+//    public UpdateRoleDto(RoleType roleType)
+//    {
+//        RoleType = roleType;
+//    }
 
-    [JsonPropertyName("roleType")]
-    public RoleType RoleType { get; }
-}
+//    [JsonPropertyName("roleType")]
+//    public RoleType RoleType { get; }
+//}

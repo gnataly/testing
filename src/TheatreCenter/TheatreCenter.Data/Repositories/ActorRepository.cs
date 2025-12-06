@@ -1,194 +1,154 @@
-﻿using TheatreCenter.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using TheatreCenter.Data;
+using TheatreCenter.Domain;
 using TheatreCenter.Domain.Interfaces.Repositories;
 using TheatreCenter.Domain.Models;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using TheatreCenter.Domain.Enums;
-using Microsoft.Extensions.Logging;
 
 namespace TheatreCenter.Data.Repositories;
+
 public class ActorRepository : IActorRepository
 {
     private readonly AppDbContext _context;
-    private readonly ILogger<ActorRepository> _logger;
 
-    public ActorRepository(AppDbContext context, ILogger<ActorRepository> logger)
+    public ActorRepository(AppDbContext context)
     {
         _context = context;
-        _logger = logger;
     }
 
     public async Task<Actor?> GetByIdAsync(int id)
     {
-        _logger.LogInformation("Querying actor by ID: {ActorId}", id);
-        try
-        {
-            var actor = await _context.Actors.FindAsync(id);
-            _logger.LogDebug("Actor with ID {ActorId} was {Result}",
-                id, actor == null ? "not found" : "found");
-            return actor;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while fetching actor with ID: {ActorId}", id);
-            throw;
-        }
+        return await _context.Actors
+            .Include(a => a.ActorRoles)
+                .ThenInclude(ar => ar.Role)
+            .Include(a => a.CastMembers)
+            .FirstOrDefaultAsync(a => a.Id == id);
     }
 
-    public async Task<IEnumerable<Actor>> GetAllAsync()
+    public async Task<List<Actor>> GetAllAsync(ActorFilter filter)
     {
-        _logger.LogInformation("Fetching all actors");
-        try
+        var query = _context.Actors.AsQueryable();
+
+        if (!string.IsNullOrEmpty(filter.Search))
         {
-            var actors = await _context.Actors.ToListAsync();
-            _logger.LogInformation("Successfully retrieved {Count} actors", actors.Count);
-            return actors;
+            query = query.Where(a => a.Name.Contains(filter.Search));
         }
-        catch (Exception ex)
+
+        if (filter.VoiceType.HasValue)
         {
-            _logger.LogError(ex, "Error occurred while fetching all actors");
-            throw;
+            query = query.Where(a => a.VoiceType == filter.VoiceType.Value);
         }
+
+        if (filter.Gender.HasValue)
+        {
+            query = query.Where(a => a.Gender == filter.Gender.Value);
+        }
+
+        query = filter.Sort switch
+        {
+            "name_asc" => query.OrderBy(a => a.Name),
+            "name_desc" => query.OrderByDescending(a => a.Name),
+            "birthDate_asc" => query.OrderBy(a => a.BirthDate),
+            "birthDate_desc" => query.OrderByDescending(a => a.BirthDate),
+            "id_desc" => query.OrderByDescending(a => a.Id),
+            _ => query.OrderBy(a => a.Id)
+        };
+
+        var items = await query
+            .Skip((filter.Page - 1) * filter.PageSize)
+            .Take(filter.PageSize)
+            .ToListAsync();
+
+        return items;
+    }
+
+    public async Task<int> GetCountAsync(ActorFilter filter)
+    {
+        var query = _context.Actors.AsQueryable();
+
+        if (!string.IsNullOrEmpty(filter.Search))
+        {
+            query = query.Where(a => a.Name.Contains(filter.Search));
+        }
+
+        if (filter.VoiceType.HasValue)
+        {
+            query = query.Where(a => a.VoiceType == filter.VoiceType.Value);
+        }
+
+        if (filter.Gender.HasValue)
+        {
+            query = query.Where(a => a.Gender == filter.Gender.Value);
+        }
+
+        query = filter.Sort switch
+        {
+            "name_asc" => query.OrderBy(a => a.Name),
+            "name_desc" => query.OrderByDescending(a => a.Name),
+            "birthDate_asc" => query.OrderBy(a => a.BirthDate),
+            "birthDate_desc" => query.OrderByDescending(a => a.BirthDate),
+            "id_desc" => query.OrderByDescending(a => a.Id),
+            _ => query.OrderBy(a => a.Id)
+        };
+
+
+        return await query.CountAsync();
     }
 
     public async Task AddAsync(Actor actor)
     {
-        _logger.LogInformation("Adding new actor with ID: {ActorId}", actor.Id);
-        try
-        {
-            _context.Actors.AddAsync(actor);
-            await _context.SaveChangesAsync();
-            _logger.LogDebug("Actor with ID {ActorId} added to context", actor.Id);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while adding actor with ID: {ActorId}", actor.Id);
-            throw;
-        }
+        await _context.Actors.AddAsync(actor);
     }
 
     public async Task UpdateAsync(Actor actor)
     {
-        _logger.LogInformation("Updating actor with ID: {ActorId}", actor.Id);
-        try
-        {
-            _context.Actors.Update(actor);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation("Successfully updated actor with ID: {ActorId}", actor.Id);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while updating actor with ID: {ActorId}", actor.Id);
-            throw;
-        }
+        _context.Actors.Update(actor);
     }
 
     public async Task RemoveAsync(Actor actor)
     {
-        _logger.LogInformation("Removing actor with ID: {ActorId}", actor.Id);
-        try
-        {
-            _context.Actors.Remove(actor);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation("Successfully removed actor with ID: {ActorId}", actor.Id);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while removing actor with ID: {ActorId}", actor.Id);
-            throw;
-        }
+        _context.Actors.Remove(actor);
     }
 
     public async Task SaveChangesAsync()
     {
-        try
-        {
-            _logger.LogDebug("Saving changes to database");
-            await _context.SaveChangesAsync();
-            _logger.LogDebug("Changes saved successfully");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while saving changes");
-            throw;
-        }
+        await _context.SaveChangesAsync();
     }
 
     public async Task<IEnumerable<Actor>> GetByVoiceTypeAsync(VoiceType voiceType)
     {
-        _logger.LogInformation("Querying actors by voice type: {VoiceType}", voiceType);
-        try
-        {
-            var actors = await _context.Actors
-                .Where(a => a.VoiceType == voiceType)
-                .ToListAsync();
-            _logger.LogInformation("Found {Count} actors with voice type {VoiceType}",
-                actors.Count, voiceType);
-            return actors;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while querying actors by voice type: {VoiceType}",
-                voiceType);
-            throw;
-        }
+        return await _context.Actors
+            .Where(a => a.VoiceType == voiceType)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Actor>> GetActorsByRoleAsync(int roleId)
+    {
+        return await _context.Actors
+            .Where(a => a.ActorRoles.Any(ar => ar.RoleId == roleId))
+            .ToListAsync();
+    }
+
+    public async Task<bool> AddActorToRoleAsync(int actorId, int roleId)
+    {
+        var existing = await _context.ActorRoles
+            .FirstOrDefaultAsync(ar => ar.ActorId == actorId && ar.RoleId == roleId);
+
+        if (existing != null) return false;
+
+        var actorRole = new ActorRole(actorId, roleId);
+        await _context.ActorRoles.AddAsync(actorRole);
+        return true;
+    }
+
+    public async Task<bool> RemoveActorFromRoleAsync(int actorId, int roleId)
+    {
+        var actorRole = await _context.ActorRoles
+            .FirstOrDefaultAsync(ar => ar.ActorId == actorId && ar.RoleId == roleId);
+
+        if (actorRole == null) return false;
+
+        _context.ActorRoles.Remove(actorRole);
+        return true;
     }
 }
-
-//public class ActorRepository : IActorRepository
-//{
-//    private readonly AppDbContext _context;
-
-//    public ActorRepository(AppDbContext context)
-//    {
-//        _context = context;
-//    }
-
-//    public async Task<Actor?> GetByIdAsync(int id)
-//    {
-//        return await _context.Actors.FindAsync(id);
-//    }
-
-//    public async Task<IEnumerable<Actor>> GetAllAsync()
-//    {
-//        return await _context.Actors.ToListAsync();
-//    }
-
-//    public async Task AddAsync(Actor actor)
-//    {
-//        await _context.Actors.AddAsync(actor);
-//    }
-
-//    public async Task UpdateAsync(Actor actor)
-//    {
-//        _context.Actors.Update(actor);
-//        await _context.SaveChangesAsync();
-//    }
-
-//    public async Task RemoveAsync(Actor actor)
-//    {
-//        _context.Actors.Remove(actor);
-//        await _context.SaveChangesAsync();
-//    }
-
-//    public async Task SaveChangesAsync()
-//    {
-//        //try
-//        //{
-//        //    await _context.SaveChangesAsync();
-//        //}
-//        //catch (DbUpdateException ex)
-//        //{
-//        //    Console.WriteLine(ex.InnerException?.Message);
-//        //    return StatusCode(500, "Ошибка при сохранении: " + ex.InnerException?.Message);
-//        //}
-//        await _context.SaveChangesAsync();
-//    }
-
-//    public async Task<IEnumerable<Actor>> GetByVoiceTypeAsync(VoiceType voiceType)
-//    {
-//        return await _context.Actors.Where(a => a.VoiceType == voiceType).ToListAsync();
-//    }
-//}

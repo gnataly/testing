@@ -1,5 +1,6 @@
 ﻿using Allure.Xunit.Attributes;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using TheatreCenter.Domain.Enums;
 using TheatreCenter.Domain.Interfaces.Repositories;
@@ -18,6 +19,7 @@ public class RoleServiceMockTests : IClassFixture<RoleFixture>
 {
     private readonly Mock<IRoleRepository> _roleRepositoryMock;
     private readonly Mock<IMusicalRepository> _musicalRepositoryMock;
+    private readonly Mock<ILogger<RoleService>> _loggerMock;
     private readonly RoleService _sut;
     private readonly RoleFixture _fixture;
 
@@ -26,7 +28,8 @@ public class RoleServiceMockTests : IClassFixture<RoleFixture>
         _fixture = fixture;
         _roleRepositoryMock = new Mock<IRoleRepository>();
         _musicalRepositoryMock = new Mock<IMusicalRepository>();
-        _sut = new RoleService(_roleRepositoryMock.Object, _musicalRepositoryMock.Object);
+        _loggerMock = new Mock<ILogger<RoleService>>();
+        _sut = new RoleService(_roleRepositoryMock.Object, _musicalRepositoryMock.Object, _loggerMock.Object);
     }
 
     [Fact]
@@ -233,11 +236,83 @@ public class RoleServiceMockTests : IClassFixture<RoleFixture>
     [AllureStory("Negative case - invalid musical ID")]
     public async Task GetByMusicalIdAsync_InvalidId_ThrowsArgumentException()
     {
-        
+
         var invalidId = 0;
 
-        
+
         await Assert.ThrowsAsync<ArgumentException>(() => _sut.GetByMusicalIdAsync(invalidId));
         _roleRepositoryMock.Verify(repo => repo.GetByMusicalIdAsync(It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    [AllureFeature("GetAllAsync")]
+    [AllureStory("Positive case - roles exist")]
+    public async Task GetAllAsync_RolesExist_ReturnsRoles()
+    {
+        var filter = new RoleFilter();
+        var roles = new List<Role>
+        {
+            _fixture.CreateRole(),
+            _fixture.CreateRole()
+        };
+
+        _roleRepositoryMock
+            .Setup(repo => repo.GetAllAsync(filter))
+            .ReturnsAsync(roles);
+
+
+        var result = await _sut.GetAllAsync(filter);
+
+
+        result.Should().HaveCount(2);
+        _roleRepositoryMock.Verify(repo => repo.GetAllAsync(filter), Times.Once);
+    }
+
+    [Fact]
+    [AllureFeature("GetByRoleTypeAsync")]
+    [AllureStory("Positive case - roles found by type")]
+    public async Task GetByRoleTypeAsync_ValidType_ReturnsRoles()
+    {
+        var roleType = RoleType.Main;
+        var roles = new List<Role>
+        {
+            _fixture.CreateRole(roleType: roleType),
+            _fixture.CreateRole(roleType: roleType)
+        };
+
+        _roleRepositoryMock
+            .Setup(repo => repo.GetByRoleTypeAsync(roleType))
+            .ReturnsAsync(roles);
+
+
+        var result = await _sut.GetByRoleTypeAsync(roleType);
+
+
+        result.Should().HaveCount(2);
+        _roleRepositoryMock.Verify(repo => repo.GetByRoleTypeAsync(roleType), Times.Once);
+    }
+
+    [Fact]
+    [AllureFeature("GetActorRolesAsync")]
+    [AllureStory("Positive case - roles found for actor")]
+    public async Task GetActorRolesAsync_ValidActorId_ReturnsRoles()
+    {
+        var actorId = 1;
+        var roles = new List<Role>
+        {
+            _fixture.CreateRole(),
+            _fixture.CreateRole()
+        };
+
+        _roleRepositoryMock
+            .Setup(repo => repo.GetActorRolesAsync(actorId))
+            .ReturnsAsync(roles);
+
+
+        var result = await _sut.GetActorRolesAsync(actorId);
+
+
+        result.Should().HaveCount(2);
+        _roleRepositoryMock.Verify(repo => repo.GetActorRolesAsync(actorId), Times.Once);
     }
 }

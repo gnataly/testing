@@ -1,5 +1,6 @@
 ﻿using Allure.Xunit.Attributes;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using TheatreCenter.Domain.Enums;
 using TheatreCenter.Domain.Interfaces.Repositories;
@@ -18,6 +19,8 @@ public class MusicalServiceMockTests : IClassFixture<MusicalFixture>
 {
     private readonly Mock<IMusicalRepository> _musicalRepositoryMock;
     private readonly Mock<ITheatreRepository> _theatreRepositoryMock;
+    private readonly Mock<IAccountRepository> _accountRepositoryMock;
+    private readonly Mock<ILogger<MusicalService>> _loggerMock;
     private readonly MusicalService _sut;
     private readonly MusicalFixture _fixture;
 
@@ -26,7 +29,9 @@ public class MusicalServiceMockTests : IClassFixture<MusicalFixture>
         _fixture = fixture;
         _musicalRepositoryMock = new Mock<IMusicalRepository>();
         _theatreRepositoryMock = new Mock<ITheatreRepository>();
-        _sut = new MusicalService(_musicalRepositoryMock.Object, _theatreRepositoryMock.Object);
+        _accountRepositoryMock = new Mock<IAccountRepository>();
+        _loggerMock = new Mock<ILogger<MusicalService>>();
+        _sut = new MusicalService(_musicalRepositoryMock.Object, _theatreRepositoryMock.Object, _accountRepositoryMock.Object, _loggerMock.Object);
     }
 
     [Fact]
@@ -34,7 +39,7 @@ public class MusicalServiceMockTests : IClassFixture<MusicalFixture>
     [AllureStory("Positive case - musical exists")]
     public async Task GetMusicalByIdAsync_MusicalExists_ReturnsMusical()
     {
-        
+
         var musicalId = 1;
         var expectedMusical = _fixture.CreateMusical(id: musicalId);
 
@@ -42,13 +47,43 @@ public class MusicalServiceMockTests : IClassFixture<MusicalFixture>
             .Setup(repo => repo.GetByIdAsync(musicalId))
             .ReturnsAsync(expectedMusical);
 
-        
+
         var result = await _sut.GetMusicalByIdAsync(musicalId);
 
-        
+
         result.Should().NotBeNull();
         result.Should().BeEquivalentTo(expectedMusical);
         _musicalRepositoryMock.Verify(repo => repo.GetByIdAsync(musicalId), Times.Once);
+    }
+
+    [Fact]
+    [AllureFeature("GetMusicalByIdAsync")]
+    [AllureStory("Positive case - musical exists with current user")]
+    public async Task GetMusicalByIdAsync_MusicalExistsWithCurrentUser_ReturnsMusical()
+    {
+
+        var musicalId = 1;
+        var userId = 100;
+        var expectedMusical = _fixture.CreateMusical(id: musicalId);
+        var isFavorite = true;
+
+        _musicalRepositoryMock
+            .Setup(repo => repo.GetByIdAsync(musicalId))
+            .ReturnsAsync(expectedMusical);
+
+        _accountRepositoryMock
+            .Setup(repo => repo.IsFavoriteMusicalAsync(userId, musicalId))
+            .ReturnsAsync(isFavorite);
+
+
+        var result = await _sut.GetMusicalByIdAsync(musicalId, userId);
+
+
+        result.Should().NotBeNull();
+        result.Should().BeEquivalentTo(expectedMusical);
+        result!.IsFavorite.Should().Be(isFavorite);
+        _musicalRepositoryMock.Verify(repo => repo.GetByIdAsync(musicalId), Times.Once);
+        _accountRepositoryMock.Verify(repo => repo.IsFavoriteMusicalAsync(userId, musicalId), Times.Once);
     }
 
     [Fact]
@@ -205,40 +240,77 @@ public class MusicalServiceMockTests : IClassFixture<MusicalFixture>
     }
 
     [Fact]
-    [AllureFeature("GetMusicalsByTheatreAsync")]
-    [AllureStory("Positive case - musicals found")]
-    public async Task GetMusicalsByTheatreAsync_ValidId_ReturnsMusicals()
+    [AllureFeature("GetAllMusicalsAsync")]
+    [AllureStory("Positive case - musicals exist")]
+    public async Task GetAllMusicalsAsync_MusicalsExist_ReturnsMusicals()
     {
-        
-        var theatreId = 1;
+        var filter = new MusicalFilter();
         var musicals = new List<Musical>
         {
-            _fixture.CreateMusical(theatreId: theatreId),
-            _fixture.CreateMusical(theatreId: theatreId)
+            _fixture.CreateMusical(),
+            _fixture.CreateMusical()
         };
 
         _musicalRepositoryMock
-            .Setup(repo => repo.GetByTheatreIdAsync(theatreId))
+            .Setup(repo => repo.GetAllAsync(filter))
             .ReturnsAsync(musicals);
 
-        
-        var result = await _sut.GetMusicalsByTheatreAsync(theatreId);
 
-        
+        var result = await _sut.GetAllMusicalsAsync(filter);
+
+
         result.Should().HaveCount(2);
-        _musicalRepositoryMock.Verify(repo => repo.GetByTheatreIdAsync(theatreId), Times.Once);
+        _musicalRepositoryMock.Verify(repo => repo.GetAllAsync(filter), Times.Once);
     }
 
     [Fact]
-    [AllureFeature("GetMusicalsByTheatreAsync")]
-    [AllureStory("Negative case - invalid theatre ID")]
-    public async Task GetMusicalsByTheatreAsync_InvalidId_ThrowsArgumentException()
+    [AllureFeature("GetAllMusicalsAsync")]
+    [AllureStory("Positive case - musicals exist with current user")]
+    public async Task GetAllMusicalsAsync_MusicalsExistWithCurrentUser_ReturnsMusicals()
     {
-        
-        var invalidId = 0;
+        var userId = 100;
+        var filter = new MusicalFilter();
+        var musicals = new List<Musical>
+        {
+            _fixture.CreateMusical(),
+            _fixture.CreateMusical()
+        };
 
-        
-        await Assert.ThrowsAsync<ArgumentException>(() => _sut.GetMusicalsByTheatreAsync(invalidId));
-        _musicalRepositoryMock.Verify(repo => repo.GetByTheatreIdAsync(It.IsAny<int>()), Times.Never);
+        _musicalRepositoryMock
+            .Setup(repo => repo.GetAllAsync(filter))
+            .ReturnsAsync(musicals);
+
+        _accountRepositoryMock
+            .Setup(repo => repo.IsFavoriteMusicalAsync(userId, It.IsAny<int>()))
+            .ReturnsAsync(true);
+
+
+        var result = await _sut.GetAllMusicalsAsync(filter, userId);
+
+
+        result.Should().HaveCount(2);
+        result.Should().Match<List<Musical>>(list => list.All(m => m.IsFavorite == true));
+        _musicalRepositoryMock.Verify(repo => repo.GetAllAsync(filter), Times.Once);
+        _accountRepositoryMock.Verify(repo => repo.IsFavoriteMusicalAsync(userId, It.IsAny<int>()), Times.Exactly(2));
+    }
+
+    [Fact]
+    [AllureFeature("GetCountAsync")]
+    [AllureStory("Positive case - count returned")]
+    public async Task GetCountAsync_MusicalsExist_ReturnsCount()
+    {
+        var filter = new MusicalFilter();
+        var expectedCount = 5;
+
+        _musicalRepositoryMock
+            .Setup(repo => repo.GetCountAsync(filter))
+            .ReturnsAsync(expectedCount);
+
+
+        var result = await _sut.GetCountAsync(filter);
+
+
+        result.Should().Be(expectedCount);
+        _musicalRepositoryMock.Verify(repo => repo.GetCountAsync(filter), Times.Once);
     }
 }

@@ -51,15 +51,18 @@ public class ShowRepositoryIt : IntegrationTestBase
     {
         var theatre = _theatreFixture.CreateTheatre();
         await _theatreRepository.AddAsync(theatre);
+        await _theatreRepository.SaveChangesAsync();
 
         var musical = _musicalFixture.CreateMusical(theatreId: theatre.Id);
         await _musicalRepository.AddAsync(musical);
+        await _musicalRepository.SaveChangesAsync();
 
         var show = _showFixture.CreateShow(
             musicalId: musical.Id,
             date: DateTime.UtcNow.AddDays(7));
 
         await _showRepository.AddAsync(show);
+        await _showRepository.SaveChangesAsync();
 
         var created = await _showRepository.GetByIdAsync(show.Id);
         created.Should().NotBeNull();
@@ -69,6 +72,7 @@ public class ShowRepositoryIt : IntegrationTestBase
         var newDate = DateTime.UtcNow.AddDays(14);
         created.Date = newDate;
         await _showRepository.UpdateAsync(created);
+        await _showRepository.SaveChangesAsync();
 
         var updated = await _showRepository.GetByIdAsync(show.Id);
         updated!.Date.Should().BeCloseTo(newDate, TimeSpan.FromSeconds(1));
@@ -82,6 +86,7 @@ public class ShowRepositoryIt : IntegrationTestBase
         upcomingShows.Should().ContainSingle(s => s.Id == show.Id);
 
         await _showRepository.RemoveAsync(updated);
+        await _showRepository.SaveChangesAsync();
 
         var deleted = await _showRepository.GetByIdAsync(show.Id);
         deleted.Should().BeNull();

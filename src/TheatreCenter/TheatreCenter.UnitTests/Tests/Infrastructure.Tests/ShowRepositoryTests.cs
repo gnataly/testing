@@ -1,8 +1,9 @@
-﻿using Allure.Xunit.Attributes;
+using Allure.Xunit.Attributes;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using TheatreCenter.Data;
 using TheatreCenter.Data.Repositories;
+using TheatreCenter.Domain.Enums;
 using TheatreCenter.Domain.Models;
 using TheatreCenter.Tests.Fixtures;
 using TheatreCenter.UnitTests;
@@ -36,17 +37,34 @@ public class ShowRepositoryTests : IClassFixture<ShowFixture>
     [AllureStory("Positive case - show exists")]
     public async Task GetByIdAsync_ShowExists_ReturnsShow()
     {
-        
-        var repository = GetInMemoryRepository();
-        var show = _fixture.CreateShow();
+        var contextOptions = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        var context = new AppDbContext(contextOptions);
 
-        await repository.AddAsync(show);
-         
+        var theatreRepository = new TheatreRepository(context);
+        var musicalRepository = new MusicalRepository(context);
+        var showRepository = new ShowRepository(context);
 
-        
-        var result = await repository.GetByIdAsync(show.Id);
+        var theatre = new Theatre(1, "Test Theatre", "Test Info");
+        await theatreRepository.AddAsync(theatre);
+        await theatreRepository.SaveChangesAsync();
 
-        
+        var musical = new Musical(1, "Test Musical", "Test Description", TimeSpan.FromHours(2),
+                      AgeRestriction.EighteenPlus, 1);
+        await musicalRepository.AddAsync(musical);
+        await musicalRepository.SaveChangesAsync();
+
+        var show = _fixture.CreateShow(musicalId: 1);
+
+        await showRepository.AddAsync(show);
+        await showRepository.SaveChangesAsync();
+
+
+
+        var result = await showRepository.GetByIdAsync(show.Id);
+
+
         result.Should().NotBeNull();
         result.Id.Should().Be(show.Id);
         result.MusicalId.Should().Be(show.MusicalId);
@@ -57,13 +75,13 @@ public class ShowRepositoryTests : IClassFixture<ShowFixture>
     [AllureStory("Negative case - show not found")]
     public async Task GetByIdAsync_ShowNotExists_ReturnsNull()
     {
-        
+
         var repository = GetInMemoryRepository();
 
-        
+
         var result = await repository.GetByIdAsync(999);
 
-        
+
         result.Should().BeNull();
     }
 
@@ -72,19 +90,36 @@ public class ShowRepositoryTests : IClassFixture<ShowFixture>
     [AllureStory("Positive case - returns all shows")]
     public async Task GetAllAsync_ShowsExist_ReturnsShows()
     {
-        
-        var repository = GetInMemoryRepository();
-        var show1 = _fixture.CreateShow();
-        var show2 = _fixture.CreateShow();
+        var contextOptions = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        var context = new AppDbContext(contextOptions);
 
-        await repository.AddAsync(show1);
-        await repository.AddAsync(show2);
-         
+        var theatreRepository = new TheatreRepository(context);
+        var musicalRepository = new MusicalRepository(context);
+        var showRepository = new ShowRepository(context);
 
-        
-        var result = await repository.GetAllAsync();
+        var theatre = new Theatre(1, "Test Theatre", "Test Info");
+        await theatreRepository.AddAsync(theatre);
+        await theatreRepository.SaveChangesAsync();
 
-        
+        var musical = new Musical(1, "Test Musical", "Test Description", TimeSpan.FromHours(2),
+                      AgeRestriction.EighteenPlus, 1);
+        await musicalRepository.AddAsync(musical);
+        await musicalRepository.SaveChangesAsync();
+
+        var show1 = _fixture.CreateShow(musicalId: 1);
+        var show2 = _fixture.CreateShow(musicalId: 1);
+
+        await showRepository.AddAsync(show1);
+        await showRepository.AddAsync(show2);
+        await showRepository.SaveChangesAsync();
+
+
+
+        var result = await showRepository.GetAllAsync(new ShowFilter());
+
+
         result.Should().HaveCount(2);
     }
 
@@ -93,13 +128,13 @@ public class ShowRepositoryTests : IClassFixture<ShowFixture>
     [AllureStory("Negative case - no shows")]
     public async Task GetAllAsync_NoShows_ReturnsEmpty()
     {
-        
+
         var repository = GetInMemoryRepository();
 
-        
-        var result = await repository.GetAllAsync();
 
-        
+        var result = await repository.GetAllAsync(new ShowFilter());
+
+
         result.Should().BeEmpty();
     }
 
@@ -108,16 +143,32 @@ public class ShowRepositoryTests : IClassFixture<ShowFixture>
     [AllureStory("Positive case - adds show")]
     public async Task AddAsync_ValidShow_AddsToDatabase()
     {
-        
-        var repository = GetInMemoryRepository();
-        var show = _fixture.CreateShow();
+        var contextOptions = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        var context = new AppDbContext(contextOptions);
 
-        
-        await repository.AddAsync(show);
-         
+        var theatreRepository = new TheatreRepository(context);
+        var musicalRepository = new MusicalRepository(context);
+        var showRepository = new ShowRepository(context);
 
-        
-        var result = await repository.GetByIdAsync(show.Id);
+        var theatre = new Theatre(1, "Test Theatre", "Test Info");
+        await theatreRepository.AddAsync(theatre);
+        await theatreRepository.SaveChangesAsync();
+
+        var musical = new Musical(1, "Test Musical", "Test Description", TimeSpan.FromHours(2),
+                      AgeRestriction.EighteenPlus, 1);
+        await musicalRepository.AddAsync(musical);
+        await musicalRepository.SaveChangesAsync();
+
+        var show = _fixture.CreateShow(musicalId: 1);
+
+        await showRepository.AddAsync(show);
+        await showRepository.SaveChangesAsync();
+
+
+
+        var result = await showRepository.GetByIdAsync(show.Id);
         result.Should().NotBeNull();
     }
 
@@ -126,22 +177,40 @@ public class ShowRepositoryTests : IClassFixture<ShowFixture>
     [AllureStory("Positive case - updates show")]
     public async Task UpdateAsync_ValidShow_UpdatesSuccessfully()
     {
-        
-        var repository = GetInMemoryRepository();
-        var show = _fixture.CreateShow();
+        var contextOptions = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        var context = new AppDbContext(contextOptions);
 
-        await repository.AddAsync(show);
-        
+        var theatreRepository = new TheatreRepository(context);
+        var musicalRepository = new MusicalRepository(context);
+        var showRepository = new ShowRepository(context);
 
-        var existingShow = await repository.GetByIdAsync(show.Id);
+        var theatre = new Theatre(1, "Test Theatre", "Test Info");
+        await theatreRepository.AddAsync(theatre);
+        await theatreRepository.SaveChangesAsync();
+
+        var musical = new Musical(1, "Test Musical", "Test Description", TimeSpan.FromHours(2),
+                      AgeRestriction.EighteenPlus, 1);
+        await musicalRepository.AddAsync(musical);
+        await musicalRepository.SaveChangesAsync();
+
+        var show = _fixture.CreateShow(musicalId: 1);
+
+        await showRepository.AddAsync(show);
+        await showRepository.SaveChangesAsync();
+
+
+        var existingShow = await showRepository.GetByIdAsync(show.Id);
         var newDate = DateTime.UtcNow.AddDays(14);
         existingShow.Date = newDate;
 
-        
-        await repository.UpdateAsync(existingShow);
 
-        
-        var result = await repository.GetByIdAsync(show.Id);
+        await showRepository.UpdateAsync(existingShow);
+        await showRepository.SaveChangesAsync();
+
+
+        var result = await showRepository.GetByIdAsync(show.Id);
         result.Date.Should().BeCloseTo(newDate, TimeSpan.FromSeconds(1));
     }
 
@@ -150,18 +219,20 @@ public class ShowRepositoryTests : IClassFixture<ShowFixture>
     [AllureStory("Positive case - removes show")]
     public async Task RemoveAsync_ShowExists_RemovesShow()
     {
-        
+
         var repository = GetInMemoryRepository();
         var show = _fixture.CreateShow();
 
         await repository.AddAsync(show);
-        
+        await repository.SaveChangesAsync();
 
-        
+
+
         await repository.RemoveAsync(show);
-        
+        await repository.SaveChangesAsync();
 
-        
+
+
         var result = await repository.GetByIdAsync(show.Id);
         result.Should().BeNull();
     }
@@ -171,22 +242,44 @@ public class ShowRepositoryTests : IClassFixture<ShowFixture>
     [AllureStory("Positive case - returns shows by musical")]
     public async Task GetByMusicalIdAsync_ValidMusicalId_ReturnsShows()
     {
-        
-        var repository = GetInMemoryRepository();
+        var contextOptions = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        var context = new AppDbContext(contextOptions);
+
+        var theatreRepository = new TheatreRepository(context);
+        var musicalRepository = new MusicalRepository(context);
+        var showRepository = new ShowRepository(context);
+
+        var theatre1 = new Theatre(1, "Test Theatre 1", "Test Info");
+        var theatre2 = new Theatre(2, "Test Theatre 2", "Test Info");
+        await theatreRepository.AddAsync(theatre1);
+        await theatreRepository.AddAsync(theatre2);
+        await theatreRepository.SaveChangesAsync();
+
+        var musical1 = new Musical(1, "Test Musical 1", "Test Description", TimeSpan.FromHours(2),
+                      AgeRestriction.EighteenPlus, 1);
+        var musical2 = new Musical(2, "Test Musical 2", "Test Description", TimeSpan.FromHours(2),
+                      AgeRestriction.EighteenPlus, 2);
+        await musicalRepository.AddAsync(musical1);
+        await musicalRepository.AddAsync(musical2);
+        await musicalRepository.SaveChangesAsync();
+
         var musicalId = 1;
         var show1 = _fixture.CreateShow(musicalId: musicalId);
         var show2 = _fixture.CreateShow(musicalId: musicalId);
         var show3 = _fixture.CreateShow(musicalId: 2);
 
-        await repository.AddAsync(show1);
-        await repository.AddAsync(show2);
-        await repository.AddAsync(show3);
-        
+        await showRepository.AddAsync(show1);
+        await showRepository.AddAsync(show2);
+        await showRepository.AddAsync(show3);
+        await showRepository.SaveChangesAsync();
 
-        
-        var result = await repository.GetByMusicalIdAsync(musicalId);
 
-        
+
+        var result = await showRepository.GetByMusicalIdAsync(musicalId);
+
+
         result.Should().HaveCount(2);
         result.All(s => s.MusicalId == musicalId).Should().BeTrue();
     }
@@ -196,17 +289,18 @@ public class ShowRepositoryTests : IClassFixture<ShowFixture>
     [AllureStory("Negative case - no shows for musical")]
     public async Task GetByMusicalIdAsync_NoShowsForMusical_ReturnsEmpty()
     {
-        
+
         var repository = GetInMemoryRepository();
         var show = _fixture.CreateShow(musicalId: 1);
 
         await repository.AddAsync(show);
-        
+        await repository.SaveChangesAsync();
 
-        
+
+
         var result = await repository.GetByMusicalIdAsync(999);
 
-        
+
         result.Should().BeEmpty();
     }
 
@@ -215,19 +309,36 @@ public class ShowRepositoryTests : IClassFixture<ShowFixture>
     [AllureStory("Positive case - returns upcoming shows")]
     public async Task GetUpcomingShowsAsync_FutureShowsExist_ReturnsShows()
     {
-        
-        var repository = GetInMemoryRepository();
-        var futureShow1 = _fixture.CreateShow(futureDate: true);
-        var futureShow2 = _fixture.CreateShow(futureDate: true);
+        var contextOptions = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        var context = new AppDbContext(contextOptions);
 
-        await repository.AddAsync(futureShow1);
-        await repository.AddAsync(futureShow2);
-        
+        var theatreRepository = new TheatreRepository(context);
+        var musicalRepository = new MusicalRepository(context);
+        var showRepository = new ShowRepository(context);
 
-        
-        var result = await repository.GetUpcomingShowsAsync();
+        var theatre = new Theatre(1, "Test Theatre", "Test Info");
+        await theatreRepository.AddAsync(theatre);
+        await theatreRepository.SaveChangesAsync();
 
-        
+        var musical = new Musical(1, "Test Musical", "Test Description", TimeSpan.FromHours(2),
+                      AgeRestriction.EighteenPlus, 1);
+        await musicalRepository.AddAsync(musical);
+        await musicalRepository.SaveChangesAsync();
+
+        var futureShow1 = _fixture.CreateShow(futureDate: true, musicalId: 1);
+        var futureShow2 = _fixture.CreateShow(futureDate: true, musicalId: 1);
+
+        await showRepository.AddAsync(futureShow1);
+        await showRepository.AddAsync(futureShow2);
+        await showRepository.SaveChangesAsync();
+
+
+
+        var result = await showRepository.GetUpcomingShowsAsync();
+
+
         result.Should().HaveCount(2);
         result.All(s => s.Date >= DateTime.UtcNow).Should().BeTrue();
     }
@@ -237,17 +348,18 @@ public class ShowRepositoryTests : IClassFixture<ShowFixture>
     [AllureStory("Negative case - no upcoming shows")]
     public async Task GetUpcomingShowsAsync_NoFutureShows_ReturnsEmpty()
     {
-        
+
         var repository = GetInMemoryRepository();
         var pastShow = _fixture.CreateShow(futureDate: false);
 
         await repository.AddAsync(pastShow);
-        
+        await repository.SaveChangesAsync();
 
-        
+
+
         var result = await repository.GetUpcomingShowsAsync();
 
-        
+
         result.Should().BeEmpty();
     }
 }

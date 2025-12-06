@@ -40,7 +40,8 @@ public class MusicalServiceIt : IntegrationTestBase
         var context = await Fixture.CreateTransactionalContextAsync();
         var musicalRepository = Fixture.CreateRepository<MusicalRepository>(context);
         _theatreRepository = Fixture.CreateRepository<TheatreRepository>(context);
-        _service = new MusicalService(musicalRepository, _theatreRepository);
+        var accountRepository = Fixture.CreateRepository<AccountRepository>(context);
+        _service = new MusicalService(musicalRepository, _theatreRepository, accountRepository, new NullLogger<MusicalService>());
 
         _commitTransaction = async () => {
             await context.Database.CommitTransactionAsync();
@@ -62,6 +63,7 @@ public class MusicalServiceIt : IntegrationTestBase
     {
         var theatre = _theatreFixture.CreateTheatre();
         await _theatreRepository.AddAsync(theatre);
+        await _theatreRepository.SaveChangesAsync();
 
         var testMusical = _musicalFixture.CreateMusical(
             duration: TimeSpan.FromHours(2),
@@ -89,13 +91,7 @@ public class MusicalServiceIt : IntegrationTestBase
         updateResult.Should().NotBeNull();
         updateResult.Title.Should().Be(updatedMusical.Title);
 
-        var musicalsByTheatre = await _service.GetMusicalsByTheatreAsync(testMusical.TheatreId);
-        musicalsByTheatre.Should().Contain(m => m.Id == createdMusical.Id);
-
-        var musicalsByAge = await _service.GetMusicalsByAgeRestrictionAsync(AgeRestriction.TwelvePlus);
-        musicalsByAge.Should().Contain(m => m.Id == createdMusical.Id);
-
-        var allMusicals = await _service.GetAllMusicalsAsync();
+        var allMusicals = await _service.GetAllMusicalsAsync(new MusicalFilter(), null);
         allMusicals.Should().Contain(m => m.Id == createdMusical.Id);
 
         var deleteResult = await _service.DeleteMusicalAsync(createdMusical.Id);

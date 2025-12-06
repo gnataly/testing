@@ -40,6 +40,9 @@ namespace TheatreCenter.Domain.Models
         [Required(ErrorMessage = "ID театра обязательно")]
         public int TheatreId { get; set; }
 
+        [NotMapped]
+        public bool IsFavorite { get; set; }
+
         //public DateTime UpdatedAt { get; set; }
 
         public Theatre? Theatre { get; set; }

@@ -13,7 +13,8 @@ using TheatreCenter.Services.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Serilog.Sinks.SystemConsole.Themes;
+using Microsoft.Extensions.Hosting;
+using TheatreCenter.Domain.Models;
 
 
 
@@ -34,7 +35,7 @@ public class Program
 
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Information()
-            .WriteTo.Console(theme: AnsiConsoleTheme.Code)
+            .WriteTo.Console()
             .WriteTo.File("logs/theatrecenter-.txt", rollingInterval: RollingInterval.Day)
             .CreateLogger();
 
@@ -59,23 +60,92 @@ public class Program
             });
 
 
+
+            //builder.Services.AddApiVersioning(options =>
+            //{
+            //    options.DefaultApiVersion = new Microsoft.AspNetCore.Mvc.ApiVersion(1, 0);
+            //    options.AssumeDefaultVersionWhenUnspecified = true;
+            //    options.ReportApiVersions = true;
+            //});
+
+            //builder.Services.AddVersionedApiExplorer(options =>
+            //{
+            //    options.GroupNameFormat = "'v'VVV";
+            //    options.SubstituteApiVersionInUrl = true;
+            //});
+
+
             builder.Services.AddEndpointsApiExplorer();
 
+            //builder.Services.AddSwaggerGen(c =>
+            //{
+            //    c.SwaggerDoc("v1", new OpenApiInfo
+            //    {
+            //        Title = "TheatreCenter API",
+            //        Version = "v1",
+            //        Description = "API for managing theatrical productions",
+            //        Contact = new OpenApiContact
+            //        {
+            //            Name = "Theatre Center",
+            //            Email = "support@theatrecenter.com"
+            //        }
+            //    });
+            //    c.EnableAnnotations();
+
+
+            //    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            //    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            //    if (File.Exists(xmlPath))
+            //    {
+            //        c.IncludeXmlComments(xmlPath);
+            //    }
+            //});
+
+            // Обновить настройки Swagger в Program.cs
             builder.Services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Title = "TheatreCenter API",
                     Version = "v1",
-                    Description = "API for managing theatrical productions",
                     Contact = new OpenApiContact
                     {
                         Name = "Theatre Center",
                         Email = "support@theatrecenter.com"
                     }
                 });
-                c.EnableAnnotations();
 
+                //c.SwaggerDoc("v1", new OpenApiInfo
+                //{
+                //    Title = "CoffeeShops API",
+                //    Version = "v1",
+                //    Description = "REST API для системы управления кофейнями, напитками и пользователями",
+                //});
+
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] {}
+                    }
+                });
+
+                c.EnableAnnotations();
 
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
@@ -156,51 +226,155 @@ public class Program
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 });
 
+            //builder.Services.AddApiVersioning(options =>
+            //{
+            //    options.DefaultApiVersion = new Microsoft.AspNetCore.Mvc.ApiVersion(1, 0);
+            //    options.AssumeDefaultVersionWhenUnspecified = true;
+            //    options.ReportApiVersions = true;
+            //});
+
+            //builder.Services.AddVersionedApiExplorer(options =>
+            //{
+            //    options.GroupNameFormat = "'v'VVV";
+            //    options.SubstituteApiVersionInUrl = true;
+            //});
+
             //var app = builder.Build();
 
             //builder.Services.AddCors();
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("ReactPolicy", policy =>
+                //options.AddPolicy("AllowAll", policy =>
+                //{
+                //    policy.WithOrigins("http://localhost:5173")
+                //          .AllowAnyMethod()
+                //          .AllowAnyHeader();
+                //});
+                options.AddPolicy("AllowAll", policy =>
                 {
-                    policy.WithOrigins("http://localhost:5173")
+                    policy.AllowAnyOrigin()
                           .AllowAnyMethod()
                           .AllowAnyHeader();
                 });
             });
             var app = builder.Build();
 
+            //app.UseSwagger();
+            //app.UseSwaggerUI(c =>
+            //{
+            //    c.SwaggerEndpoint("/swagger/v1/swagger.json", "CoffeeShops API v1");
+            //    c.RoutePrefix = "api/v1"; // Swagger будет по /api/v1
+            //});
 
 
-
-            if (app.Environment.IsDevelopment())
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
             {
-
-                app.UseSwagger();
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "TheatreCenter API V1");
-                    c.RoutePrefix = "swagger";
-                    c.DisplayOperationId();
-                    c.DisplayRequestDuration();
-                    c.ConfigObject.DisplayRequestDuration = true;
-                });
-                //app.UseSwaggerUI(c =>
-                //{
-                //    c.SwaggerEndpoint("/swagger/v1/swagger.json", "TheatreCenter API V1");
-                //    c.DisplayOperationId();
-                //    c.DisplayRequestDuration();
-                //});
-            }
-            else
-            {
-                app.UseExceptionHandler("/error");
-            }
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "TheatreCenter API V1");
+                c.RoutePrefix = "swagger";
+                c.DisplayOperationId();
+                c.DisplayRequestDuration();
+            });
 
 
+            //if (app.Environment.IsDevelopment())
+            //{
+            //// Рабочая версия:
+            //app.UseSwagger();
+            //app.UseSwaggerUI(c =>
+            //{
+            //    c.SwaggerEndpoint("/swagger/v1/swagger.json", "TheatreCenter API V1");
+            //    c.RoutePrefix = "swagger";
+            //    c.DisplayOperationId();
+            //    c.DisplayRequestDuration();
+            //});
+
+
+
+
+
+            //app.UseSwagger(c =>
+            //{
+            //    c.RouteTemplate = "swagger/{documentName}/swagger.json";
+            //    c.PreSerializeFilters.Add((swagger, httpReq) =>
+            //    {
+            //        swagger.Servers = new List<OpenApiServer>
+            //        {
+            //            new OpenApiServer { Url = $"{httpReq.Scheme}://{httpReq.Host.Value}/api/v1" }
+            //        };
+            //    });
+            //});
+
+            //app.UseSwaggerUI(c =>
+            //{
+            //    c.SwaggerEndpoint("/api/v1/swagger/swagger.json", "API V1");
+            //    c.RoutePrefix = "api/v1/swagger";
+            //});
+
+            //    app.UseSwagger(c =>
+            //    {
+            //        c.RouteTemplate = "swagger/{documentName}/swagger.json";
+            //        c.PreSerializeFilters.Add((swaggerDoc, httpReq) =>
+            //        {
+            //            swaggerDoc.Servers = new List<OpenApiServer>
+            //{
+            //    new OpenApiServer {
+            //        Url = $"{httpReq.Scheme}://{httpReq.Host.Value}/api/v1",
+            //        Description = "API Server"
+            //    }
+            //};
+            //        });
+            //    });
+
+            //    app.UseSwaggerUI(c =>
+            //    {
+            //        c.SwaggerEndpoint("/api/v1/swagger/v1/swagger.json", "TheatreCenter API V1");
+            //        c.RoutePrefix = "api/v1/swagger";
+            //        c.DisplayOperationId();
+            //        c.DisplayRequestDuration();
+            //    });
+            //}
+            //else
+            //{
+            //    app.UseExceptionHandler("/error");
+            //}
+
+
+
+
+
+            //if (app.Environment.IsDevelopment())
+            //{
+            //    app.UsePathBase("/api/v1");
+
+            //    app.UseSwagger(c =>
+            //    {
+            //        c.RouteTemplate = "swagger/{documentName}/swagger.json";
+            //        c.PreSerializeFilters.Add((swaggerDoc, httpReq) =>
+            //        {
+            //            swaggerDoc.Servers = new List<OpenApiServer>
+            //{
+            //    new OpenApiServer { Url = $"{httpReq.Scheme}://{httpReq.Host.Value}/api/v1" }
+            //};
+            //        });
+            //    });
+
+            //    app.UseSwaggerUI(c =>
+            //    {
+            //        c.SwaggerEndpoint("/api/v1/swagger/v1/swagger.json", "TheatreCenter API V1");
+            //        c.RoutePrefix = "api/v1/swagger";
+            //    });
+            //}
+
+
+
+
+
+
+            //app.UsePathBase(new PathString("/api/v1"));
 
             app.UseHttpsRedirection();
-            app.UseCors("ReactPolicy");
+            app.UseCors("AllowAll");
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
@@ -224,7 +398,7 @@ public class Program
                 }
             }
 
-            app.MapGet("/", () => "TheatreCenter Backend is running!");
+            //app.MapGet("/", () => "TheatreCenter Backend is running!");
             app.Run();
         }
         catch (Exception ex)

@@ -1,19 +1,18 @@
-﻿using System.Text.Json.Serialization;
+﻿//using System.Text.Json.Serialization;
 
-namespace TheatreCenter.DTOs.Favorite
-{
-    public class RemoveFavoriteDTO
-    {
-        public RemoveFavoriteDTO(int accountId, int targetId)
-        {
-            AccountId = accountId;
-            TargetId = targetId;
-        }
+//namespace TheatreCenter.DTOs;
 
-        [JsonPropertyName("accountId")]
-        public int AccountId { get; }
+//public class RemoveFavoriteDto
+//{
+//    public RemoveFavoriteDto(int accountId, int targetId)
+//    {
+//        AccountId = accountId;
+//        TargetId = targetId;
+//    }
 
-        [JsonPropertyName("targetId")]
-        public int TargetId { get; }
-    }
-}
+//    [JsonPropertyName("accountId")]
+//    public int AccountId { get; }
+
+//    [JsonPropertyName("targetId")]
+//    public int TargetId { get; }
+//}

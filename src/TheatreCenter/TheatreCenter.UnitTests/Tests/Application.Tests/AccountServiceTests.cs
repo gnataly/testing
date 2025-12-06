@@ -1,5 +1,6 @@
 ﻿using Allure.Xunit.Attributes;
 using FluentAssertions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using TheatreCenter.Domain.Enums;
@@ -18,7 +19,7 @@ namespace TheatreCenter.Tests.Services;
 public class AccountServiceMockTests : IClassFixture<AccountFixture>
 {
     private readonly Mock<IAccountRepository> _accountRepositoryMock;
-    private readonly Mock<ILogger<AccountService>> _loggerMock;
+    private readonly Mock<IConfiguration> _configurationMock;
     private readonly AccountService _sut;
     private readonly AccountFixture _fixture;
 
@@ -26,8 +27,8 @@ public class AccountServiceMockTests : IClassFixture<AccountFixture>
     {
         _fixture = fixture;
         _accountRepositoryMock = new Mock<IAccountRepository>();
-        _loggerMock = new Mock<ILogger<AccountService>>();
-        _sut = new AccountService(_accountRepositoryMock.Object);
+        _configurationMock = new Mock<IConfiguration>();
+        _sut = new AccountService(_accountRepositoryMock.Object, _configurationMock.Object);
     }
 
     [Fact]
@@ -100,17 +101,15 @@ public class AccountServiceMockTests : IClassFixture<AccountFixture>
     [AllureStory("Negative case - invalid password")]
     public async Task AuthenticateAsync_InvalidPassword_ThrowsUnauthorizedAccessException()
     {
-        
+
         var username = "testuser";
-        var passwordHash = "hashedpassword";
         var wrongPasswordHash = "wrongpassword";
-        var account = _fixture.CreateAccount(username: username, passwordHash: passwordHash);
 
         _accountRepositoryMock
             .Setup(repo => repo.AuthenticateAsync(username, wrongPasswordHash))
-            .ReturnsAsync(account);
+            .ReturnsAsync((Account?)null);
 
-        
+
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
             _sut.AuthenticateAsync(username, wrongPasswordHash));
     }
@@ -138,7 +137,7 @@ public class AccountServiceMockTests : IClassFixture<AccountFixture>
     [AllureStory("Positive case - new user")]
     public async Task RegisterAsync_NewUser_ReturnsAccount()
     {
-        
+
         var username = "newuser";
         var passwordHash = "hashedpassword";
 
@@ -149,10 +148,10 @@ public class AccountServiceMockTests : IClassFixture<AccountFixture>
             .Setup(repo => repo.CreateAsync(It.IsAny<Account>()))
             .Returns(Task.CompletedTask);
 
-        
+
         var result = await _sut.RegisterAsync(username, passwordHash);
 
-        
+
         result.Should().NotBeNull();
         result.Username.Should().Be(username);
         result.PasswordHash.Should().Be(passwordHash);
@@ -162,10 +161,39 @@ public class AccountServiceMockTests : IClassFixture<AccountFixture>
 
     [Fact]
     [AllureFeature("RegisterAsync")]
+    [AllureStory("Positive case - new user with access level")]
+    public async Task RegisterAsync_NewUserWithAccessLevel_ReturnsAccount()
+    {
+
+        var username = "newuser";
+        var passwordHash = "hashedpassword";
+        var accessLevel = AccessLevel.Admin;
+
+        _accountRepositoryMock
+            .Setup(repo => repo.GetByUsernameAsync(username))
+            .ReturnsAsync((Account?)null);
+        _accountRepositoryMock
+            .Setup(repo => repo.CreateAsync(It.IsAny<Account>()))
+            .Returns(Task.CompletedTask);
+
+
+        var result = await _sut.RegisterAsync(username, passwordHash, accessLevel);
+
+
+        result.Should().NotBeNull();
+        result.Username.Should().Be(username);
+        result.PasswordHash.Should().Be(passwordHash);
+        result.AccessLevel.Should().Be(accessLevel);
+        _accountRepositoryMock.Verify(repo => repo.GetByUsernameAsync(username), Times.Once);
+        _accountRepositoryMock.Verify(repo => repo.CreateAsync(It.IsAny<Account>()), Times.Once);
+    }
+
+    [Fact]
+    [AllureFeature("RegisterAsync")]
     [AllureStory("Negative case - username exists")]
     public async Task RegisterAsync_UsernameExists_ThrowsArgumentException()
     {
-        
+
         var username = "existinguser";
         var passwordHash = "hashedpassword";
         var existingAccount = _fixture.CreateAccount(username: username);
@@ -174,7 +202,7 @@ public class AccountServiceMockTests : IClassFixture<AccountFixture>
             .Setup(repo => repo.GetByUsernameAsync(username))
             .ReturnsAsync(existingAccount);
 
-        
+
         await Assert.ThrowsAsync<ArgumentException>(() =>
             _sut.RegisterAsync(username, passwordHash));
         _accountRepositoryMock.Verify(repo => repo.CreateAsync(It.IsAny<Account>()), Times.Never);

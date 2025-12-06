@@ -1,424 +1,306 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using TheatreCenter.Domain.Enums;
-using TheatreCenter.Domain.Models;
-using TheatreCenter.DTOs.Account;
-using TheatreCenter.DTOs.Favorite;
+﻿using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
+using TheatreCenter.DTOs;
 using TheatreCenter.Services.Interfaces.Services;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using System.ComponentModel.DataAnnotations;
+using TheatreCenter.Domain.Models;
 
-namespace TheatreCenter.Backend.WebAPI.Controllers
+namespace TheatreCenter.Backend.WebAPI.Controllers;
+
+[ApiController]
+[Route("/api/v1/accounts")]
+public class AccountsController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class AccountsController : ControllerBase
+    private readonly IAccountService _accountService;
+    private readonly ILogger<AccountsController> _logger;
+
+    public AccountsController(IAccountService accountService, ILogger<AccountsController> logger)
     {
-        private readonly IAccountService _accountService;
-        private readonly IConfiguration _configuration;
+        _accountService = accountService;
+        _logger = logger;
+    }
 
-        public AccountsController(IAccountService accountService, IConfiguration configuration)
+    [HttpGet]
+    [Authorize(Policy = "AdminOnly")]
+    [SwaggerOperation(
+        OperationId = "GetAllAccounts",
+        Summary = "Получить все аккаунты с фильтрацией",
+        Description = "Получить пагинированный список всех аккаунтов с возможностью фильтрации по запросам на повышение (только для администраторов)")]
+    [SwaggerResponse(200, "Успешное получение списка аккаунтов", typeof(AccountListDto))]
+    [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+    [SwaggerResponse(403, "Запрещено", typeof(ErrorDto))]
+    public async Task<IActionResult> GetAllAccounts([FromQuery] bool? upgradeRequest, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    {
+        try
         {
-            _accountService = accountService;
-            _configuration = configuration;
-        }
-
-        [HttpPost("auth/login")]
-        [AllowAnonymous]
-        public async Task<IActionResult> Login([FromBody] AuthDTO authDto)
-        {
-            try
+            var filter = new AccountFilter
             {
-                var account = await _accountService.AuthenticateAsync(authDto.Username, authDto.PasswordHash);
-
-                if (account == null)
-                    return Unauthorized("Invalid username or password");
-
-                var token = GenerateJwtToken(account);
-
-                return Ok(new AuthResponse
-                {
-                    Token = token,
-                    Account = new AccountDTO(
-                        account.Id,
-                        account.Username,
-                        account.LastFavoritesViewDate,
-                        account.AccessLevel,
-                        false)
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpPost("auth/register")]
-        [AllowAnonymous]
-        public async Task<IActionResult> Register([FromBody] AuthDTO authDto)
-        {
-            try
-            {
-                var account = await _accountService.RegisterAsync(
-                    authDto.Username,
-                    authDto.PasswordHash,
-                    AccessLevel.User);
-
-                var token = GenerateJwtToken(account);
-
-                return Ok(new AuthResponse
-                {
-                    Token = token,
-                    Account = new AccountDTO(
-                        account.Id,
-                        account.Username,
-                        account.LastFavoritesViewDate,
-                        account.AccessLevel,
-                        false)
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpGet("{id}")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetById(int id)
-        {
-            try
-            {
-                var account = await _accountService.GetByIdAsync(id);
-                if (account == null)
-                    return NotFound();
-
-                return Ok(new AccountDTO(
-                    account.Id,
-                    account.Username,
-                    account.LastFavoritesViewDate,
-                    account.AccessLevel,
-                    false));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpGet]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetAll()
-        {
-            try
-            {
-                var accounts = await _accountService.GetAllAsync();
-                var accountDtos = accounts.Select(a => new AccountDTO(
-                    a.Id,
-                    a.Username,
-                    a.LastFavoritesViewDate,
-                    a.AccessLevel,
-                    false));
-
-                return Ok(accountDtos);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpPut("{id}")]
-        [Authorize(Policy = "AdminOrUser")]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateAccountDTO updateDto)
-        {
-            try
-            {
-                // Проверка, что пользователь обновляет только свой аккаунт (если он не админ)
-                var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-                if (currentUserId != id && !User.IsInRole(AccessLevel.Admin.ToString()))
-                {
-                    return Forbid();
-                }
-
-                var account = await _accountService.GetByIdAsync(id);
-                if (account == null)
-                    return NotFound();
-
-                account.Username = updateDto.Username;
-
-                await _accountService.UpdateAsync(account);
-
-                return Ok(new AccountDTO(
-                    account.Id,
-                    account.Username,
-                    account.LastFavoritesViewDate,
-                    account.AccessLevel,
-                    false));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpDelete("{id}")]
-        [Authorize(Policy = "AdminOrUser")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            try
-            {
-                await _accountService.DeleteAsync(id);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpPost("{accountId}/favorites/actors/{actorId}")]
-        [Authorize(Policy = "AdminOrUser")]
-        public async Task<IActionResult> AddFavoriteActor([FromBody] AddFavoriteDTO addFavoriteDTO)
-        {
-            try
-            {
-                int accountId = addFavoriteDTO.AccountId;
-                int actorId = addFavoriteDTO.TargetId;
-                // Проверка, что пользователь изменяет только свои избранные
-                var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-                if (currentUserId != accountId && !User.IsInRole(AccessLevel.Admin.ToString()))
-                {
-                    return Forbid();
-                }
-
-                var result = await _accountService.AddFavoriteActorAsync(accountId, actorId);
-                return result ? Ok() : NotFound();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpDelete("{accountId}/favorites/actors/{actorId}")]
-        [Authorize(Policy = "AdminOrUser")]
-        public async Task<IActionResult> RemoveFavoriteActor([FromBody] RemoveFavoriteDTO removeFavoriteDTO)
-        {
-            int accountId = removeFavoriteDTO.AccountId;
-            int actorId = removeFavoriteDTO.TargetId;
-            try
-            {
-                var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-                if (currentUserId != accountId && !User.IsInRole(AccessLevel.Admin.ToString()))
-                {
-                    return Forbid();
-                }
-
-                var result = await _accountService.RemoveFavoriteActorAsync(accountId, actorId);
-                return result ? Ok() : NotFound();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpPost("{accountId}/favorites/musicals/{musicalId}")]
-        [Authorize(Policy = "AdminOrUser")]
-        public async Task<IActionResult> AddFavoriteMusical([FromBody] AddFavoriteDTO addFavoriteDTO)
-        {
-            try
-            {
-                int accountId = addFavoriteDTO.AccountId;
-                int musicalId = addFavoriteDTO.TargetId;
-                var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-                if (currentUserId != accountId && !User.IsInRole(AccessLevel.Admin.ToString()))
-                {
-                    return Forbid();
-                }
-
-                var result = await _accountService.AddFavoriteMusicalAsync(accountId, musicalId);
-                return result ? Ok() : NotFound();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpDelete("{accountId}/favorites/musicals/{musicalId}")]
-        [Authorize(Policy = "AdminOrUser")]
-        public async Task<IActionResult> RemoveFavoriteMusical([FromBody] RemoveFavoriteDTO removeFavoriteDTO)
-        {
-            try
-            {
-                int accountId = removeFavoriteDTO.AccountId;
-                int musicalId = removeFavoriteDTO.TargetId;
-                var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-                if (currentUserId != accountId && !User.IsInRole(AccessLevel.Admin.ToString()))
-                {
-                    return Forbid();
-                }
-
-                var result = await _accountService.RemoveFavoriteMusicalAsync(accountId, musicalId);
-                return result ? Ok() : NotFound();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpPost("{accountId}/favorites/theatres/{theatreId}")]
-        [Authorize(Policy = "AdminOrUser")]
-        public async Task<IActionResult> AddFavoriteTheatre([FromBody] AddFavoriteDTO addFavoriteDTO)
-        {
-            try
-            {
-                int accountId = addFavoriteDTO.AccountId;
-                int theatreId = addFavoriteDTO.TargetId;
-                var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-                if (currentUserId != accountId && !User.IsInRole(AccessLevel.Admin.ToString()))
-                {
-                    return Forbid();
-                }
-
-                var result = await _accountService.AddFavoriteTheatreAsync(accountId, theatreId);
-                return result ? Ok() : NotFound();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpDelete("{accountId}/favorites/theatres/{theatreId}")]
-        [Authorize(Policy = "AdminOrUser")]
-        public async Task<IActionResult> RemoveFavoriteTheatre([FromBody] RemoveFavoriteDTO removeFavoriteDTO)
-        {
-            try
-            {
-                int accountId = removeFavoriteDTO.AccountId;
-                int theatreId = removeFavoriteDTO.TargetId;
-                var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-                if (currentUserId != accountId && !User.IsInRole(AccessLevel.Admin.ToString()))
-                {
-                    return Forbid();
-                }
-
-                var result = await _accountService.RemoveFavoriteTheatreAsync(accountId, theatreId);
-                return result ? Ok() : NotFound();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpGet("{accountId}/favorites")]
-        [Authorize(Policy = "AdminOrUser")]
-        public async Task<IActionResult> GetFavorites(int accountId)
-        {
-            try
-            {
-                var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-                if (currentUserId != accountId && !User.IsInRole(AccessLevel.Admin.ToString()))
-                {
-                    return Forbid();
-                }
-
-                var favorites = await _accountService.GetFavoritesAsync(accountId);
-                return Ok(favorites);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        private string GenerateJwtToken(Account account)
-        {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Secret"]);
-
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new[]
-                {
-                    new Claim(ClaimTypes.NameIdentifier, account.Id.ToString()),
-                    new Claim(ClaimTypes.Name, account.Username),
-                    new Claim(ClaimTypes.Role, account.AccessLevel.ToString())
-                }),
-                Expires = DateTime.UtcNow.AddDays(7),
-                SigningCredentials = new SigningCredentials(
-                    new SymmetricSecurityKey(key),
-                    SecurityAlgorithms.HmacSha256Signature)
+                Page = page,
+                PageSize = pageSize,
+                UpgradeRequest = upgradeRequest
             };
 
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
-        }
+            var result = await _accountService.GetAllAsync(filter);
 
+            var totalCount = result.Count();
+            var items = result
+                .OrderBy(a => a.Id)
+                .Skip((filter.Page - 1) * filter.PageSize)
+                .Take(filter.PageSize)
+                .ToList();
 
-        [HttpPost("{id}/upgrade-request")]
-        [Authorize(Policy = "AdminOrUser")]
-        public async Task<IActionResult> SubmitUpgradeRequest(int id)
-        {
-            try
+            var accountDtos = items.Select(a => new AccountDto
             {
-                var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-                if (currentUserId != id)
+                Id = a.Id,
+                Username = a.Username,
+                LastFavoritesViewDate = a.LastFavoritesViewDate,
+                AccessLevel = a.AccessLevel,
+                UpgradeRequest = a.UpgradeRequest
+            }).ToList();
+
+            var response = new AccountListDto
+            {
+                Items = accountDtos,
+                Pagination = new PaginationDto
                 {
-                    return Forbid();
+                    Page = filter.Page,
+                    PageSize = filter.PageSize,
+                    TotalCount = totalCount
                 }
+            };
 
-                var result = await _accountService.SubmitUpgradeRequestAsync(id);
-                return result ? Ok() : NotFound();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return Ok(response);
         }
-
-        [HttpGet("upgrade-requests")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetUpgradeRequests()
+        catch (Exception ex)
         {
-            try
-            {
-                var accounts = await _accountService.GetAccountsWithUpgradeRequestAsync();
-                var accountDtos = accounts.Select(a => new AccountDTO(
-                    a.Id,
-                    a.Username,
-                    a.LastFavoritesViewDate,
-                    a.AccessLevel,
-                    a.UpgradeRequest));
-
-                return Ok(accountDtos);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            _logger.LogError(ex, "Internal Server Error");
+            return StatusCode(500, new ErrorDto("InternalServerError", "Internal server error"));
         }
+    }
 
-        [HttpPost("{id}/process-upgrade")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> ProcessUpgradeRequest(int id, [FromBody] bool isApproved)
+    [HttpGet("{accountId}")]
+    [Authorize(Policy = "AdminOrUser")]
+    [SwaggerOperation(
+        OperationId = "GetAccountByAccountId",
+        Summary = "Получить аккаунт по ID",
+        Description = "Получить информацию об аккаунте по его ID (пользователи могут получать только свой аккаунт)")]
+    [SwaggerResponse(200, "Успешное получение аккаунта", typeof(AccountDto))]
+    [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+    [SwaggerResponse(403, "Запрещено", typeof(ErrorDto))]
+    [SwaggerResponse(404, "Ресурс не найден", typeof(ErrorDto))]
+    public async Task<IActionResult> GetAccountByAccountId([Required][FromRoute] int accountId)
+    {
+        try
         {
-            try
+            var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var isAdmin = User.IsInRole("Admin");
+
+            // Users can only access their own account unless they are admin
+            if (currentUserId != accountId && !isAdmin)
             {
-                var result = await _accountService.ProcessUpgradeRequestAsync(id, isApproved);
-                return result ? Ok() : NotFound();
+                return Forbid();
             }
-            catch (Exception ex)
+
+            var account = await _accountService.GetByIdAsync(accountId);
+            if (account == null)
             {
-                return BadRequest(ex.Message);
+                return NotFound(new ErrorDto("NotFound", "Account not found"));
             }
+
+            var accountDto = new AccountDto
+            {
+                Id = account.Id,
+                Username = account.Username,
+                LastFavoritesViewDate = account.LastFavoritesViewDate,
+                AccessLevel = account.AccessLevel,
+                UpgradeRequest = account.UpgradeRequest
+            };
+
+            return Ok(accountDto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Internal Server Error");
+            return StatusCode(500, new ErrorDto("InternalServerError", "Internal server error"));
+        }
+    }
+
+    [HttpPut("{accountId}")]
+    [Authorize(Policy = "AdminOrUser")]
+    [SwaggerOperation(
+        OperationId = "UpdateAccountByAccountId",
+        Summary = "Обновить аккаунт",
+        Description = "Обновить информацию аккаунта (пользователи могут обновлять только свой аккаунт)")]
+    [SwaggerResponse(200, "Аккаунт успешно обновлен", typeof(AccountDto))]
+    [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+    [SwaggerResponse(403, "Запрещено", typeof(ErrorDto))]
+    [SwaggerResponse(400, "Ошибка валидации", typeof(ErrorDto))]
+    public async Task<IActionResult> UpdateAccountByAccountId([Required][FromRoute] int accountId, [Required][FromBody] UpdateAccountRequestDto updateAccountRequestDto)
+    {
+        try
+        {
+            var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var isAdmin = User.IsInRole("Admin");
+
+            // Users can only update their own account unless they are admin
+            if (currentUserId != accountId && !isAdmin)
+            {
+                return Forbid();
+            }
+
+            var account = await _accountService.GetByIdAsync(accountId);
+            if (account == null)
+            {
+                return NotFound(new ErrorDto("NotFound", "Account not found"));
+            }
+
+            account.Username = updateAccountRequestDto.Username;
+            account.ChangePassword(updateAccountRequestDto.PasswordHash);
+
+            await _accountService.UpdateAsync(account);
+
+            var accountDto = new AccountDto
+            {
+                Id = account.Id,
+                Username = account.Username,
+                LastFavoritesViewDate = account.LastFavoritesViewDate,
+                AccessLevel = account.AccessLevel,
+                UpgradeRequest = account.UpgradeRequest
+            };
+
+            return Ok(accountDto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Internal Server Error");
+            return StatusCode(500, new ErrorDto("InternalServerError", "Internal server error"));
+        }
+    }
+
+    [HttpDelete("{accountId}")]
+    [Authorize(Policy = "AdminOrUser")]
+    [SwaggerOperation(
+        OperationId = "DeleteAccountByAccountId",
+        Summary = "Удалить аккаунт",
+        Description = "Удалить аккаунт (пользователи могут удалять только свой аккаунт)")]
+    [SwaggerResponse(204, "Аккаунт успешно удален")]
+    [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+    [SwaggerResponse(403, "Запрещено", typeof(ErrorDto))]
+    [SwaggerResponse(404, "Ресурс не найден", typeof(ErrorDto))]
+    public async Task<IActionResult> DeleteAccountByAccountId([Required][FromRoute] int accountId)
+    {
+        try
+        {
+            var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var isAdmin = User.IsInRole("Admin");
+
+            // Users can only delete their own account unless they are admin
+            if (currentUserId != accountId && !isAdmin)
+            {
+                return Forbid();
+            }
+
+            var account = await _accountService.GetByIdAsync(accountId);
+            if (account == null)
+            {
+                return NotFound(new ErrorDto("NotFound", "Account not found"));
+            }
+
+            await _accountService.DeleteAsync(accountId);
+
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Internal Server Error");
+            return StatusCode(500, new ErrorDto("InternalServerError", "Internal server error"));
+        }
+    }
+
+    [HttpPost("{accountId}/upgrade_request")]
+    [Authorize(Policy = "AdminOrUser")]
+    [SwaggerOperation(
+        OperationId = "CreateUpgradeRequestByAccountId",
+        Summary = "Запросить повышение прав доступа",
+        Description = "Отправить запрос на повышение прав доступа до администратора")]
+    [SwaggerResponse(200, "Запрос на повышение успешно отправлен", typeof(AccountDto))]
+    [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+    [SwaggerResponse(403, "Запрещено", typeof(ErrorDto))]
+    [SwaggerResponse(404, "Ресурс не найден", typeof(ErrorDto))]
+    public async Task<IActionResult> CreateUpgradeRequestByAccountId([Required][FromRoute] int accountId)
+    {
+        try
+        {
+            var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+
+            if (currentUserId != accountId)
+            {
+                return Forbid();
+            }
+
+            var result = await _accountService.SubmitUpgradeRequestAsync(accountId);
+            if (!result)
+            {
+                return NotFound(new ErrorDto("NotFound", "Account not found"));
+            }
+
+            var account = await _accountService.GetByIdAsync(accountId);
+            var accountDto = new AccountDto
+            {
+                Id = account.Id,
+                Username = account.Username,
+                LastFavoritesViewDate = account.LastFavoritesViewDate,
+                AccessLevel = account.AccessLevel,
+                UpgradeRequest = account.UpgradeRequest
+            };
+
+            return Ok(accountDto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Internal Server Error");
+            return StatusCode(500, new ErrorDto("InternalServerError", "Internal server error"));
+        }
+    }
+
+    [HttpPost("{accountId}/upgrade_approval")]
+    [Authorize(Policy = "AdminOnly")]
+    [SwaggerOperation(
+        OperationId = "UpgradeApprovalByAccountId",
+        Summary = "Одобрить/отклонить запрос на повышение прав",
+        Description = "Одобрить или отклонить запрос на повышение прав доступа (только для администраторов)")]
+    [SwaggerResponse(200, "Запрос на повышение успешно обработан", typeof(AccountDto))]
+    [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+    [SwaggerResponse(403, "Запрещено", typeof(ErrorDto))]
+    [SwaggerResponse(404, "Ресурс не найден", typeof(ErrorDto))]
+    public async Task<IActionResult> UpgradeApprovalByAccountId([Required][FromRoute] int accountId, [Required][FromBody] UpgradeRequestDto upgradeRequestDto)
+    {
+        try
+        {
+            var result = await _accountService.ProcessUpgradeRequestAsync(accountId, upgradeRequestDto.IsApproved);
+            if (!result)
+            {
+                return NotFound(new ErrorDto("NotFound", "Account not found"));
+            }
+
+            var account = await _accountService.GetByIdAsync(accountId);
+            var accountDto = new AccountDto
+            {
+                Id = account.Id,
+                Username = account.Username,
+                LastFavoritesViewDate = account.LastFavoritesViewDate,
+                AccessLevel = account.AccessLevel,
+                UpgradeRequest = account.UpgradeRequest
+            };
+
+            return Ok(accountDto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Internal Server Error");
+            return StatusCode(500, new ErrorDto("InternalServerError", "Internal server error"));
         }
     }
 }

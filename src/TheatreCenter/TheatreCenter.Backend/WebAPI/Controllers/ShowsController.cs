@@ -1,193 +1,241 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using TheatreCenter.Domain.Models;
-using TheatreCenter.DTOs.Show;
+using TheatreCenter.DTOs;
 using TheatreCenter.Services.Interfaces.Services;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using TheatreCenter.Domain.Models;
+using System.ComponentModel.DataAnnotations;
+using TheatreCenter.Domain.Enums;
 
-namespace TheatreCenter.Backend.WebAPI.Controllers
+namespace TheatreCenter.Backend.WebAPI.Controllers;
+
+[ApiController]
+[Route("/api/v1/shows")]
+public class ShowsController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class ShowsController : ControllerBase
+    private readonly IShowService _showService;
+    private readonly ILogger<ShowsController> _logger;
+
+    public ShowsController(IShowService showService, ILogger<ShowsController> logger)
     {
-        private readonly IShowService _showService;
+        _showService = showService;
+        _logger = logger;
+    }
 
-
-        public ShowsController(IShowService showService)
+    [HttpGet]
+    [SwaggerOperation(
+        OperationId = "GetAllShows",
+        Summary = "Получить все показы с фильтрацией",
+        Description = "Получить пагинированный список показов с возможностью фильтрации по различным параметрам, включая участие конкретного актера")]
+    [SwaggerResponse(200, "Успешное получение списка показов", typeof(ShowListDto))]
+    [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+    [SwaggerResponse(400, "Ошибка валидации", typeof(ErrorDto))]
+    public async Task<IActionResult> GetAllShows(
+        [FromQuery] int? musicalId,
+        [FromQuery] int? actorId,
+        [FromQuery] DateTime? dateFrom,
+        [FromQuery] DateTime? dateTo,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] SortType sort = SortType.date_asc)
+    {
+        try
         {
-            _showService = showService;
+            var filter = new ShowFilter
+            {
+                Page = page,
+                PageSize = pageSize,
+                MusicalId = musicalId,
+                ActorId = actorId,
+                DateFrom = dateFrom,
+                DateTo = dateTo,
+                Sort = sort.ToString()
+            };
+
+            var result = await _showService.GetAllAsync(filter);
+
+            var totalCount = result.Count();
+            var items = result
+                .OrderBy(a => a.Id)
+                .Skip((filter.Page - 1) * filter.PageSize)
+                .Take(filter.PageSize)
+                .ToList();
+
+            var showDtos = items.Select(s => new ShowDto
+            {
+                Id = s.Id,
+                Date = s.Date,
+                MusicalId = s.MusicalId
+            }).ToList();
+
+            var response = new ShowListDto
+            {
+                Items = showDtos,
+                Pagination = new PaginationDto
+                {
+                    Page = filter.Page,
+                    PageSize = filter.PageSize,
+                    TotalCount = totalCount
+                }
+            };
+
+            return Ok(response);
         }
-
-        [HttpGet("{id}")]
-        [SwaggerOperation(
-            OperationId = "GetShowById",
-            Summary = "Get show by ID",
-            Description = "Returns a single show with the specified ID")]
-        [SwaggerResponse(200, "Show found", typeof(ShowDTO))]
-        [SwaggerResponse(404, "Show not found")]
-        [SwaggerResponse(500, "Server error")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetById(int id)
+        catch (Exception ex)
         {
-            try
-            {
-                var show = await _showService.GetByIdAsync(id);
-                var showDto = new ShowDTO(
-                    show.Id,
-                    show.Date,
-                    show.MusicalId
-
-                );
-                return Ok(showDto);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound();
-            }
+            _logger.LogError(ex, "Internal Server Error");
+            return StatusCode(500, new ErrorDto("InternalServerError", "Internal server error"));
         }
+    }
 
-        [HttpGet]
-        [SwaggerOperation(
-            OperationId = "GetAllShows",
-            Summary = "Get all shows",
-            Description = "Returns a list of all shows")]
-        [SwaggerResponse(200, "List of shows", typeof(IEnumerable<ShowDTO>))]
-        [SwaggerResponse(500, "Server error")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetAll()
+    [HttpPost]
+    [Authorize(Policy = "AdminOnly")]
+    [SwaggerOperation(
+        OperationId = "CreateShow",
+        Summary = "Создать новый показ",
+        Description = "Создать новый показ (только для администраторов)")]
+    [SwaggerResponse(201, "Показ успешно создан", typeof(ShowDto))]
+    [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+    [SwaggerResponse(403, "Запрещено", typeof(ErrorDto))]
+    [SwaggerResponse(400, "Ошибка валидации", typeof(ErrorDto))]
+    public async Task<IActionResult> CreateShow([Required][FromBody] CreateShowRequestDto createShowRequestDto)
+    {
+        try
         {
-            var shows = await _showService.GetAllAsync();
-            var showDtos = shows.Select(s => new ShowDTO(
-                s.Id,
-                s.Date,
-                s.MusicalId
-            ));
-            return Ok(showDtos);
+            var show = new Show(
+                id: 0,
+                date: createShowRequestDto.Date,
+                musicalId: createShowRequestDto.MusicalId
+            );
+
+            var createdShow = await _showService.CreateAsync(show);
+
+            var showDto = new ShowDto
+            {
+                Id = createdShow.Id,
+                Date = createdShow.Date,
+                MusicalId = createdShow.MusicalId
+            };
+
+            return CreatedAtAction(nameof(GetShowByShowId), new { showId = showDto.Id }, showDto);
         }
-
-        [HttpPost]
-        [SwaggerOperation(
-            OperationId = "CreateShow",
-            Summary = "Create new show",
-            Description = "Creates a new show with the provided data")]
-        [SwaggerResponse(201, "Show created", typeof(ShowDTO))]
-        [SwaggerResponse(400, "Invalid input")]
-        [SwaggerResponse(500, "Server error")]
-        [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> Create([FromBody] CreateShowDTO createDto)
+        catch (Exception ex)
         {
-            try
-            {
-                var show = new Show(
-                    0,
-                    createDto.Date,
-                    createDto.MusicalId
-                );
-
-                var createdShow = await _showService.CreateAsync(show);
-                var showDto = new ShowDTO(
-                    createdShow.Id,
-                    createdShow.Date,
-                    createdShow.MusicalId
-                );
-
-                return CreatedAtAction(nameof(GetById), new { id = showDto.Id }, showDto);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            _logger.LogError(ex, "Internal Server Error");
+            return BadRequest(new ErrorDto("ValidationError", ex.Message));
         }
+    }
 
-        [HttpPut("{id}")]
-        [SwaggerOperation(
-            OperationId = "UpdateShow",
-            Summary = "Update show",
-            Description = "Updates an existing show with the provided data")]
-        [SwaggerResponse(200, "Show updated", typeof(ShowDTO))]
-        [SwaggerResponse(400, "Invalid input")]
-        [SwaggerResponse(404, "Show not found")]
-        [SwaggerResponse(500, "Server error")]
-        [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateShowDTO updateDto)
+    [HttpGet("{showId}")]
+    [SwaggerOperation(
+        OperationId = "GetShowByShowId",
+        Summary = "Получить показ по ID",
+        Description = "Получить информацию о показе по его ID")]
+    [SwaggerResponse(200, "Успешное получение показа", typeof(ShowDto))]
+    [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+    [SwaggerResponse(404, "Ресурс не найден", typeof(ErrorDto))]
+    public async Task<IActionResult> GetShowByShowId([Required][FromRoute] int showId)
+    {
+        try
         {
-            try
-            {
-                var existingShow = await _showService.GetByIdAsync(id);
+            var show = await _showService.GetByIdAsync(showId);
 
-                existingShow.Date = updateDto.Date;
-
-                var updatedShow = await _showService.UpdateAsync(existingShow);
-                var showDto = new ShowDTO(
-                    updatedShow.Id,
-                    updatedShow.Date,
-                    updatedShow.MusicalId
-                );
-
-                return Ok(showDto);
-            }
-            catch (KeyNotFoundException)
+            var showDto = new ShowDto
             {
-                return NotFound();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+                Id = show.Id,
+                Date = show.Date,
+                MusicalId = show.MusicalId
+            };
+
+            return Ok(showDto);
         }
-
-        [HttpDelete("{id}")]
-        [SwaggerOperation(
-            OperationId = "DeleteShow",
-            Summary = "Delete show",
-            Description = "Deletes a show with the specified ID")]
-        [SwaggerResponse(204, "Show deleted")]
-        [SwaggerResponse(400, "Cannot delete show")]
-        [SwaggerResponse(404, "Show not found")]
-        [SwaggerResponse(500, "Server error")]
-        [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> Delete(int id)
+        catch (KeyNotFoundException ex)
         {
-            try
-            {
-                await _showService.DeleteAsync(id);
-                return NoContent();
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return NotFound(new ErrorDto("NotFound", ex.Message));
         }
-
-        [HttpGet("musical/{musicalId}")]
-        [SwaggerOperation(
-            OperationId = "GetShowsByMusical",
-            Summary = "Get shows by musical",
-            Description = "Returns shows for a specific musical")]
-        [SwaggerResponse(200, "List of shows", typeof(IEnumerable<ShowDTO>))]
-        [SwaggerResponse(500, "Server error")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetByMusical(int musicalId)
+        catch (Exception ex)
         {
-            try
+            _logger.LogError(ex, "Internal Server Error");
+            return StatusCode(500, new ErrorDto("InternalServerError", "Internal server error"));
+        }
+    }
+
+    [HttpPut("{showId}")]
+    [Authorize(Policy = "AdminOnly")]
+    [SwaggerOperation(
+        OperationId = "UpdateShowByShowId",
+        Summary = "Обновить показ",
+        Description = "Обновить информацию о показе (только для администраторов)")]
+    [SwaggerResponse(200, "Показ успешно обновлен", typeof(ShowDto))]
+    [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+    [SwaggerResponse(403, "Запрещено", typeof(ErrorDto))]
+    [SwaggerResponse(400, "Ошибка валидации", typeof(ErrorDto))]
+    [SwaggerResponse(404, "Ресурс не найден", typeof(ErrorDto))]
+    public async Task<IActionResult> UpdateShowByShowId([Required][FromRoute] int showId, [Required][FromBody] UpdateShowRequestDto updateShowRequestDto)
+    {
+        try
+        {
+            var existingShow = await _showService.GetByIdAsync(showId);
+
+            var show = new Show(
+                id: showId,
+                date: updateShowRequestDto.Date,
+                musicalId: existingShow.MusicalId
+            );
+
+            var updatedShow = await _showService.UpdateAsync(show);
+
+            var showDto = new ShowDto
             {
-                var shows = await _showService.GetByMusicalIdAsync(musicalId);
-                var showDtos = shows.Select(s => new ShowDTO(
-                    s.Id,
-                    s.Date,
-                    s.MusicalId
-                ));
-                return Ok(showDtos);
-            }
-            catch (Exception ex)
+                Id = updatedShow.Id,
+                Date = updatedShow.Date,
+                MusicalId = updatedShow.MusicalId
+            };
+
+            return Ok(showDto);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new ErrorDto("NotFound", ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Internal Server Error");
+            return BadRequest(new ErrorDto("ValidationError", ex.Message));
+        }
+    }
+
+    [HttpDelete("{showId}")]
+    [Authorize(Policy = "AdminOnly")]
+    [SwaggerOperation(
+        OperationId = "DeleteShowByShowId",
+        Summary = "Удалить показ",
+        Description = "Удалить показ (только для администраторов)")]
+    [SwaggerResponse(204, "Показ успешно удален")]
+    [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+    [SwaggerResponse(403, "Запрещено", typeof(ErrorDto))]
+    [SwaggerResponse(404, "Ресурс не найден", typeof(ErrorDto))]
+    public async Task<IActionResult> DeleteShowByShowId([Required][FromRoute] int showId)
+    {
+        try
+        {
+            var result = await _showService.DeleteAsync(showId);
+            if (!result)
             {
-                return BadRequest(ex.Message);
+                return NotFound(new ErrorDto("NotFound", "Show not found"));
             }
+
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new ErrorDto("ValidationError", ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Internal Server Error");
+            return StatusCode(500, new ErrorDto("InternalServerError", "Internal server error"));
         }
     }
 }

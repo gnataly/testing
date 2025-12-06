@@ -37,7 +37,7 @@ public class ActorFixture
             .With(a => a.Name, name ?? $"Actor {_fixture.Create<int>()}")
             .With(a => a.VoiceType, voiceType)
             .With(a => a.Gender, gender)
-            .With(a => a.BirthDate, birthDate ?? new DateTime(1990, 1, 1))
+            .With(a => a.BirthDate, birthDate ?? new DateTime(1990, 1, 1, 0, 0, 0, DateTimeKind.Utc))
             .With(a => a.Height, height ?? 170)
             .With(a => a.Weight, weight ?? 70)
             .With(a => a.AddInfo, addInfo ?? $"Additional info {_fixture.Create<int>()}")

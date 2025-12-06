@@ -1,5 +1,6 @@
 ﻿using Allure.Xunit.Attributes;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using TheatreCenter.Domain.Interfaces.Repositories;
 using TheatreCenter.Domain.Models;
@@ -17,6 +18,7 @@ public class ShowServiceMockTests : IClassFixture<ShowFixture>
 {
     private readonly Mock<IShowRepository> _showRepositoryMock;
     private readonly Mock<IMusicalRepository> _musicalRepositoryMock;
+    private readonly Mock<ILogger<ShowService>> _loggerMock;
     private readonly ShowService _sut;
     private readonly ShowFixture _fixture;
 
@@ -25,7 +27,8 @@ public class ShowServiceMockTests : IClassFixture<ShowFixture>
         _fixture = fixture;
         _showRepositoryMock = new Mock<IShowRepository>();
         _musicalRepositoryMock = new Mock<IMusicalRepository>();
-        _sut = new ShowService(_showRepositoryMock.Object, _musicalRepositoryMock.Object);
+        _loggerMock = new Mock<ILogger<ShowService>>();
+        _sut = new ShowService(_showRepositoryMock.Object, _musicalRepositoryMock.Object, _loggerMock.Object);
     }
 
     [Fact]
@@ -277,8 +280,32 @@ public class ShowServiceMockTests : IClassFixture<ShowFixture>
         
         var result = await _sut.GetUpcomingShowsAsync();
 
-        
+
         result.Should().HaveCount(2);
         _showRepositoryMock.Verify(repo => repo.GetUpcomingShowsAsync(), Times.Once);
+    }
+
+    [Fact]
+    [AllureFeature("GetAllAsync")]
+    [AllureStory("Positive case - shows exist")]
+    public async Task GetAllAsync_ShowsExist_ReturnsShows()
+    {
+        var filter = new ShowFilter();
+        var shows = new List<Show>
+        {
+            _fixture.CreateShow(),
+            _fixture.CreateShow()
+        };
+
+        _showRepositoryMock
+            .Setup(repo => repo.GetAllAsync(filter))
+            .ReturnsAsync(shows);
+
+
+        var result = await _sut.GetAllAsync(filter);
+
+
+        result.Should().HaveCount(2);
+        _showRepositoryMock.Verify(repo => repo.GetAllAsync(filter), Times.Once);
     }
 }

@@ -301,12 +301,6 @@ public class DatabaseFixture : IAsyncLifetime
     {
         var repositoryType = typeof(TRepository);
 
-        if (repositoryType == typeof(ActorRepository))
-        {
-            var logger = NullLogger<ActorRepository>.Instance;
-            return Activator.CreateInstance(repositoryType, context, logger) as TRepository;
-        }
-
         return Activator.CreateInstance(repositoryType, context) as TRepository;
     }
 }

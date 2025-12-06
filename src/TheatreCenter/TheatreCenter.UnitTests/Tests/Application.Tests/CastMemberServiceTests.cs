@@ -1,5 +1,6 @@
 ﻿using Allure.Xunit.Attributes;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using TheatreCenter.Domain.Interfaces.Repositories;
 using TheatreCenter.Domain.Models;
@@ -19,6 +20,7 @@ public class CastMemberServiceMockTests : IClassFixture<CastMemberFixture>
     private readonly Mock<IShowRepository> _showRepositoryMock;
     private readonly Mock<IRoleRepository> _roleRepositoryMock;
     private readonly Mock<IActorRepository> _actorRepositoryMock;
+    private readonly Mock<ILogger<CastMemberService>> _loggerMock;
     private readonly CastMemberService _sut;
     private readonly CastMemberFixture _fixture;
 
@@ -29,11 +31,13 @@ public class CastMemberServiceMockTests : IClassFixture<CastMemberFixture>
         _showRepositoryMock = new Mock<IShowRepository>();
         _roleRepositoryMock = new Mock<IRoleRepository>();
         _actorRepositoryMock = new Mock<IActorRepository>();
+        _loggerMock = new Mock<ILogger<CastMemberService>>();
         _sut = new CastMemberService(
             _castMemberRepositoryMock.Object,
             _showRepositoryMock.Object,
             _roleRepositoryMock.Object,
-            _actorRepositoryMock.Object);
+            _actorRepositoryMock.Object,
+            _loggerMock.Object);
     }
 
     [Fact]
@@ -229,11 +233,35 @@ public class CastMemberServiceMockTests : IClassFixture<CastMemberFixture>
     [AllureStory("Negative case - invalid actor ID")]
     public async Task GetByActorIdAsync_InvalidId_ThrowsArgumentException()
     {
-        
+
         var invalidId = 0;
 
-        
+
         await Assert.ThrowsAsync<ArgumentException>(() => _sut.GetByActorIdAsync(invalidId));
         _castMemberRepositoryMock.Verify(repo => repo.GetByActorIdAsync(It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    [AllureFeature("GetAllAsync")]
+    [AllureStory("Positive case - cast members exist")]
+    public async Task GetAllAsync_CastMembersExist_ReturnsCastMembers()
+    {
+        var filter = new CastMemberFilter();
+        var castMembers = new List<CastMember>
+        {
+            _fixture.CreateCastMember(),
+            _fixture.CreateCastMember()
+        };
+
+        _castMemberRepositoryMock
+            .Setup(repo => repo.GetAllAsync(filter))
+            .ReturnsAsync(castMembers);
+
+
+        var result = await _sut.GetAllAsync(filter);
+
+
+        result.Should().HaveCount(2);
+        _castMemberRepositoryMock.Verify(repo => repo.GetAllAsync(filter), Times.Once);
     }
 }

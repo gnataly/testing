@@ -1,203 +1,243 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using TheatreCenter.Domain.Models;
-using TheatreCenter.DTOs.CastMember;
+using TheatreCenter.DTOs;
 using TheatreCenter.Services.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
+using TheatreCenter.Domain.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace TheatreCenter.Backend.WebAPI.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("/api/v1/cast_members")]
     public class CastMembersController : ControllerBase
     {
         private readonly ICastMemberService _castMemberService;
+        private readonly ILogger<CastMembersController> _logger;
 
-        public CastMembersController(ICastMemberService castMemberService)
+        public CastMembersController(ICastMemberService castMemberService, ILogger<CastMembersController> logger)
         {
             _castMemberService = castMemberService;
-        }
-
-        [HttpGet("{id}")]
-        [SwaggerOperation(
-            OperationId = "GetCastMemberById",
-            Summary = "Get cast member by ID",
-            Description = "Returns a single cast member with the specified ID")]
-        [SwaggerResponse(200, "Cast member found", typeof(CastMemberDTO))]
-        [SwaggerResponse(404, "Cast member not found")]
-        [SwaggerResponse(500, "Server error")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetById(int id)
-        {
-            try
-            {
-                var castMember = await _castMemberService.GetByIdAsync(id);
-                var castMemberDto = new CastMemberDTO(
-                    castMember.Id,
-                    castMember.ShowId,
-                    castMember.RoleId,
-                    castMember.ActorId,
-                    castMember.Comment
-                );
-                return Ok(castMemberDto);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound();
-            }
+            _logger = logger;
         }
 
         [HttpGet]
         [SwaggerOperation(
             OperationId = "GetAllCastMembers",
-            Summary = "Get all cast members",
-            Description = "Returns a list of all cast members")]
-        [SwaggerResponse(200, "List of cast members", typeof(IEnumerable<CastMemberDTO>))]
-        [SwaggerResponse(500, "Server error")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetAll()
+            Summary = "Получить всех участников каста с фильтрацией",
+            Description = "Получить пагинированный список участников каста с возможностью фильтрации по различным параметрам")]
+        [SwaggerResponse(200, "Успешное получение списка участников каста", typeof(CastMemberListDto))]
+        [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+        [SwaggerResponse(400, "Ошибка валидации", typeof(ErrorDto))]
+        public async Task<IActionResult> GetAllCastMembers(
+            [FromQuery] int? showId,
+            [FromQuery] int? roleId,
+            [FromQuery] int? actorId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
-            var castMembers = await _castMemberService.GetAllAsync();
-            var castMemberDtos = castMembers.Select(cm => new CastMemberDTO(
-                cm.Id,
-                cm.ShowId,
-                cm.RoleId,
-                cm.ActorId,
-                cm.Comment
-            ));
-            return Ok(castMemberDtos);
+            try
+            {
+                var filter = new CastMemberFilter
+                {
+                    Page = page,
+                    PageSize = pageSize,
+                    ShowId = showId,
+                    RoleId = roleId,
+                    ActorId = actorId
+                };
+
+                var result = await _castMemberService.GetAllAsync(filter);
+
+                var totalCount = result.Count();
+                var items = result
+                    .OrderBy(a => a.Id)
+                    .Skip((filter.Page - 1) * filter.PageSize)
+                    .Take(filter.PageSize)
+                    .ToList();
+
+                var castMemberDtos = items.Select(cm => new CastMemberDto
+                {
+                    Id = cm.Id,
+                    ShowId = cm.ShowId,
+                    RoleId = cm.RoleId,
+                    ActorId = cm.ActorId,
+                    Comment = cm.Comment
+                }).ToList();
+
+                var response = new CastMemberListDto
+                {
+                    Items = castMemberDtos,
+                    Pagination = new PaginationDto
+                    {
+                        Page = filter.Page,
+                        PageSize = filter.PageSize,
+                        TotalCount = totalCount
+                    }
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Internal Server Error");
+                return StatusCode(500, new ErrorDto("InternalServerError", "Internal server error"));
+            }
         }
 
         [HttpPost]
+        [Authorize(Policy = "AdminOnly")]
         [SwaggerOperation(
             OperationId = "CreateCastMember",
-            Summary = "Create new cast member",
-            Description = "Creates a new cast member with the provided data")]
-        [SwaggerResponse(201, "Cast member created", typeof(CastMemberDTO))]
-        [SwaggerResponse(400, "Invalid input")]
-        [SwaggerResponse(500, "Server error")]
-        [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> Create([FromBody] CreateCastMemberDTO createDto)
+            Summary = "Создать нового участника каста",
+            Description = "Создать нового участника каста (только для администраторов)")]
+        [SwaggerResponse(201, "Участник каста успешно создан", typeof(CastMemberDto))]
+        [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+        [SwaggerResponse(403, "Запрещено", typeof(ErrorDto))]
+        [SwaggerResponse(400, "Ошибка валидации", typeof(ErrorDto))]
+        public async Task<IActionResult> CreateCastMember([Required][FromBody] CreateCastMemberRequestDto createCastMemberRequestDto)
         {
             try
             {
                 var castMember = new CastMember(
-                    0,
-                    createDto.ShowId,
-                    createDto.RoleId,
-                    createDto.ActorId,
-                    createDto.Comment
+                    id: 0,
+                    showId: createCastMemberRequestDto.ShowId,
+                    roleId: createCastMemberRequestDto.RoleId,
+                    actorId: createCastMemberRequestDto.ActorId,
+                    comment: createCastMemberRequestDto.Comment
                 );
 
                 var createdCastMember = await _castMemberService.CreateAsync(castMember);
-                var castMemberDto = new CastMemberDTO(
-                    createdCastMember.Id,
-                    createdCastMember.ShowId,
-                    createdCastMember.RoleId,
-                    createdCastMember.ActorId,
-                    createdCastMember.Comment
-                );
 
-                return CreatedAtAction(nameof(GetById), new { id = castMemberDto.Id }, castMemberDto);
+                var castMemberDto = new CastMemberDto
+                {
+                    Id = createdCastMember.Id,
+                    ShowId = createdCastMember.ShowId,
+                    RoleId = createdCastMember.RoleId,
+                    ActorId = createdCastMember.ActorId,
+                    Comment = createdCastMember.Comment
+                };
+
+                return CreatedAtAction(nameof(GetCastMemberByCastMemberId), new { castMemberId = castMemberDto.Id }, castMemberDto);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                _logger.LogError(ex, "Internal Server Error");
+                return BadRequest(new ErrorDto("ValidationError", ex.Message));
             }
         }
 
-        [HttpPut("{id}")]
+        [HttpGet("{castMemberId}")]
         [SwaggerOperation(
-            OperationId = "UpdateCastMember",
-            Summary = "Update cast member",
-            Description = "Updates an existing cast member with the provided data")]
-        [SwaggerResponse(200, "Cast member updated", typeof(CastMemberDTO))]
-        [SwaggerResponse(400, "Invalid input")]
-        [SwaggerResponse(404, "Cast member not found")]
-        [SwaggerResponse(500, "Server error")]
-        [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateCastMemberDTO updateDto)
+            OperationId = "GetCastMemberByCastMemberId",
+            Summary = "Получить участника каста по ID",
+            Description = "Получить информацию об участнике каста по его ID")]
+        [SwaggerResponse(200, "Успешное получение участника каста", typeof(CastMemberDto))]
+        [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+        [SwaggerResponse(404, "Ресурс не найден", typeof(ErrorDto))]
+        public async Task<IActionResult> GetCastMemberByCastMemberId([Required][FromRoute] int castMemberId)
         {
             try
             {
-                var existingCastMember = await _castMemberService.GetByIdAsync(id);
+                var castMember = await _castMemberService.GetByIdAsync(castMemberId);
 
-                existingCastMember.RoleId = updateDto.RoleId;
-                existingCastMember.ActorId = updateDto.ActorId;
-
-                var updatedCastMember = await _castMemberService.UpdateAsync(existingCastMember);
-                var castMemberDto = new CastMemberDTO(
-                    updatedCastMember.Id,
-                    updatedCastMember.ShowId,
-                    updatedCastMember.RoleId,
-                    updatedCastMember.ActorId,
-                    updatedCastMember.Comment
-                );
+                var castMemberDto = new CastMemberDto
+                {
+                    Id = castMember.Id,
+                    ShowId = castMember.ShowId,
+                    RoleId = castMember.RoleId,
+                    ActorId = castMember.ActorId,
+                    Comment = castMember.Comment
+                };
 
                 return Ok(castMemberDto);
             }
-            catch (KeyNotFoundException)
+            catch (KeyNotFoundException ex)
             {
-                return NotFound();
+                return NotFound(new ErrorDto("NotFound", ex.Message));
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                _logger.LogError(ex, "Internal Server Error");
+                return StatusCode(500, new ErrorDto("InternalServerError", "Internal server error"));
             }
         }
 
-        [HttpDelete("{id}")]
-        [SwaggerOperation(
-            OperationId = "DeleteCastMember",
-            Summary = "Delete cast member",
-            Description = "Deletes a cast member with the specified ID")]
-        [SwaggerResponse(204, "Cast member deleted")]
-        [SwaggerResponse(400, "Cannot delete cast member")]
-        [SwaggerResponse(404, "Cast member not found")]
-        [SwaggerResponse(500, "Server error")]
+        [HttpPut("{castMemberId}")]
         [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> Delete(int id)
+        [SwaggerOperation(
+            OperationId = "UpdateCastMemberByCastMemberId",
+            Summary = "Обновить участника каста",
+            Description = "Обновить информацию об участнике каста (только для администраторов)")]
+        [SwaggerResponse(200, "Участник каста успешно обновлен", typeof(CastMemberDto))]
+        [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+        [SwaggerResponse(403, "Запрещено", typeof(ErrorDto))]
+        [SwaggerResponse(400, "Ошибка валидации", typeof(ErrorDto))]
+        [SwaggerResponse(404, "Ресурс не найден", typeof(ErrorDto))]
+        public async Task<IActionResult> UpdateCastMemberByCastMemberId([Required][FromRoute] int castMemberId, [Required][FromBody] UpdateCastMemberRequestDto updateCastMemberRequestDto)
         {
             try
             {
-                await _castMemberService.DeleteAsync(id);
+                var existingCastMember = await _castMemberService.GetByIdAsync(castMemberId);
+
+                var castMember = new CastMember(
+                    id: castMemberId,
+                    showId: existingCastMember.ShowId,
+                    roleId: updateCastMemberRequestDto.RoleId,
+                    actorId: updateCastMemberRequestDto.ActorId,
+                    comment: updateCastMemberRequestDto.Comment
+                );
+
+                var updatedCastMember = await _castMemberService.UpdateAsync(castMember);
+
+                var castMemberDto = new CastMemberDto
+                {
+                    Id = updatedCastMember.Id,
+                    ShowId = updatedCastMember.ShowId,
+                    RoleId = updatedCastMember.RoleId,
+                    ActorId = updatedCastMember.ActorId,
+                    Comment = updatedCastMember.Comment
+                };
+
+                return Ok(castMemberDto);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new ErrorDto("NotFound", ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Internal Server Error");
+                return BadRequest(new ErrorDto("ValidationError", ex.Message));
+            }
+        }
+
+        [HttpDelete("{castMemberId}")]
+        [Authorize(Policy = "AdminOnly")]
+        [SwaggerOperation(
+            OperationId = "DeleteCastMemberByCastMemberId",
+            Summary = "Удалить участника каста",
+            Description = "Удалить участника каста (только для администраторов)")]
+        [SwaggerResponse(204, "Участник каста успешно удален")]
+        [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+        [SwaggerResponse(403, "Запрещено", typeof(ErrorDto))]
+        [SwaggerResponse(404, "Ресурс не найден", typeof(ErrorDto))]
+        public async Task<IActionResult> DeleteCastMemberByCastMemberId([Required][FromRoute] int castMemberId)
+        {
+            try
+            {
+                var result = await _castMemberService.DeleteAsync(castMemberId);
+                if (!result)
+                {
+                    return NotFound(new ErrorDto("NotFound", "Cast member not found"));
+                }
+
                 return NoContent();
             }
-            catch (KeyNotFoundException)
-            {
-                return NotFound();
-            }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpGet("show/{showId}")]
-        [SwaggerOperation(
-            OperationId = "GetCastMembersByShow",
-            Summary = "Get cast members by show",
-            Description = "Returns cast members for a specific show")]
-        [SwaggerResponse(200, "List of cast members", typeof(IEnumerable<CastMemberDTO>))]
-        [SwaggerResponse(500, "Server error")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetByShow(int showId)
-        {
-            try
-            {
-                var castMembers = await _castMemberService.GetByShowIdAsync(showId);
-                var castMemberDtos = castMembers.Select(cm => new CastMemberDTO(
-                    cm.Id,
-                    cm.ShowId,
-                    cm.RoleId,
-                    cm.ActorId,
-                    cm.Comment
-                ));
-                return Ok(castMemberDtos);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
+                _logger.LogError(ex, "Internal Server Error");
+                return StatusCode(500, new ErrorDto("InternalServerError", "Internal server error"));
             }
         }
     }
