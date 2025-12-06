@@ -1,4 +1,4 @@
-﻿using Allure.Xunit.Attributes;
+using Allure.Xunit.Attributes;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -36,7 +36,7 @@ public class AccountServiceMockTests : IClassFixture<AccountFixture>
     [AllureStory("Positive case - account exists")]
     public async Task GetByIdAsync_AccountExists_ReturnsAccount()
     {
-        
+
         var accountId = 1;
         var expectedAccount = _fixture.CreateAccount(id: accountId);
 
@@ -44,10 +44,10 @@ public class AccountServiceMockTests : IClassFixture<AccountFixture>
             .Setup(repo => repo.GetByIdAsync(accountId))
             .ReturnsAsync(expectedAccount);
 
-        
+
         var result = await _sut.GetByIdAsync(accountId);
 
-        
+
         result.Should().NotBeNull();
         result.Should().BeEquivalentTo(expectedAccount);
         _accountRepositoryMock.Verify(repo => repo.GetByIdAsync(accountId), Times.Once);
@@ -58,17 +58,17 @@ public class AccountServiceMockTests : IClassFixture<AccountFixture>
     [AllureStory("Negative case - account not found")]
     public async Task GetByIdAsync_AccountNotExists_ReturnsNull()
     {
-        
+
         var accountId = 1;
 
         _accountRepositoryMock
             .Setup(repo => repo.GetByIdAsync(accountId))
             .ReturnsAsync((Account?)null);
 
-        
+
         var result = await _sut.GetByIdAsync(accountId);
 
-        
+
         result.Should().BeNull();
         _accountRepositoryMock.Verify(repo => repo.GetByIdAsync(accountId), Times.Once);
     }
@@ -78,7 +78,7 @@ public class AccountServiceMockTests : IClassFixture<AccountFixture>
     [AllureStory("Positive case - valid credentials")]
     public async Task AuthenticateAsync_ValidCredentials_ReturnsAccount()
     {
-        
+
         var username = "testuser";
         var passwordHash = "hashedpassword";
         var expectedAccount = _fixture.CreateAccount(username: username, passwordHash: passwordHash);
@@ -87,10 +87,10 @@ public class AccountServiceMockTests : IClassFixture<AccountFixture>
             .Setup(repo => repo.AuthenticateAsync(username, passwordHash))
             .ReturnsAsync(expectedAccount);
 
-        
+
         var result = await _sut.AuthenticateAsync(username, passwordHash);
 
-        
+
         result.Should().NotBeNull();
         result.Should().BeEquivalentTo(expectedAccount);
         _accountRepositoryMock.Verify(repo => repo.AuthenticateAsync(username, passwordHash), Times.Once);
@@ -119,7 +119,7 @@ public class AccountServiceMockTests : IClassFixture<AccountFixture>
     [AllureStory("Negative case - account not found")]
     public async Task AuthenticateAsync_AccountNotFound_ThrowsUnauthorizedAccessException()
     {
-        
+
         var username = "testuser";
         var passwordHash = "hashedpassword";
 
@@ -127,7 +127,7 @@ public class AccountServiceMockTests : IClassFixture<AccountFixture>
             .Setup(repo => repo.AuthenticateAsync(username, passwordHash))
             .ReturnsAsync((Account?)null);
 
-        
+
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
             _sut.AuthenticateAsync(username, passwordHash));
     }
@@ -213,7 +213,7 @@ public class AccountServiceMockTests : IClassFixture<AccountFixture>
     [AllureStory("Positive case - account updated")]
     public async Task UpdateAsync_ValidAccount_UpdatesSuccessfully()
     {
-        
+
         var account = _fixture.CreateAccount(id: 1);
 
         _accountRepositoryMock
@@ -223,10 +223,10 @@ public class AccountServiceMockTests : IClassFixture<AccountFixture>
             .Setup(repo => repo.UpdateAsync(account))
             .Returns(Task.CompletedTask);
 
-        
+
         await _sut.UpdateAsync(account);
 
-        
+
         _accountRepositoryMock.Verify(repo => repo.GetByIdAsync(account.Id), Times.Once);
         _accountRepositoryMock.Verify(repo => repo.UpdateAsync(account), Times.Once);
     }
@@ -236,14 +236,14 @@ public class AccountServiceMockTests : IClassFixture<AccountFixture>
     [AllureStory("Negative case - account not found")]
     public async Task UpdateAsync_AccountNotFound_ThrowsKeyNotFoundException()
     {
-        
+
         var account = _fixture.CreateAccount(id: 1);
 
         _accountRepositoryMock
             .Setup(repo => repo.GetByIdAsync(account.Id))
             .ReturnsAsync((Account?)null);
 
-        
+
         await Assert.ThrowsAsync<KeyNotFoundException>(() => _sut.UpdateAsync(account));
         _accountRepositoryMock.Verify(repo => repo.UpdateAsync(It.IsAny<Account>()), Times.Never);
     }
@@ -253,17 +253,17 @@ public class AccountServiceMockTests : IClassFixture<AccountFixture>
     [AllureStory("Positive case - account deleted")]
     public async Task DeleteAsync_ValidId_DeletesSuccessfully()
     {
-        
+
         var accountId = 1;
 
         _accountRepositoryMock
             .Setup(repo => repo.DeleteAsync(accountId))
             .Returns(Task.CompletedTask);
 
-        
+
         await _sut.DeleteAsync(accountId);
 
-        
+
         _accountRepositoryMock.Verify(repo => repo.DeleteAsync(accountId), Times.Once);
     }
 
@@ -272,7 +272,7 @@ public class AccountServiceMockTests : IClassFixture<AccountFixture>
     [AllureStory("Positive case - password changed")]
     public async Task ChangePasswordAsync_ValidAccount_ChangesPassword()
     {
-        
+
         var accountId = 1;
         var newPasswordHash = "newhashedpassword";
         var account = _fixture.CreateAccount(id: accountId);
@@ -284,10 +284,10 @@ public class AccountServiceMockTests : IClassFixture<AccountFixture>
             .Setup(repo => repo.SaveChangesAsync())
             .Returns(Task.CompletedTask);
 
-        
+
         await _sut.ChangePasswordAsync(accountId, newPasswordHash);
 
-        
+
         account.PasswordHash.Should().Be(newPasswordHash);
         _accountRepositoryMock.Verify(repo => repo.GetByIdAsync(accountId), Times.Once);
         _accountRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Once);
@@ -298,7 +298,7 @@ public class AccountServiceMockTests : IClassFixture<AccountFixture>
     [AllureStory("Negative case - account not found")]
     public async Task ChangePasswordAsync_AccountNotFound_ThrowsArgumentException()
     {
-        
+
         var accountId = 1;
         var newPasswordHash = "newhashedpassword";
 
@@ -306,7 +306,7 @@ public class AccountServiceMockTests : IClassFixture<AccountFixture>
             .Setup(repo => repo.GetByIdAsync(accountId))
             .ReturnsAsync((Account?)null);
 
-        
+
         await Assert.ThrowsAsync<ArgumentException>(() =>
             _sut.ChangePasswordAsync(accountId, newPasswordHash));
         _accountRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Never);
@@ -317,7 +317,7 @@ public class AccountServiceMockTests : IClassFixture<AccountFixture>
     [AllureStory("Positive case - upgrade request submitted")]
     public async Task SubmitUpgradeRequestAsync_ValidAccount_ReturnsTrue()
     {
-        
+
         var accountId = 1;
         var account = _fixture.CreateAccount(id: accountId);
 
@@ -328,10 +328,10 @@ public class AccountServiceMockTests : IClassFixture<AccountFixture>
             .Setup(repo => repo.UpdateAsync(account))
             .Returns(Task.CompletedTask);
 
-        
+
         var result = await _sut.SubmitUpgradeRequestAsync(accountId);
 
-        
+
         result.Should().BeTrue();
         account.UpgradeRequest.Should().BeTrue();
         _accountRepositoryMock.Verify(repo => repo.GetByIdAsync(accountId), Times.Once);
@@ -343,17 +343,17 @@ public class AccountServiceMockTests : IClassFixture<AccountFixture>
     [AllureStory("Negative case - account not found")]
     public async Task SubmitUpgradeRequestAsync_AccountNotFound_ReturnsFalse()
     {
-        
+
         var accountId = 1;
 
         _accountRepositoryMock
             .Setup(repo => repo.GetByIdAsync(accountId))
             .ReturnsAsync((Account?)null);
 
-        
+
         var result = await _sut.SubmitUpgradeRequestAsync(accountId);
 
-        
+
         result.Should().BeFalse();
         _accountRepositoryMock.Verify(repo => repo.UpdateAsync(It.IsAny<Account>()), Times.Never);
     }

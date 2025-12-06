@@ -1,4 +1,4 @@
-﻿//namespace TheatreCenter.DTOs;
+//namespace TheatreCenter.DTOs;
 //using System.Text.Json.Serialization;
 //using TheatreCenter.Domain.Enums;
 
@@ -18,19 +18,19 @@
 
 //    [JsonPropertyName("name")]
 //    public string Name { get; }
-    
+
 //    [JsonPropertyName("voiceType")]
 //    public VoiceType VoiceType { get; }
-    
+
 //    [JsonPropertyName("gender")]
 //    public Gender Gender { get; }
-    
+
 //    [JsonPropertyName("birthDate")]
 //    public DateTime BirthDate { get; }
-    
+
 //    [JsonPropertyName("height")]
 //    public int Height { get; }
-    
+
 //    [JsonPropertyName("weight")]
 //    public int Weight { get; }
 

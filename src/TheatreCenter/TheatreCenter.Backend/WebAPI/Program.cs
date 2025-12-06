@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using System;
@@ -19,6 +19,7 @@ using TheatreCenter.Domain.Models;
 
 
 namespace TheatreCenter.Backend.WebAPI;
+
 public class Program
 {
     public static void Main(string[] args)

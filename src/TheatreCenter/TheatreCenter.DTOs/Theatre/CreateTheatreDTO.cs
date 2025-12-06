@@ -1,4 +1,4 @@
-﻿//using System.Text.Json.Serialization;
+//using System.Text.Json.Serialization;
 
 //namespace TheatreCenter.DTOs;
 
@@ -12,7 +12,7 @@
 
 //    [JsonPropertyName("name")]
 //    public string Name { get; }
-    
+
 //    [JsonPropertyName("addInfo")]
 //    public string AddInfo { get; }
 //}

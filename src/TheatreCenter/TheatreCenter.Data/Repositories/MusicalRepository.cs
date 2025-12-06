@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TheatreCenter.Domain.Enums;
 using TheatreCenter.Domain.Interfaces.Repositories;
 using TheatreCenter.Domain.Models;
@@ -27,89 +27,14 @@ namespace TheatreCenter.Data.Repositories
 
         public async Task<List<Musical>> GetAllAsync(MusicalFilter filter)
         {
-            var query = _context.Musicals
-                .Include(m => m.Theatre)
-                .Include(m => m.MusicalThemes)
-                    .ThenInclude(mt => mt.Theme)
-                .AsQueryable();
+            var query = ApplySorting(ApplyFilters(BuildBaseQuery(), filter), filter.Sort);
 
-            if (!string.IsNullOrEmpty(filter.Search))
-            {
-                query = query.Where(m => m.Title.Contains(filter.Search) ||
-                                        m.Description.Contains(filter.Search));
-            }
-
-            if (filter.AgeRestriction.HasValue)
-            {
-                query = query.Where(m => m.AgeRestriction == filter.AgeRestriction.Value);
-            }
-
-            if (filter.TheatreId.HasValue)
-            {
-                query = query.Where(m => m.TheatreId == filter.TheatreId.Value);
-            }
-
-            if (filter.ThemeId.HasValue)
-            {
-                query = query.Where(m => m.MusicalThemes.Any(mt => mt.ThemeId == filter.ThemeId.Value));
-            }
-
-            query = filter.Sort switch
-            {
-                "title_asc" => query.OrderBy(m => m.Title),
-                "title_desc" => query.OrderByDescending(m => m.Title),
-                "duration_asc" => query.OrderBy(m => m.Duration),
-                "duration_desc" => query.OrderByDescending(m => m.Duration),
-                "id_desc" => query.OrderByDescending(m => m.Id),
-                _ => query.OrderBy(m => m.Id)
-            };
-
-            var items = await query
-                .Skip((filter.Page - 1) * filter.PageSize)
-                .Take(filter.PageSize)
-                .ToListAsync();
-
-            return items;
+            return await ApplyPaging(query, filter.Page, filter.PageSize).ToListAsync();
         }
 
         public async Task<int> GetCountAsync(MusicalFilter filter)
         {
-            var query = _context.Musicals
-                .Include(m => m.Theatre)
-                .Include(m => m.MusicalThemes)
-                    .ThenInclude(mt => mt.Theme)
-                .AsQueryable();
-
-            if (!string.IsNullOrEmpty(filter.Search))
-            {
-                query = query.Where(m => m.Title.Contains(filter.Search) ||
-                                        m.Description.Contains(filter.Search));
-            }
-
-            if (filter.AgeRestriction.HasValue)
-            {
-                query = query.Where(m => m.AgeRestriction == filter.AgeRestriction.Value);
-            }
-
-            if (filter.TheatreId.HasValue)
-            {
-                query = query.Where(m => m.TheatreId == filter.TheatreId.Value);
-            }
-
-            if (filter.ThemeId.HasValue)
-            {
-                query = query.Where(m => m.MusicalThemes.Any(mt => mt.ThemeId == filter.ThemeId.Value));
-            }
-
-            query = filter.Sort switch
-            {
-                "title_asc" => query.OrderBy(m => m.Title),
-                "title_desc" => query.OrderByDescending(m => m.Title),
-                "duration_asc" => query.OrderBy(m => m.Duration),
-                "duration_desc" => query.OrderByDescending(m => m.Duration),
-                "id_desc" => query.OrderByDescending(m => m.Id),
-                _ => query.OrderBy(m => m.Id)
-            };
+            var query = ApplySorting(ApplyFilters(BuildBaseQuery(), filter), filter.Sort);
 
             return await query.CountAsync();
         }
@@ -179,5 +104,54 @@ namespace TheatreCenter.Data.Repositories
                 .Where(t => t.MusicalThemes.Any(mt => mt.MusicalId == musicalId))
                 .ToListAsync();
         }
+
+        private IQueryable<Musical> BuildBaseQuery()
+        {
+            return _context.Musicals
+                .Include(m => m.Theatre)
+                .Include(m => m.MusicalThemes)
+                    .ThenInclude(mt => mt.Theme)
+                .AsQueryable();
+        }
+
+        private static IQueryable<Musical> ApplyFilters(IQueryable<Musical> query, MusicalFilter filter)
+        {
+            if (!string.IsNullOrWhiteSpace(filter.Search))
+            {
+                query = query.Where(m => m.Title.Contains(filter.Search) ||
+                                         m.Description.Contains(filter.Search));
+            }
+
+            if (filter.AgeRestriction.HasValue)
+            {
+                query = query.Where(m => m.AgeRestriction == filter.AgeRestriction.Value);
+            }
+
+            if (filter.TheatreId.HasValue)
+            {
+                query = query.Where(m => m.TheatreId == filter.TheatreId.Value);
+            }
+
+            if (filter.ThemeId.HasValue)
+            {
+                query = query.Where(m => m.MusicalThemes.Any(mt => mt.ThemeId == filter.ThemeId.Value));
+            }
+
+            return query;
+        }
+
+        private static IQueryable<Musical> ApplySorting(IQueryable<Musical> query, string? sort) =>
+            sort switch
+            {
+                "title_asc" => query.OrderBy(m => m.Title),
+                "title_desc" => query.OrderByDescending(m => m.Title),
+                "duration_asc" => query.OrderBy(m => m.Duration),
+                "duration_desc" => query.OrderByDescending(m => m.Duration),
+                "id_desc" => query.OrderByDescending(m => m.Id),
+                _ => query.OrderBy(m => m.Id)
+            };
+
+        private static IQueryable<Musical> ApplyPaging(IQueryable<Musical> query, int page, int pageSize) =>
+            query.Skip((page - 1) * pageSize).Take(pageSize);
     }
 }

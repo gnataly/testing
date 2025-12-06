@@ -1,4 +1,4 @@
-﻿using TheatreCenter.Services.Interfaces.Services;
+using TheatreCenter.Services.Interfaces.Services;
 using TheatreCenter.Domain.Models;
 using TheatreCenter.Domain.Enums;
 using TheatreCenter.Domain.Interfaces.Repositories;
@@ -218,7 +218,7 @@ namespace TheatreCenter.Services.Services
             }
         }
 
-        
+
 
         public async Task<bool> AddActorToRoleAsync(int actorId, int roleId)
         {

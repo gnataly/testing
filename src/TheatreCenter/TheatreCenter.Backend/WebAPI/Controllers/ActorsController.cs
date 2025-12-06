@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using TheatreCenter.DTOs;
 using TheatreCenter.Services.Interfaces.Services;
@@ -162,7 +162,7 @@ public class ActorsController : ControllerBase
 
             if (currentUser != null)
                 actor = await _actorService.GetActorByIdAsync(actorId, int.Parse(currentUser.Value));
-            else 
+            else
                 actor = await _actorService.GetActorByIdAsync(actorId);
 
             var actorDto = new ActorDto

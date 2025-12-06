@@ -1,4 +1,4 @@
-﻿//using System.Text.Json.Serialization;
+//using System.Text.Json.Serialization;
 //using TheatreCenter.Domain.Enums;
 
 //namespace TheatreCenter.DTOs;

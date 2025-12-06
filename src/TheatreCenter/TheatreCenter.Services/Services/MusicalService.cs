@@ -1,4 +1,4 @@
-﻿using TheatreCenter.Services.Interfaces.Services;
+using TheatreCenter.Services.Interfaces.Services;
 using TheatreCenter.Domain.Enums;
 using TheatreCenter.Domain.Interfaces.Repositories;
 using TheatreCenter.Domain.Models;
@@ -220,7 +220,7 @@ namespace TheatreCenter.Services.Services
             }
         }
 
-        
+
 
         public async Task<bool> AddThemeToMusicalAsync(int musicalId, int themeId)
         {

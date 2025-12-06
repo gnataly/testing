@@ -1,4 +1,4 @@
-﻿using TheatreCenter.Data;
+using TheatreCenter.Data;
 using TheatreCenter.Domain.Models;
 using TheatreCenter.Domain.Enums;
 using TheatreCenter.Services.Services;
@@ -36,11 +36,13 @@ public class ActorServiceIt : IntegrationTestBase
         var accountRepository = Fixture.CreateRepository<AccountRepository>(context);
         _service = new ActorService(actorRepository, accountRepository, new NullLogger<ActorService>());
 
-        _commitTransaction = async () => {
+        _commitTransaction = async () =>
+        {
             await context.Database.CommitTransactionAsync();
             await context.DisposeAsync();
         };
-        _rollbackTransaction = async () => {
+        _rollbackTransaction = async () =>
+        {
             await context.Database.RollbackTransactionAsync();
             await context.DisposeAsync();
         };

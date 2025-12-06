@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TheatreCenter.Domain.Models;
 using TheatreCenter.Domain.Enums;
 
@@ -42,7 +42,7 @@ namespace TheatreCenter.Data
                 entity.Property(a => a.PasswordHash)
                     .IsRequired();
                 entity.Property(a => a.AccessLevel)
-                    .HasConversion<string>() 
+                    .HasConversion<string>()
                     .IsRequired();
                 entity.Property(a => a.UpgradeRequest)
                     .IsRequired()
@@ -54,7 +54,7 @@ namespace TheatreCenter.Data
             modelBuilder.Entity<Actor>(entity =>
             {
                 entity.Property(a => a.Id)
-                    .ValueGeneratedOnAdd(); 
+                    .ValueGeneratedOnAdd();
                 entity.Property(a => a.Name)
                     .IsRequired()
                     .HasMaxLength(100);

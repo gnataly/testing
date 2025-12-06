@@ -1,4 +1,4 @@
-﻿using Xunit.Abstractions;
+using Xunit.Abstractions;
 using TheatreCenter.UnitTests.Tests.Database;
 using Xunit;
 

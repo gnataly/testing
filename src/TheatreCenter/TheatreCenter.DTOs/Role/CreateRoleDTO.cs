@@ -1,4 +1,4 @@
-﻿//namespace TheatreCenter.DTOs;
+//namespace TheatreCenter.DTOs;
 //using System.Text.Json.Serialization;
 //using TheatreCenter.Domain.Enums;
 
@@ -13,10 +13,10 @@
 
 //    [JsonPropertyName("name")]
 //    public string Name { get; }
-    
+
 //    [JsonPropertyName("musicalId")]
 //    public int MusicalId { get; }
-    
+
 //    [JsonPropertyName("roleType")]
 //    public RoleType RoleType { get; }
 //}

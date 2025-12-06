@@ -1,4 +1,4 @@
-﻿using TheatreCenter.Data;
+using TheatreCenter.Data;
 using TheatreCenter.Domain.Models;
 using TheatreCenter.Domain.Enums;
 using TheatreCenter.Services.Services;
@@ -30,7 +30,8 @@ public class MusicalServiceIt : IntegrationTestBase
     private readonly ITestOutputHelper _outputHelper;
 
     public MusicalServiceIt(DatabaseFixture fixture, ITestOutputHelper output)
-        : base(fixture, output) {
+        : base(fixture, output)
+    {
         _outputHelper = output;
     }
 
@@ -43,11 +44,13 @@ public class MusicalServiceIt : IntegrationTestBase
         var accountRepository = Fixture.CreateRepository<AccountRepository>(context);
         _service = new MusicalService(musicalRepository, _theatreRepository, accountRepository, new NullLogger<MusicalService>());
 
-        _commitTransaction = async () => {
+        _commitTransaction = async () =>
+        {
             await context.Database.CommitTransactionAsync();
             await context.DisposeAsync();
         };
-        _rollbackTransaction = async () => {
+        _rollbackTransaction = async () =>
+        {
             await context.Database.RollbackTransactionAsync();
             await context.DisposeAsync();
         };

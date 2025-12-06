@@ -1,4 +1,4 @@
-﻿using Allure.Xunit.Attributes;
+using Allure.Xunit.Attributes;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -37,7 +37,7 @@ public class RoleServiceMockTests : IClassFixture<RoleFixture>
     [AllureStory("Positive case - role exists")]
     public async Task GetByIdAsync_RoleExists_ReturnsRole()
     {
-        
+
         var roleId = 1;
         var expectedRole = _fixture.CreateRole(id: roleId);
 
@@ -45,10 +45,10 @@ public class RoleServiceMockTests : IClassFixture<RoleFixture>
             .Setup(repo => repo.GetByIdAsync(roleId))
             .ReturnsAsync(expectedRole);
 
-        
+
         var result = await _sut.GetByIdAsync(roleId);
 
-        
+
         result.Should().NotBeNull();
         result.Should().BeEquivalentTo(expectedRole);
         _roleRepositoryMock.Verify(repo => repo.GetByIdAsync(roleId), Times.Once);
@@ -59,10 +59,10 @@ public class RoleServiceMockTests : IClassFixture<RoleFixture>
     [AllureStory("Negative case - invalid ID")]
     public async Task GetByIdAsync_InvalidId_ThrowsArgumentException()
     {
-        
+
         var invalidId = 0;
 
-        
+
         await Assert.ThrowsAsync<ArgumentException>(() => _sut.GetByIdAsync(invalidId));
         _roleRepositoryMock.Verify(repo => repo.GetByIdAsync(It.IsAny<int>()), Times.Never);
     }
@@ -72,14 +72,14 @@ public class RoleServiceMockTests : IClassFixture<RoleFixture>
     [AllureStory("Negative case - role not found")]
     public async Task GetByIdAsync_RoleNotFound_ThrowsKeyNotFoundException()
     {
-        
+
         var roleId = 1;
 
         _roleRepositoryMock
             .Setup(repo => repo.GetByIdAsync(roleId))
             .ReturnsAsync((Role?)null);
 
-        
+
         await Assert.ThrowsAsync<KeyNotFoundException>(() => _sut.GetByIdAsync(roleId));
         _roleRepositoryMock.Verify(repo => repo.GetByIdAsync(roleId), Times.Once);
     }
@@ -89,7 +89,7 @@ public class RoleServiceMockTests : IClassFixture<RoleFixture>
     [AllureStory("Positive case - valid role")]
     public async Task CreateAsync_ValidRole_ReturnsCreatedRole()
     {
-        
+
         var role = _fixture.CreateRole();
         var musical = _fixture.CreateMusical(id: role.MusicalId);
 
@@ -103,10 +103,10 @@ public class RoleServiceMockTests : IClassFixture<RoleFixture>
             .Setup(repo => repo.SaveChangesAsync())
             .Returns(Task.CompletedTask);
 
-        
+
         var result = await _sut.CreateAsync(role);
 
-        
+
         result.Should().BeEquivalentTo(role);
         _musicalRepositoryMock.Verify(repo => repo.GetByIdAsync(role.MusicalId), Times.Once);
         _roleRepositoryMock.Verify(repo => repo.AddAsync(role), Times.Once);
@@ -118,10 +118,10 @@ public class RoleServiceMockTests : IClassFixture<RoleFixture>
     [AllureStory("Negative case - null role")]
     public async Task CreateAsync_NullRole_ThrowsArgumentNullException()
     {
-        
+
         Role role = null!;
 
-        
+
         await Assert.ThrowsAsync<ArgumentNullException>(() => _sut.CreateAsync(role));
         _roleRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<Role>()), Times.Never);
     }
@@ -131,11 +131,11 @@ public class RoleServiceMockTests : IClassFixture<RoleFixture>
     [AllureStory("Negative case - empty name")]
     public async Task CreateAsync_EmptyName_ThrowsArgumentException()
     {
-        
+
         var role = _fixture.CreateRole();
         role.Name = "";
 
-        
+
         await Assert.ThrowsAsync<ArgumentException>(() => _sut.CreateAsync(role));
         _roleRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<Role>()), Times.Never);
     }
@@ -145,14 +145,14 @@ public class RoleServiceMockTests : IClassFixture<RoleFixture>
     [AllureStory("Negative case - musical not found")]
     public async Task CreateAsync_MusicalNotFound_ThrowsArgumentException()
     {
-        
+
         var role = _fixture.CreateRole();
 
         _musicalRepositoryMock
             .Setup(repo => repo.GetByIdAsync(role.MusicalId))
             .ReturnsAsync((Musical?)null);
 
-        
+
         await Assert.ThrowsAsync<ArgumentException>(() => _sut.CreateAsync(role));
         _roleRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<Role>()), Times.Never);
     }
@@ -162,7 +162,7 @@ public class RoleServiceMockTests : IClassFixture<RoleFixture>
     [AllureStory("Positive case - role deleted")]
     public async Task DeleteAsync_ValidRole_ReturnsTrue()
     {
-        
+
         var roleId = 1;
         var role = _fixture.CreateRole(id: roleId);
         role.ActorRoles = new List<ActorRole>(); // No assigned actors
@@ -177,10 +177,10 @@ public class RoleServiceMockTests : IClassFixture<RoleFixture>
             .Setup(repo => repo.SaveChangesAsync())
             .Returns(Task.CompletedTask);
 
-        
+
         var result = await _sut.DeleteAsync(roleId);
 
-        
+
         result.Should().BeTrue();
         _roleRepositoryMock.Verify(repo => repo.GetByIdAsync(roleId), Times.Once);
         _roleRepositoryMock.Verify(repo => repo.RemoveAsync(role), Times.Once);
@@ -192,7 +192,7 @@ public class RoleServiceMockTests : IClassFixture<RoleFixture>
     [AllureStory("Negative case - role with assigned actors")]
     public async Task DeleteAsync_RoleWithActors_ThrowsInvalidOperationException()
     {
-        
+
         var roleId = 1;
         var role = _fixture.CreateRole(id: roleId);
         role.ActorRoles = new List<ActorRole> { new ActorRole(1, roleId) }; // Has assigned actors
@@ -201,7 +201,7 @@ public class RoleServiceMockTests : IClassFixture<RoleFixture>
             .Setup(repo => repo.GetByIdAsync(roleId))
             .ReturnsAsync(role);
 
-        
+
         await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.DeleteAsync(roleId));
         _roleRepositoryMock.Verify(repo => repo.RemoveAsync(It.IsAny<Role>()), Times.Never);
     }
@@ -211,7 +211,7 @@ public class RoleServiceMockTests : IClassFixture<RoleFixture>
     [AllureStory("Positive case - roles found")]
     public async Task GetByMusicalIdAsync_ValidId_ReturnsRoles()
     {
-        
+
         var musicalId = 1;
         var roles = new List<Role>
         {
@@ -223,10 +223,10 @@ public class RoleServiceMockTests : IClassFixture<RoleFixture>
             .Setup(repo => repo.GetByMusicalIdAsync(musicalId))
             .ReturnsAsync(roles);
 
-        
+
         var result = await _sut.GetByMusicalIdAsync(musicalId);
 
-        
+
         result.Should().HaveCount(2);
         _roleRepositoryMock.Verify(repo => repo.GetByMusicalIdAsync(musicalId), Times.Once);
     }

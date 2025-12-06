@@ -1,4 +1,4 @@
-﻿using TheatreCenter.Services.Interfaces.Services;
+using TheatreCenter.Services.Interfaces.Services;
 using TheatreCenter.Domain.Interfaces.Repositories;
 using TheatreCenter.Domain.Models;
 using Microsoft.Extensions.Configuration;

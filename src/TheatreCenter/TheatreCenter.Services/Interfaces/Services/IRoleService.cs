@@ -1,4 +1,4 @@
-﻿using TheatreCenter.Domain.Models;
+using TheatreCenter.Domain.Models;
 using TheatreCenter.Domain.Enums;
 
 namespace TheatreCenter.Services.Interfaces.Services

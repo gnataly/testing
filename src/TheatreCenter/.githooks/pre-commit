@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+SOLUTION_DIR="$ROOT_DIR/src/TheatreCenter"
+
+cd "$SOLUTION_DIR"
+
+echo "Restoring dependencies..."
+dotnet restore TheatreCenter.sln
+
+echo "Running dotnet format..."
+dotnet format --verify-no-changes --no-restore
+
+echo "Building with analyzers..."
+dotnet build TheatreCenter.sln --no-restore
+
+echo "Running code metrics..."
+dotnet run --project tools/CodeQuality/TheatreCenter.CodeQuality.csproj -- --solution TheatreCenter.sln --config codequality.config.json --report artifacts/metrics.json

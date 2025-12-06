@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TheatreCenter.Data;
 using TheatreCenter.Data.Repositories;
 using TheatreCenter.Domain.Models;

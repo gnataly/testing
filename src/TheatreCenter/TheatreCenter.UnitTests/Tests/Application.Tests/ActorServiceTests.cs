@@ -1,4 +1,4 @@
-﻿using Allure.Xunit.Attributes;
+using Allure.Xunit.Attributes;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -298,10 +298,10 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
     [AllureStory("Negative case - null actor")]
     public async Task CreateActorAsync_NullActor_ThrowsArgumentNullException()
     {
-        
+
         Actor actor = null!;
 
-        
+
         await Assert.ThrowsAsync<ArgumentNullException>(() => _sut.CreateActorAsync(actor));
         _actorRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<Actor>()), Times.Never);
 
@@ -321,11 +321,11 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
     [AllureStory("Negative case - empty name")]
     public async Task CreateActorAsync_EmptyName_ThrowsArgumentException()
     {
-        
+
         var actor = _fixture.CreateActor();
         actor.Name = "";
 
-        
+
         await Assert.ThrowsAsync<ArgumentException>(() => _sut.CreateActorAsync(actor));
         _actorRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<Actor>()), Times.Never);
 
@@ -345,11 +345,11 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
     [AllureStory("Negative case - future birth date")]
     public async Task CreateActorAsync_FutureBirthDate_ThrowsArgumentException()
     {
-        
+
         var actor = _fixture.CreateActor();
         actor.BirthDate = DateTime.UtcNow.AddDays(1);
 
-        
+
         await Assert.ThrowsAsync<ArgumentException>(() => _sut.CreateActorAsync(actor));
         _actorRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<Actor>()), Times.Never);
 
@@ -369,11 +369,11 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
     [AllureStory("Negative case - invalid height")]
     public async Task CreateActorAsync_InvalidHeight_ThrowsArgumentException()
     {
-        
+
         var actor = _fixture.CreateActor();
         actor.Height = 50; // Too short
 
-        
+
         await Assert.ThrowsAsync<ArgumentException>(() => _sut.CreateActorAsync(actor));
         _actorRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<Actor>()), Times.Never);
 
@@ -393,7 +393,7 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
     [AllureStory("Positive case - valid update")]
     public async Task UpdateActorAsync_ValidActor_ReturnsUpdatedActor()
     {
-        
+
         var actor = _fixture.CreateActor(id: 1);
         var existingActor = _fixture.CreateActor(id: 1);
 
@@ -407,10 +407,10 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
             .Setup(repo => repo.SaveChangesAsync())
             .Returns(Task.CompletedTask);
 
-        
+
         var result = await _sut.UpdateActorAsync(actor);
 
-        
+
         result.Should().BeEquivalentTo(existingActor);
         _actorRepositoryMock.Verify(repo => repo.GetByIdAsync(actor.Id), Times.Once);
         _actorRepositoryMock.Verify(repo => repo.UpdateAsync(existingActor), Times.Once);
@@ -432,7 +432,7 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
     [AllureStory("Positive case - actor deleted")]
     public async Task DeleteActorAsync_ValidActor_ReturnsTrue()
     {
-        
+
         var actorId = 1;
         var actor = _fixture.CreateActor(id: actorId);
         actor.ActorRoles = new List<ActorRole>(); // No assigned roles
@@ -447,10 +447,10 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
             .Setup(repo => repo.SaveChangesAsync())
             .Returns(Task.CompletedTask);
 
-        
+
         var result = await _sut.DeleteActorAsync(actorId);
 
-        
+
         result.Should().BeTrue();
         _actorRepositoryMock.Verify(repo => repo.GetByIdAsync(actorId), Times.Once);
         _actorRepositoryMock.Verify(repo => repo.RemoveAsync(actor), Times.Once);
@@ -472,7 +472,7 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
     [AllureStory("Negative case - actor with assigned roles")]
     public async Task DeleteActorAsync_ActorWithRoles_ThrowsInvalidOperationException()
     {
-        
+
         var actorId = 1;
         var actor = _fixture.CreateActor(id: actorId);
         actor.ActorRoles = new List<ActorRole> { new ActorRole(1, 1) }; // Has assigned roles
@@ -481,7 +481,7 @@ public class ActorServiceMockTests : IClassFixture<ActorFixture>
             .Setup(repo => repo.GetByIdAsync(actorId))
             .ReturnsAsync(actor);
 
-        
+
         await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.DeleteActorAsync(actorId));
         _actorRepositoryMock.Verify(repo => repo.RemoveAsync(It.IsAny<Actor>()), Times.Never);
 

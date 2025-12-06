@@ -1,4 +1,4 @@
-﻿using Allure.Xunit.Attributes;
+using Allure.Xunit.Attributes;
 using Xunit;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
@@ -337,10 +337,10 @@ public class TheatreServiceMockTests : IClassFixture<TheatreFixture>
     [AllureStory("Negative case - null theatre")]
     public async Task UpdateTheatreAsync_NullTheatre_ThrowsArgumentNullException()
     {
-        
+
         Theatre theatre = null!;
 
-        
+
         await Assert.ThrowsAsync<ArgumentNullException>(() => _sut.UpdateTheatreAsync(theatre));
         _theatreRepositoryMock.Verify(repo => repo.GetByIdAsync(It.IsAny<int>()), Times.Never);
         _theatreRepositoryMock.Verify(repo => repo.UpdateAsync(It.IsAny<Theatre>()), Times.Never);
@@ -352,14 +352,14 @@ public class TheatreServiceMockTests : IClassFixture<TheatreFixture>
     [AllureStory("Negative case - theatre not found")]
     public async Task UpdateTheatreAsync_TheatreNotExists_ThrowsKeyNotFoundException()
     {
-        
+
         var theatre = _fixture.CreateTheatre(id: 1);
 
         _theatreRepositoryMock
             .Setup(repo => repo.GetByIdAsync(theatre.Id))
             .ReturnsAsync((Theatre?)null);
 
-        
+
         await Assert.ThrowsAsync<KeyNotFoundException>(() => _sut.UpdateTheatreAsync(theatre));
         _theatreRepositoryMock.Verify(repo => repo.GetByIdAsync(theatre.Id), Times.Once);
         _theatreRepositoryMock.Verify(repo => repo.UpdateAsync(It.IsAny<Theatre>()), Times.Never);
@@ -395,7 +395,7 @@ public class TheatreServiceMockTests : IClassFixture<TheatreFixture>
     [AllureStory("Positive case - theatre deleted")]
     public async Task DeleteTheatreAsync_ValidId_ReturnsTrue()
     {
-        
+
         var theatreId = 1;
         var existingTheatre = _fixture.CreateTheatre(id: theatreId);
 
@@ -409,10 +409,10 @@ public class TheatreServiceMockTests : IClassFixture<TheatreFixture>
             .Setup(repo => repo.SaveChangesAsync())
             .Returns(Task.CompletedTask);
 
-        
+
         var result = await _sut.DeleteTheatreAsync(theatreId);
 
-        
+
         result.Should().BeTrue();
         _theatreRepositoryMock.Verify(repo => repo.GetByIdAsync(theatreId), Times.Once);
         _theatreRepositoryMock.Verify(repo => repo.RemoveAsync(existingTheatre), Times.Once);
@@ -424,17 +424,17 @@ public class TheatreServiceMockTests : IClassFixture<TheatreFixture>
     [AllureStory("Negative case - theatre not found")]
     public async Task DeleteTheatreAsync_TheatreNotExists_ReturnsFalse()
     {
-        
+
         var theatreId = 1;
 
         _theatreRepositoryMock
             .Setup(repo => repo.GetByIdAsync(theatreId))
             .ReturnsAsync((Theatre?)null);
 
-        
+
         var result = await _sut.DeleteTheatreAsync(theatreId);
 
-        
+
         result.Should().BeFalse();
         _theatreRepositoryMock.Verify(repo => repo.GetByIdAsync(theatreId), Times.Once);
         _theatreRepositoryMock.Verify(repo => repo.RemoveAsync(It.IsAny<Theatre>()), Times.Never);
@@ -446,7 +446,7 @@ public class TheatreServiceMockTests : IClassFixture<TheatreFixture>
     [AllureStory("Exception handling")]
     public async Task DeleteTheatreAsync_RepositoryThrowsException_ThrowsException()
     {
-        
+
         var theatreId = 1;
         var existingTheatre = _fixture.CreateTheatre(id: theatreId);
         var exception = new Exception("Delete failed");
@@ -458,7 +458,7 @@ public class TheatreServiceMockTests : IClassFixture<TheatreFixture>
             .Setup(repo => repo.RemoveAsync(existingTheatre))
             .ThrowsAsync(exception);
 
-        
+
         await Assert.ThrowsAsync<Exception>(() => _sut.DeleteTheatreAsync(theatreId));
         _theatreRepositoryMock.Verify(repo => repo.GetByIdAsync(theatreId), Times.Once);
         _theatreRepositoryMock.Verify(repo => repo.RemoveAsync(existingTheatre), Times.Once);

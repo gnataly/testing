@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using TheatreCenter.DTOs;
 using TheatreCenter.Services.Interfaces.Services;
@@ -55,7 +55,7 @@ namespace TheatreCenter.Backend.WebAPI.Controllers
                 int? cId = null;
                 if (currentUser != null)
                     cId = int.Parse(currentUser.Value);
-                
+
                 var result = await _theatreService.GetAllTheatresAsync(filter, cId);
 
                 var totalCount = await _theatreService.GetCountAsync(filter, cId);

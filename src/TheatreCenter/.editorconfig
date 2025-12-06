@@ -1,0 +1,67 @@
+root = true
+
+[*.cs]
+indent_style = space
+indent_size = 4
+charset = utf-8
+insert_final_newline = true
+
+# Analyzer severities
+dotnet_analyzer_diagnostic.category-Style.severity = suggestion
+dotnet_analyzer_diagnostic.category-Design.severity = suggestion
+dotnet_analyzer_diagnostic.category-Maintainability.severity = suggestion
+dotnet_analyzer_diagnostic.category-Usage.severity = suggestion
+
+# Cyclomatic complexity guard
+dotnet_diagnostic.CA1502.severity = error
+dotnet_code_quality.CA1502.max_complexity = 10
+
+# Suppress noisy style/design rules across legacy code
+dotnet_diagnostic.CA1707.severity = none
+dotnet_diagnostic.CA1050.severity = suggestion
+dotnet_diagnostic.CA1866.severity = suggestion
+dotnet_diagnostic.CA1310.severity = suggestion
+dotnet_diagnostic.CA1869.severity = suggestion
+dotnet_diagnostic.CA1305.severity = suggestion
+dotnet_diagnostic.CA1852.severity = suggestion
+dotnet_diagnostic.CA2201.severity = suggestion
+dotnet_diagnostic.CA1822.severity = suggestion
+dotnet_diagnostic.CS8618.severity = suggestion
+dotnet_diagnostic.CS8625.severity = suggestion
+dotnet_diagnostic.CS8602.severity = suggestion
+dotnet_diagnostic.CS8603.severity = suggestion
+dotnet_diagnostic.CS8619.severity = suggestion
+dotnet_diagnostic.CS1998.severity = suggestion
+dotnet_diagnostic.CA1848.severity = suggestion
+dotnet_diagnostic.CA1825.severity = suggestion
+dotnet_diagnostic.CA1861.severity = suggestion
+dotnet_diagnostic.CA1860.severity = suggestion
+dotnet_diagnostic.CS8613.severity = suggestion
+dotnet_diagnostic.CS4014.severity = suggestion
+dotnet_diagnostic.CS0414.severity = suggestion
+dotnet_diagnostic.CA1711.severity = suggestion
+dotnet_diagnostic.CA1051.severity = suggestion
+dotnet_diagnostic.CA1805.severity = suggestion
+dotnet_diagnostic.CA1837.severity = suggestion
+dotnet_diagnostic.CA1859.severity = suggestion
+dotnet_diagnostic.CS8601.severity = suggestion
+dotnet_diagnostic.CS8604.severity = suggestion
+
+# Code style
+dotnet_style_qualification_for_field = false:silent
+dotnet_style_qualification_for_property = false:silent
+dotnet_style_qualification_for_method = false:silent
+dotnet_style_qualification_for_event = false:silent
+dotnet_style_require_accessibility_modifiers = always:silent
+dotnet_style_explicit_tuple_names = true:silent
+dotnet_style_readonly_field = true:silent
+csharp_prefer_braces = true:silent
+csharp_prefer_static_local_function = true:silent
+csharp_style_expression_bodied_methods = when_on_single_line:silent
+csharp_style_expression_bodied_properties = when_on_single_line:silent
+csharp_style_var_for_built_in_types = true:silent
+csharp_style_var_when_type_is_apparent = true:silent
+csharp_style_var_elsewhere = true:silent
+csharp_style_prefer_switch_expression = true:silent
+csharp_style_prefer_pattern_matching = true:silent
+csharp_preferred_modifier_order = public,private,protected,internal,static,readonly,virtual,new,abstract,sealed,override,extern,unsafe,volatile,async:silent

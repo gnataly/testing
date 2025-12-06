@@ -1,4 +1,4 @@
-﻿using TheatreCenter.Domain.Models;
+using TheatreCenter.Domain.Models;
 using AutoFixture;
 using TheatreCenter.Domain.Enums;
 

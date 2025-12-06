@@ -1,4 +1,4 @@
-﻿
+
 //using System.Text.Json.Serialization;
 //namespace TheatreCenter.DTOs;
 //public class AddFavoriteDto

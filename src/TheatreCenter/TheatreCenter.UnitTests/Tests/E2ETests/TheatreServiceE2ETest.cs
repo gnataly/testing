@@ -1,4 +1,4 @@
-﻿using TheatreCenter.Data;
+using TheatreCenter.Data;
 using TheatreCenter.Domain.Models;
 using TheatreCenter.Domain.Enums;
 using TheatreCenter.Services.Services;
@@ -78,12 +78,14 @@ public class TheatreServiceE2ETests : IClassFixture<DatabaseFixture>, IAsyncLife
             new NullLogger<CastMemberService>()
         );
 
-        _commitTransaction = async () => {
+        _commitTransaction = async () =>
+        {
             await context.Database.CommitTransactionAsync();
             await context.DisposeAsync();
         };
 
-        _rollbackTransaction = async () => {
+        _rollbackTransaction = async () =>
+        {
             await context.Database.RollbackTransactionAsync();
             await context.DisposeAsync();
         };

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using TheatreCenter.Data.Repositories;
 using TheatreCenter.Data;
@@ -39,11 +39,13 @@ public class ShowServiceIt : IntegrationTestBase
         _theatreRepository = Fixture.CreateRepository<TheatreRepository>(context);
         _service = new ShowService(showRepository, _musicalRepository, new NullLogger<ShowService>());
 
-        _commitTransaction = async () => {
+        _commitTransaction = async () =>
+        {
             await context.Database.CommitTransactionAsync();
             await context.DisposeAsync();
         };
-        _rollbackTransaction = async () => {
+        _rollbackTransaction = async () =>
+        {
             await context.Database.RollbackTransactionAsync();
             await context.DisposeAsync();
         };

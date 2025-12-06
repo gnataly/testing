@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using TheatreCenter.DTOs;
 using TheatreCenter.Services.Interfaces.Services;
@@ -51,7 +51,7 @@ namespace TheatreCenter.Backend.WebAPI.Controllers
                     Search = search,
                     AgeRestriction = ageRestriction.HasValue ? ageRestriction.Value : null,
                     TheatreId = theatreId,
-                    ThemeId = themeId, 
+                    ThemeId = themeId,
                     OnlyFavorites = onlyFavorites,
                     Sort = sort.ToString()
                 };

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using TheatreCenter.DTOs;
 using TheatreCenter.Services.Interfaces.Services;
@@ -75,7 +75,7 @@ public class RolesController : ControllerBase
                 Items = roleDtos,
                 Pagination = new PaginationDto
                 {
-                    Page =  filter.Page,
+                    Page = filter.Page,
                     PageSize = filter.PageSize,
                     TotalCount = totalCount
                 }

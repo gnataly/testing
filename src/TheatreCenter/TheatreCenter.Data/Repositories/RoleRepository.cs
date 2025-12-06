@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TheatreCenter.Domain.Interfaces.Repositories;
 using TheatreCenter.Domain.Models;
 using TheatreCenter.Domain.Enums;
@@ -26,41 +26,7 @@ namespace TheatreCenter.Data.Repositories
 
         public async Task<IEnumerable<Role>> GetAllAsync(RoleFilter filter)
         {
-            var query = _context.Roles
-                .Include(r => r.Musical)
-                .Include(r => r.ActorRoles)
-                    .ThenInclude(ar => ar.Actor)
-                .AsQueryable();
-
-            if (!string.IsNullOrEmpty(filter.Search))
-            {
-                query = query.Where(r => r.Name.Contains(filter.Search));
-            }
-
-            if (filter.RoleType.HasValue)
-            {
-                query = query.Where(r => r.RoleType == filter.RoleType.Value);
-            }
-
-            if (filter.MusicalId.HasValue)
-            {
-                query = query.Where(r => r.MusicalId == filter.MusicalId.Value);
-            }
-
-            if (filter.ActorId.HasValue)
-            {
-                query = query.Where(r => r.ActorRoles.Any(ar => ar.ActorId == filter.ActorId.Value));
-            }
-
-            query = filter.Sort switch
-            {
-                "name_asc" => query.OrderBy(r => r.Name),
-                "name_desc" => query.OrderByDescending(r => r.Name),
-                "roleType_asc" => query.OrderBy(r => r.RoleType),
-                "roleType_desc" => query.OrderByDescending(r => r.RoleType),
-                "id_desc" => query.OrderByDescending(r => r.Id),
-                _ => query.OrderBy(r => r.Id)
-            };
+            var query = ApplySorting(ApplyFilters(BuildBaseQuery(), filter), filter.Sort);
 
             return await query.ToListAsync();
         }
@@ -110,5 +76,50 @@ namespace TheatreCenter.Data.Repositories
                 .Include(r => r.Musical)
                 .ToListAsync();
         }
+
+        private IQueryable<Role> BuildBaseQuery()
+        {
+            return _context.Roles
+                .Include(r => r.Musical)
+                .Include(r => r.ActorRoles)
+                    .ThenInclude(ar => ar.Actor)
+                .AsQueryable();
+        }
+
+        private static IQueryable<Role> ApplyFilters(IQueryable<Role> query, RoleFilter filter)
+        {
+            if (!string.IsNullOrWhiteSpace(filter.Search))
+            {
+                query = query.Where(r => r.Name.Contains(filter.Search));
+            }
+
+            if (filter.RoleType.HasValue)
+            {
+                query = query.Where(r => r.RoleType == filter.RoleType.Value);
+            }
+
+            if (filter.MusicalId.HasValue)
+            {
+                query = query.Where(r => r.MusicalId == filter.MusicalId.Value);
+            }
+
+            if (filter.ActorId.HasValue)
+            {
+                query = query.Where(r => r.ActorRoles.Any(ar => ar.ActorId == filter.ActorId.Value));
+            }
+
+            return query;
+        }
+
+        private static IQueryable<Role> ApplySorting(IQueryable<Role> query, string? sort) =>
+            sort switch
+            {
+                "name_asc" => query.OrderBy(r => r.Name),
+                "name_desc" => query.OrderByDescending(r => r.Name),
+                "roleType_asc" => query.OrderBy(r => r.RoleType),
+                "roleType_desc" => query.OrderByDescending(r => r.RoleType),
+                "id_desc" => query.OrderByDescending(r => r.Id),
+                _ => query.OrderBy(r => r.Id)
+            };
     }
 }
