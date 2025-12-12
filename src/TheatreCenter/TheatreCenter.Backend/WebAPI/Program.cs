@@ -10,6 +10,7 @@ using TheatreCenter.Domain.Enums;
 using TheatreCenter.Domain.Interfaces.Repositories;
 using TheatreCenter.Services.Interfaces.Services;
 using TheatreCenter.Services.Services;
+using TheatreCenter.Services.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -188,6 +189,10 @@ public class Program
             builder.Services.AddScoped<IRoleService, RoleService>();
             builder.Services.AddScoped<IShowService, ShowService>();
             builder.Services.AddScoped<IThemeService, ThemeService>();
+            builder.Services.Configure<PaymentOptions>(builder.Configuration.GetSection("Payment"));
+            builder.Services.AddHttpClient<CloudPaymentsClient>();
+            builder.Services.AddScoped<IPaymentGatewayClient, CloudPaymentsClient>();
+            builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 
             builder.Services.AddAuthentication(options =>
