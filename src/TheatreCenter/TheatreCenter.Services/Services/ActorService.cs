@@ -1,12 +1,9 @@
-﻿using TheatreCenter.Services.Interfaces.Services;
+using TheatreCenter.Services.Interfaces.Services;
 using TheatreCenter.Domain.Models;
 using TheatreCenter.Domain.Enums;
 using TheatreCenter.Domain.Interfaces.Repositories;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using TheatreCenter.DTOs;
 
 namespace TheatreCenter.Services.Services
 {
@@ -14,14 +11,16 @@ namespace TheatreCenter.Services.Services
     {
         private readonly ILogger<ActorService> _logger;
         private readonly IActorRepository _actorRepository;
+        private readonly IAccountRepository _accountRepository;
 
-        public ActorService(IActorRepository actorRepository, ILogger<ActorService> logger)
+        public ActorService(IActorRepository actorRepository, IAccountRepository accountRepository, ILogger<ActorService> logger)
         {
             _logger = logger;
             _actorRepository = actorRepository;
+            _accountRepository = accountRepository;
         }
 
-        public async Task<Actor> GetActorByIdAsync(int id)
+        public async Task<Actor> GetActorByIdAsync(int id, int? currentUserId = null)
         {
             _logger.LogInformation("Attempting to get actor with ID: {ActorId}", id);
 
@@ -38,7 +37,12 @@ namespace TheatreCenter.Services.Services
                 if (actor == null)
                 {
                     _logger.LogWarning("Actor with ID {ActorId} not found", id);
-                    throw new ArgumentNullException("Actor not found");
+                    throw new KeyNotFoundException("Actor not found");
+                }
+
+                if (currentUserId.HasValue)
+                {
+                    actor.IsFavorite = await _accountRepository.IsFavoriteActorAsync(currentUserId.Value, id);
                 }
 
                 _logger.LogInformation("Successfully retrieved actor with ID: {ActorId}", id);
@@ -51,15 +55,45 @@ namespace TheatreCenter.Services.Services
             }
         }
 
-        public async Task<IEnumerable<Actor>> GetAllActorsAsync()
+        public async Task<List<Actor>> GetAllActorsAsync(ActorFilter filter, int? currentUserId = null)
         {
-            _logger.LogInformation("Starting to retrieve all actors");
+            _logger.LogInformation("Starting to retrieve all actors with filter");
 
             try
             {
-                var actors = await _actorRepository.GetAllAsync();
-                _logger.LogInformation("Successfully retrieved {ActorCount} actors", actors.Count());
-                return actors;
+                var result = await _actorRepository.GetAllAsync(filter);
+
+                if (currentUserId.HasValue)
+                {
+                    foreach (var actor in result)
+                    {
+                        actor.IsFavorite = await _accountRepository.IsFavoriteActorAsync(currentUserId.Value, actor.Id);
+                    }
+
+                    if (filter.OnlyFavorites)
+                    {
+                        result = result.Where(a => a.IsFavorite).ToList();
+                    }
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while getting all actors");
+                throw;
+            }
+        }
+
+        public async Task<int> GetCountAsync(ActorFilter filter, int? currentUserId = null)
+        {
+            _logger.LogInformation("Starting to retrieve all actors with filter");
+
+            try
+            {
+                var result = await _actorRepository.GetCountAsync(filter);
+
+                return result;
             }
             catch (Exception ex)
             {
@@ -86,7 +120,7 @@ namespace TheatreCenter.Services.Services
                     throw new ArgumentException("Actor name cannot be empty");
                 }
 
-                if (actor.BirthDate > DateTime.UtcNow)
+                if (actor.BirthDate > DateTime.Now)
                 {
                     _logger.LogError("Invalid birth date provided: {BirthDate}", actor.BirthDate);
                     throw new ArgumentException("Birth date cannot be in the future");
@@ -184,20 +218,44 @@ namespace TheatreCenter.Services.Services
             }
         }
 
-        public async Task<IEnumerable<Actor>> GetActorsByVoiceTypeAsync(VoiceType voiceType)
+
+
+        public async Task<bool> AddActorToRoleAsync(int actorId, int roleId)
         {
-            _logger.LogInformation("Attempting to get actors by voice type: {VoiceType}", voiceType);
+            _logger.LogInformation("Adding actor {ActorId} to role {RoleId}", actorId, roleId);
 
             try
             {
-                var actors = await _actorRepository.GetByVoiceTypeAsync(voiceType);
-                _logger.LogInformation("Found {ActorCount} actors with voice type {VoiceType}",
-                    actors.Count(), voiceType);
-                return actors;
+                var result = await _actorRepository.AddActorToRoleAsync(actorId, roleId);
+                if (result)
+                {
+                    await _actorRepository.SaveChangesAsync();
+                }
+                return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while getting actors by voice type: {VoiceType}", voiceType);
+                _logger.LogError(ex, "Error adding actor to role");
+                throw;
+            }
+        }
+
+        public async Task<bool> RemoveActorFromRoleAsync(int actorId, int roleId)
+        {
+            _logger.LogInformation("Removing actor {ActorId} from role {RoleId}", actorId, roleId);
+
+            try
+            {
+                var result = await _actorRepository.RemoveActorFromRoleAsync(actorId, roleId);
+                if (result)
+                {
+                    await _actorRepository.SaveChangesAsync();
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error removing actor from role");
                 throw;
             }
         }

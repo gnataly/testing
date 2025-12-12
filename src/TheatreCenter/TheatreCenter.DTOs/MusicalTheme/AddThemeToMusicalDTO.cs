@@ -1,19 +1,18 @@
-﻿using System.Text.Json.Serialization;
+//using System.Text.Json.Serialization;
 
-namespace TheatreCenter.DTOs.MusicalThemes
-{
-    public class AddThemeToMusicalDTO
-    {
-        public AddThemeToMusicalDTO(int musicalId, int themeId)
-        {
-            MusicalId = musicalId;
-            ThemeId = themeId;
-        }
+//namespace TheatreCenter.DTOs;
 
-        [JsonPropertyName("musicalId")]
-        public int MusicalId { get; }
+//public class AddThemeToMusicalDto
+//{
+//    public AddThemeToMusicalDto(int musicalId, int themeId)
+//    {
+//        MusicalId = musicalId;
+//        ThemeId = themeId;
+//    }
 
-        [JsonPropertyName("themeId")]
-        public int ThemeId { get; }
-    }
-}
+//    [JsonPropertyName("musicalId")]
+//    public int MusicalId { get; }
+
+//    [JsonPropertyName("themeId")]
+//    public int ThemeId { get; }
+//}

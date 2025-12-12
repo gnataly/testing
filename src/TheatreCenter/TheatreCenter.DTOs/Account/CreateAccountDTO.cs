@@ -1,19 +1,18 @@
-﻿using System.Text.Json.Serialization;
+//using System.Text.Json.Serialization;
 
-namespace TheatreCenter.DTOs.Account
-{
-    public class CreateAccountDTO
-    {
-        public CreateAccountDTO(string username, string passwordHash)
-        {
-            Username = username;
-            PasswordHash = passwordHash;
-        }
+//namespace TheatreCenter.DTOs;
 
-        [JsonPropertyName("username")]
-        public string Username { get; }
+//public class CreateAccountDto
+//{
+//    public CreateAccountDto(string username, string passwordHash)
+//    {
+//        Username = username;
+//        PasswordHash = passwordHash;
+//    }
 
-        [JsonPropertyName("passwordHash")]
-        public string PasswordHash { get; }
-    }
-}
+//    [JsonPropertyName("username")]
+//    public string Username { get; }
+
+//    [JsonPropertyName("passwordHash")]
+//    public string PasswordHash { get; }
+//}

@@ -1,214 +1,304 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.AspNetCore;
-using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
+using TheatreCenter.DTOs;
+using TheatreCenter.Services.Interfaces.Services;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using TheatreCenter.Domain.Models;
-using TheatreCenter.DTOs.Actor;
-using TheatreCenter.Services.Interfaces.Services;
+using System.ComponentModel.DataAnnotations;
+using TheatreCenter.Domain.Enums;
 
-namespace TheatreCenter.Backend.WebAPI.Controllers
+namespace TheatreCenter.Backend.WebAPI.Controllers;
+
+[ApiController]
+[Route("/api/v1/actors")]
+public class ActorsController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class ActorsController : ControllerBase
+    private readonly IActorService _actorService;
+    private readonly ILogger<ActorsController> _logger;
+
+    public ActorsController(IActorService actorService, ILogger<ActorsController> logger)
     {
-        private readonly IActorService _actorService;
-        private readonly ILogger<ActorsController> _logger;
+        _actorService = actorService;
+        _logger = logger;
+    }
 
-        public ActorsController(IActorService actorService, ILogger<ActorsController> logger)
+    [HttpGet]
+    [SwaggerOperation(
+        OperationId = "GetAllActors",
+        Summary = "Получить всех актеров с фильтрацией",
+        Description = "Получить пагинированный список актеров с возможностью фильтрации по различным параметрам")]
+    [SwaggerResponse(200, "Успешное получение списка актеров", typeof(ActorListDto))]
+    [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+    [SwaggerResponse(400, "Ошибка валидации", typeof(ErrorDto))]
+    public async Task<IActionResult> GetAllActors(
+        [FromQuery] VoiceType? voiceType,
+        [FromQuery] Gender? gender,
+        [FromQuery] string? search,
+        [FromQuery] bool onlyFavorites = false,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] SortType sort = SortType.id_asc)
+    {
+        try
         {
-            _actorService = actorService;
-            _logger = logger;
+            var filter = new ActorFilter
+            {
+                Page = page,
+                PageSize = pageSize,
+                Search = search,
+                VoiceType = voiceType.HasValue ? voiceType.Value : null,
+                Gender = gender.HasValue ? gender.Value : null,
+                OnlyFavorites = onlyFavorites,
+                Sort = sort.ToString()
+            };
+
+            var currentUser = User.FindFirst(ClaimTypes.NameIdentifier);
+
+            int? cId = null;
+            if (currentUser != null)
+                cId = int.Parse(currentUser.Value);
+
+            var result = await _actorService.GetAllActorsAsync(filter, cId);
+
+            var totalCount = await _actorService.GetCountAsync(filter, cId);
+
+            var actorDtos = result.Select(a => new ActorDto
+            {
+                Id = a.Id,
+                Name = a.Name,
+                VoiceType = a.VoiceType,
+                Gender = a.Gender,
+                BirthDate = a.BirthDate,
+                Height = a.Height,
+                Weight = a.Weight,
+                AddInfo = a.AddInfo,
+                IsFavorite = a.IsFavorite
+            }).ToList();
+
+            var response = new ActorListDto
+            {
+                Items = actorDtos,
+                Pagination = new PaginationDto
+                {
+                    Page = filter.Page,
+                    PageSize = filter.PageSize,
+                    TotalCount = totalCount
+                }
+            };
+
+            return Ok(response);
         }
-
-        [HttpGet("{id}")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetById(int id)
+        catch (Exception ex)
         {
-            _logger.LogInformation("Starting GetById request for actor ID: {ActorId}", id);
-
-            try
-            {
-                var actor = await _actorService.GetActorByIdAsync(id);
-
-                _logger.LogDebug("Mapping actor with ID {ActorId} to DTO", id);
-                var actorDto = new ActorDTO(
-                    actor.Id,
-                    actor.Name,
-                    actor.VoiceType,
-                    actor.Gender,
-                    actor.BirthDate,
-                    actor.Height,
-                    actor.Weight,
-                    actor.AddInfo
-                );
-
-                _logger.LogInformation("Successfully processed GetById request for actor ID: {ActorId}", id);
-                return Ok(actorDto);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                _logger.LogWarning(ex, "Actor with ID {ActorId} not found", id);
-                return NotFound();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing GetById request for actor ID: {ActorId}", id);
-                return StatusCode(500, "Internal server error");
-            }
-        }
-
-        [HttpGet]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetAll()
-        {
-            _logger.LogInformation("Starting GetAllActors request");
-
-            try
-            {
-                var actors = await _actorService.GetAllActorsAsync();
-
-                _logger.LogDebug("Mapping {ActorCount} actors to DTOs", actors.Count());
-                var actorDtos = actors.Select(a => new ActorDTO(
-                    a.Id,
-                    a.Name,
-                    a.VoiceType,
-                    a.Gender,
-                    a.BirthDate,
-                    a.Height,
-                    a.Weight,
-                    a.AddInfo
-                ));
-
-                _logger.LogInformation("Successfully processed GetAllActors request, returning {ActorCount} actors", actorDtos.Count());
-                return Ok(actorDtos);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing GetAllActors request");
-                return StatusCode(500, "Internal server error");
-            }
-        }
-
-        [HttpPost]
-        [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> Create([FromBody] CreateActorDTO createDto)
-        {
-            _logger.LogInformation("Starting CreateActor request");
-
-            try
-            {
-                _logger.LogDebug("Mapping CreateActorDTO to Actor entity");
-                var actor = new Actor(
-                    0,
-                    createDto.Name,
-                    createDto.VoiceType,
-                    createDto.Gender,
-                    createDto.BirthDate,
-                    createDto.Height,
-                    createDto.Weight,
-                    createDto.AddInfo
-                );
-
-                var createdActor = await _actorService.CreateActorAsync(actor);
-
-                _logger.LogDebug("Mapping created actor with ID {ActorId} to DTO", createdActor.Id);
-                var actorDto = new ActorDTO(
-                    createdActor.Id,
-                    createdActor.Name,
-                    createdActor.VoiceType,
-                    createdActor.Gender,
-                    createdActor.BirthDate,
-                    createdActor.Height,
-                    createdActor.Weight,
-                    createdActor.AddInfo
-                );
-
-                _logger.LogInformation("Successfully created actor with ID: {ActorId}", createdActor.Id);
-                return CreatedAtAction(nameof(GetById), new { id = actorDto.Id }, actorDto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing CreateActor request");
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpPut("{id}")]
-        [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateActorDTO updateDto)
-        {
-            _logger.LogInformation("Starting UpdateActor request for actor ID: {ActorId}", id);
-
-            try
-            {
-                _logger.LogDebug("Fetching existing actor with ID: {ActorId}", id);
-                var existingActor = await _actorService.GetActorByIdAsync(id);
-
-                _logger.LogDebug("Updating fields for actor ID: {ActorId}", id);
-                //existingActor.Height = updateDto.Height;
-                //existingActor.Weight = updateDto.Weight;
-                //existingActor.AddInfo = updateDto.AddInfo;
-                //existingActor.VoiceType = updateDto.VoiceType;
-                existingActor.Name = updateDto.Name;
-                existingActor.VoiceType = updateDto.VoiceType;
-                existingActor.Gender = updateDto.Gender;
-                existingActor.BirthDate = updateDto.BirthDate;
-                existingActor.Height = updateDto.Height;
-                existingActor.Weight = updateDto.Weight;
-                existingActor.AddInfo = updateDto.AddInfo;
-
-                var updatedActor = await _actorService.UpdateActorAsync(existingActor);
-
-                _logger.LogDebug("Mapping updated actor with ID {ActorId} to DTO", id);
-                var actorDto = new ActorDTO(
-                    updatedActor.Id,
-                    updatedActor.Name,
-                    updatedActor.VoiceType,
-                    updatedActor.Gender,
-                    updatedActor.BirthDate,
-                    updatedActor.Height,
-                    updatedActor.Weight,
-                    updatedActor.AddInfo
-                );
-
-                _logger.LogInformation("Successfully updated actor with ID: {ActorId}", id);
-                return Ok(actorDto);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                _logger.LogWarning(ex, "Actor with ID {ActorId} not found for update", id);
-                return NotFound();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing UpdateActor request for actor ID: {ActorId}", id);
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpDelete("{id}")]
-        [Authorize(Policy = "AdminOnly")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            _logger.LogInformation("Starting DeleteActor request for actor ID: {ActorId}", id);
-
-            try
-            {
-                await _actorService.DeleteActorAsync(id);
-                _logger.LogInformation("Successfully deleted actor with ID: {ActorId}", id);
-                return NoContent();
-            }
-            catch (KeyNotFoundException ex)
-            {
-                _logger.LogWarning(ex, "Actor with ID {ActorId} not found for deletion", id);
-                return NotFound();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing DeleteActor request for actor ID: {ActorId}", id);
-                return BadRequest(ex.Message);
-            }
+            _logger.LogError(ex, "Internal Server Error");
+            return StatusCode(500, new ErrorDto("InternalServerError", "Internal server error"));
         }
     }
+
+    [HttpPost]
+    [Authorize(Policy = "AdminOnly")]
+    [SwaggerOperation(
+        OperationId = "CreateActor",
+        Summary = "Создать нового актера",
+        Description = "Создать нового актера (только для администраторов)")]
+    [SwaggerResponse(201, "Актер успешно создан", typeof(ActorDto))]
+    [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+    [SwaggerResponse(403, "Запрещено", typeof(ErrorDto))]
+    [SwaggerResponse(400, "Ошибка валидации", typeof(ErrorDto))]
+    public async Task<IActionResult> CreateActor([Required][FromBody] CreateActorRequestDto createActorRequestDto)
+    {
+        try
+        {
+            var actor = new Actor(
+                id: 0,
+                name: createActorRequestDto.Name,
+                voiceType: createActorRequestDto.VoiceType,
+                gender: createActorRequestDto.Gender,
+                birthDate: createActorRequestDto.BirthDate,
+                height: createActorRequestDto.Height,
+                weight: createActorRequestDto.Weight,
+                addInfo: createActorRequestDto.AddInfo
+            );
+
+            var createdActor = await _actorService.CreateActorAsync(actor);
+
+            var actorDto = new ActorDto
+            {
+                Id = createdActor.Id,
+                Name = createdActor.Name,
+                VoiceType = createdActor.VoiceType,
+                Gender = createdActor.Gender,
+                BirthDate = createdActor.BirthDate,
+                Height = createdActor.Height,
+                Weight = createdActor.Weight,
+                AddInfo = createdActor.AddInfo,
+                IsFavorite = false
+            };
+
+            return CreatedAtAction(nameof(GetActorByActorId), new { actorId = actorDto.Id }, actorDto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Internal Server Error");
+            return BadRequest(new ErrorDto("ValidationError", ex.Message));
+        }
+    }
+
+    [HttpGet("{actorId}")]
+    [SwaggerOperation(
+        OperationId = "GetActorByActorId",
+        Summary = "Получить актера по ID",
+        Description = "Получить информацию об актере по его ID")]
+    [SwaggerResponse(200, "Успешное получение актера", typeof(ActorDto))]
+    [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+    [SwaggerResponse(404, "Ресурс не найден", typeof(ErrorDto))]
+    public async Task<IActionResult> GetActorByActorId([Required][FromRoute] int actorId)
+    {
+        try
+        {
+            var currentUser = User.FindFirst(ClaimTypes.NameIdentifier);
+            Actor? actor;
+
+            if (currentUser != null)
+                actor = await _actorService.GetActorByIdAsync(actorId, int.Parse(currentUser.Value));
+            else
+                actor = await _actorService.GetActorByIdAsync(actorId);
+
+            var actorDto = new ActorDto
+            {
+                Id = actor.Id,
+                Name = actor.Name,
+                VoiceType = actor.VoiceType,
+                Gender = actor.Gender,
+                BirthDate = actor.BirthDate,
+                Height = actor.Height,
+                Weight = actor.Weight,
+                AddInfo = actor.AddInfo,
+                IsFavorite = actor.IsFavorite
+            };
+
+            return Ok(actorDto);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new ErrorDto("NotFound", ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Internal Server Error");
+            return StatusCode(500, new ErrorDto("InternalServerError", "Internal server error"));
+        }
+    }
+
+    [HttpPut("{actorId}")]
+    [Authorize(Policy = "AdminOnly")]
+    [SwaggerOperation(
+        OperationId = "UpdateActorByActorId",
+        Summary = "Обновить актера",
+        Description = "Обновить информацию об актере (только для администраторов)")]
+    [SwaggerResponse(200, "Актер успешно обновлен", typeof(ActorDto))]
+    [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+    [SwaggerResponse(403, "Запрещено", typeof(ErrorDto))]
+    [SwaggerResponse(400, "Ошибка валидации", typeof(ErrorDto))]
+    [SwaggerResponse(404, "Ресурс не найден", typeof(ErrorDto))]
+    public async Task<IActionResult> UpdateActorByActorId([Required][FromRoute] int actorId, [Required][FromBody] UpdateActorRequestDto updateActorRequestDto)
+    {
+        try
+        {
+            var actor = new Actor(
+                id: actorId,
+                name: updateActorRequestDto.Name,
+                voiceType: updateActorRequestDto.VoiceType,
+                gender: updateActorRequestDto.Gender,
+                birthDate: updateActorRequestDto.BirthDate,
+                height: updateActorRequestDto.Height,
+                weight: updateActorRequestDto.Weight,
+                addInfo: updateActorRequestDto.AddInfo
+            );
+
+            var updatedActor = await _actorService.UpdateActorAsync(actor);
+
+            var actorDto = new ActorDto
+            {
+                Id = updatedActor.Id,
+                Name = updatedActor.Name,
+                VoiceType = updatedActor.VoiceType,
+                Gender = updatedActor.Gender,
+                BirthDate = updatedActor.BirthDate,
+                Height = updatedActor.Height,
+                Weight = updatedActor.Weight,
+                AddInfo = updatedActor.AddInfo,
+                IsFavorite = updatedActor.IsFavorite
+            };
+
+            return Ok(actorDto);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new ErrorDto("NotFound", ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Internal Server Error");
+            return BadRequest(new ErrorDto("ValidationError", ex.Message));
+        }
+    }
+
+    [HttpDelete("{actorId}")]
+    [Authorize(Policy = "AdminOnly")]
+    [SwaggerOperation(
+        OperationId = "DeleteActorByActorId",
+        Summary = "Удалить актера",
+        Description = "Удалить актера (только для администраторов)")]
+    [SwaggerResponse(204, "Актер успешно удален")]
+    [SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+    [SwaggerResponse(403, "Запрещено", typeof(ErrorDto))]
+    [SwaggerResponse(404, "Ресурс не найден", typeof(ErrorDto))]
+    public async Task<IActionResult> DeleteActorByActorId([Required][FromRoute] int actorId)
+    {
+        try
+        {
+            var result = await _actorService.DeleteActorAsync(actorId);
+            if (!result)
+            {
+                return NotFound(new ErrorDto("NotFound", "Actor not found"));
+            }
+
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new ErrorDto("ValidationError", ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Internal Server Error");
+            return StatusCode(500, new ErrorDto("InternalServerError", "Internal server error"));
+        }
+    }
+
+    //[HttpGet("{actorId}/roles")]
+    //[Authorize]
+    //[SwaggerOperation(
+    //    OperationId = "GetRolesByActorId",
+    //    Summary = "Получить все роли актера",
+    //    Description = "Получить список всех ролей, которые исполняет конкретный актер")]
+    //[SwaggerResponse(200, "Успешное получение ролей актера", typeof(RoleListDto))]
+    //[SwaggerResponse(401, "Не авторизован", typeof(ErrorDto))]
+    //[SwaggerResponse(404, "Ресурс не найден", typeof(ErrorDto))]
+    //public async Task<IActionResult> GetRolesByActorId([Required][FromRoute] int actorId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    //{
+    //    try
+    //    {
+    //        // This would require additional service method to get actor roles with pagination
+    //        // For now, returning not implemented
+    //        return StatusCode(501, new ErrorDto("NotImplemented", "This endpoint is not yet implemented"));
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        _logger.LogError(ex, "Internal Server Error");
+    //        return StatusCode(500, new ErrorDto("InternalServerError", "Internal server error"));
+    //    }
+    //}
 }

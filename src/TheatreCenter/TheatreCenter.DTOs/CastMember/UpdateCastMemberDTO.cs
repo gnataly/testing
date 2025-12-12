@@ -1,23 +1,22 @@
-﻿using System.Text.Json.Serialization;
+//using System.Text.Json.Serialization;
 
-namespace TheatreCenter.DTOs.CastMember
-{
-    public class UpdateCastMemberDTO
-    {
-        public UpdateCastMemberDTO(int roleId, int actorId, string comment)
-        {
-            RoleId = roleId;
-            ActorId = actorId;
-            Comment = comment;
-        }
+//namespace TheatreCenter.DTOs;
 
-        [JsonPropertyName("roleId")]
-        public int RoleId { get; }
+//public class UpdateCastMemberDto
+//{
+//    public UpdateCastMemberDto(int roleId, int actorId, string comment)
+//    {
+//        RoleId = roleId;
+//        ActorId = actorId;
+//        Comment = comment;
+//    }
 
-        [JsonPropertyName("actorId")]
-        public int ActorId { get; }
+//    [JsonPropertyName("roleId")]
+//    public int RoleId { get; }
 
-        [JsonPropertyName("comment")]
-        public string Comment { get; }
-    }
-}
+//    [JsonPropertyName("actorId")]
+//    public int ActorId { get; }
+
+//    [JsonPropertyName("comment")]
+//    public string Comment { get; }
+//}

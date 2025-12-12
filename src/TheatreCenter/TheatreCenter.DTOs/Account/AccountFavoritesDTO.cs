@@ -1,28 +1,26 @@
-﻿using System.Text.Json.Serialization;
-using System.Collections.Generic;
-using TheatreCenter.DTOs.Favorite;
+//using System.Text.Json.Serialization;
+//using System.Collections.Generic;
 
-namespace TheatreCenter.DTOs.Account
-{
-    public class AccountFavoritesDTO
-    {
-        public AccountFavoritesDTO(
-            IEnumerable<FavoriteItemDTO> favoriteActors,
-            IEnumerable<FavoriteItemDTO> favoriteMusicals,
-            IEnumerable<FavoriteItemDTO> favoriteTheatres)
-        {
-            FavoriteActors = favoriteActors;
-            FavoriteMusicals = favoriteMusicals;
-            FavoriteTheatres = favoriteTheatres;
-        }
+//namespace TheatreCenter.DTOs;
 
-        [JsonPropertyName("favoriteActors")]
-        public IEnumerable<FavoriteItemDTO> FavoriteActors { get; }
+//public class AccountFavoritesDto
+//{
+//    public AccountFavoritesDto(
+//        IEnumerable<FavoriteDto> favoriteActors,
+//        IEnumerable<FavoriteDto> favoriteMusicals,
+//        IEnumerable<FavoriteDto> favoriteTheatres)
+//    {
+//        FavoriteActors = favoriteActors;
+//        FavoriteMusicals = favoriteMusicals;
+//        FavoriteTheatres = favoriteTheatres;
+//    }
 
-        [JsonPropertyName("favoriteMusicals")]
-        public IEnumerable<FavoriteItemDTO> FavoriteMusicals { get; }
+//    [JsonPropertyName("favoriteActors")]
+//    public IEnumerable<FavoriteDto> FavoriteActors { get; }
 
-        [JsonPropertyName("favoriteTheatres")]
-        public IEnumerable<FavoriteItemDTO> FavoriteTheatres { get; }
-    }
-}
+//    [JsonPropertyName("favoriteMusicals")]
+//    public IEnumerable<FavoriteDto> FavoriteMusicals { get; }
+
+//    [JsonPropertyName("favoriteTheatres")]
+//    public IEnumerable<FavoriteDto> FavoriteTheatres { get; }
+//}

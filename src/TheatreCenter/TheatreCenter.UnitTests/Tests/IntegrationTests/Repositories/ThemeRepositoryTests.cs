@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TheatreCenter.Data;
 using TheatreCenter.Data.Repositories;
 using TheatreCenter.Domain.Models;
@@ -45,6 +45,7 @@ public class ThemeRepositoryIt : IntegrationTestBase
     {
         var theme = _themeFixture.CreateTheme();
         await _themeRepository.AddAsync(theme);
+        await _themeRepository.SaveChangesAsync();
 
         var created = await _themeRepository.GetByIdAsync(theme.Id);
         created.Should().NotBeNull();
@@ -52,15 +53,17 @@ public class ThemeRepositoryIt : IntegrationTestBase
 
         created.Name = theme.Name + "123";
         await _themeRepository.UpdateAsync(created);
+        await _themeRepository.SaveChangesAsync();
 
         var updated = await _themeRepository.GetByIdAsync(theme.Id);
-        updated!.Name.Should().Be(theme.Name);
+        updated!.Name.Should().StartWith(theme.Name).And.EndWith("123");
 
-        var allThemes = await _themeRepository.GetAllAsync();
+        var allThemes = await _themeRepository.GetAllAsync(new ThemeFilter());
 
         allThemes.Should().Contain(t => t.Id == theme.Id);
 
         await _themeRepository.RemoveAsync(updated);
+        await _themeRepository.SaveChangesAsync();
 
         var deleted = await _themeRepository.GetByIdAsync(theme.Id);
         deleted.Should().BeNull();

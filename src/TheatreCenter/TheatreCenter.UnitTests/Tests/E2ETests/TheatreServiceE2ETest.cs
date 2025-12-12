@@ -1,4 +1,4 @@
-﻿using TheatreCenter.Data;
+using TheatreCenter.Data;
 using TheatreCenter.Domain.Models;
 using TheatreCenter.Domain.Enums;
 using TheatreCenter.Services.Services;
@@ -55,33 +55,37 @@ public class TheatreServiceE2ETests : IClassFixture<DatabaseFixture>, IAsyncLife
 
         AppDbContext context = await _fixture.CreateTransactionalContextAsync();
 
+        var configuration = new Microsoft.Extensions.Configuration.ConfigurationBuilder().Build();
         var accountRepository = new AccountRepository(context);
-        var actorRepository = new ActorRepository(context, new NullLogger<ActorRepository>());
+        var actorRepository = new ActorRepository(context);
         var musicalRepository = new MusicalRepository(context);
         var theatreRepository = new TheatreRepository(context);
         var showRepository = new ShowRepository(context);
         var roleRepository = new RoleRepository(context);
         var castMemberRepository = new CastMemberRepository(context);
 
-        _accountService = new AccountService(accountRepository);
-        _actorService = new ActorService(actorRepository, new NullLogger<ActorService>());
-        _musicalService = new MusicalService(musicalRepository, theatreRepository);
-        _theatreService = new TheatreService(theatreRepository);
-        _showService = new ShowService(showRepository, musicalRepository);
-        _roleService = new RoleService(roleRepository, musicalRepository);
+        _accountService = new AccountService(accountRepository, configuration);
+        _actorService = new ActorService(actorRepository, accountRepository, new NullLogger<ActorService>());
+        _musicalService = new MusicalService(musicalRepository, theatreRepository, accountRepository, new NullLogger<MusicalService>());
+        _theatreService = new TheatreService(theatreRepository, accountRepository, new NullLogger<TheatreService>());
+        _showService = new ShowService(showRepository, musicalRepository, new NullLogger<ShowService>());
+        _roleService = new RoleService(roleRepository, musicalRepository, new NullLogger<RoleService>());
         _castMemberService = new CastMemberService(
             castMemberRepository,
             showRepository,
             roleRepository,
-            actorRepository
+            actorRepository,
+            new NullLogger<CastMemberService>()
         );
 
-        _commitTransaction = async () => {
+        _commitTransaction = async () =>
+        {
             await context.Database.CommitTransactionAsync();
             await context.DisposeAsync();
         };
 
-        _rollbackTransaction = async () => {
+        _rollbackTransaction = async () =>
+        {
             await context.Database.RollbackTransactionAsync();
             await context.DisposeAsync();
         };
@@ -376,9 +380,9 @@ public class TheatreServiceE2ETests : IClassFixture<DatabaseFixture>, IAsyncLife
         var supportingRoles = await _roleService.GetByRoleTypeAsync(RoleType.Supporting);
         var ensembleRoles = await _roleService.GetByRoleTypeAsync(RoleType.Ensemble);
 
-        Assert.Contains(mainRoles, r => r.Name == "Test Role Alpha");
-        Assert.Contains(supportingRoles, r => r.Name == "Test Role Beta");
-        Assert.Contains(ensembleRoles, r => r.Name == "Test Role Gamma");
+        Assert.Contains(mainRoles, r => r.Name == role1.Name);
+        Assert.Contains(supportingRoles, r => r.Name == role2.Name);
+        Assert.Contains(ensembleRoles, r => r.Name == role3.Name);
 
         var musicalRoles = await _roleService.GetByMusicalIdAsync(createdMusical.Id);
         Assert.Equal(3, musicalRoles.Count());
@@ -396,7 +400,7 @@ public class TheatreServiceE2ETests : IClassFixture<DatabaseFixture>, IAsyncLife
         var deleteResult = await _roleService.DeleteAsync(createdRole3.Id);
         Assert.True(deleteResult);
 
-        var remainingRoles = await _roleService.GetByMusicalIdAsync(createdMusical.Id);
+        var remainingRoles = await _roleService.GetAllAsync(new RoleFilter());
         Assert.Equal(2, remainingRoles.Count());
     }
 }

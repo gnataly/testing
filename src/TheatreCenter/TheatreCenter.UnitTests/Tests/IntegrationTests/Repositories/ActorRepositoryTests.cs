@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using TheatreCenter.Data;
 using TheatreCenter.Data.Repositories;
@@ -57,6 +57,7 @@ public class ActorRepositoryIt : IntegrationTestBase
             gender: Gender.Male);
 
         await _actorRepository.AddAsync(actor);
+        await _actorRepository.SaveChangesAsync();
 
         var created = await _actorRepository.GetByIdAsync(actor.Id);
         created.Should().NotBeNull();
@@ -67,12 +68,13 @@ public class ActorRepositoryIt : IntegrationTestBase
         created.Name = actor.Name + "123";
         created.VoiceType = VoiceType.Baritone;
         await _actorRepository.UpdateAsync(created);
+        await _actorRepository.SaveChangesAsync();
 
         var updated = await _actorRepository.GetByIdAsync(actor.Id);
-        updated!.Name.Should().Be(actor.Name);
+        updated!.Name.Should().StartWith(actor.Name).And.EndWith("123");
         updated.VoiceType.Should().Be(VoiceType.Baritone);
 
-        var allActors = await _actorRepository.GetAllAsync();
+        var allActors = await _actorRepository.GetAllAsync(new ActorFilter());
 
         allActors.Should().Contain(a => a.Id == actor.Id);
 
@@ -81,6 +83,7 @@ public class ActorRepositoryIt : IntegrationTestBase
         tenors.Should().ContainSingle(a => a.Id == actor.Id);
 
         await _actorRepository.RemoveAsync(updated);
+        await _actorRepository.SaveChangesAsync();
 
         var deleted = await _actorRepository.GetByIdAsync(actor.Id);
         deleted.Should().BeNull();

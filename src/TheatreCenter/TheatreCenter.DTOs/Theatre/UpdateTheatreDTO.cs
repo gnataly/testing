@@ -1,18 +1,18 @@
-﻿using System.Text.Json.Serialization;
+//using System.Text.Json.Serialization;
 
-namespace TheatreCenter.DTOs.Theatre;
+//namespace TheatreCenter.DTOs;
 
-public class UpdateTheatreDTO
-{
-    public UpdateTheatreDTO(string name, string addInfo)
-    {
-        Name = name;
-        AddInfo = addInfo;
-    }
+//public class UpdateTheatreDto
+//{
+//    public UpdateTheatreDto(string name, string addInfo)
+//    {
+//        Name = name;
+//        AddInfo = addInfo;
+//    }
 
-    [JsonPropertyName("name")]
-    public string Name { get; }
-    
-    [JsonPropertyName("addInfo")]
-    public string AddInfo { get; }
-}
+//    [JsonPropertyName("name")]
+//    public string Name { get; }
+
+//    [JsonPropertyName("addInfo")]
+//    public string AddInfo { get; }
+//}

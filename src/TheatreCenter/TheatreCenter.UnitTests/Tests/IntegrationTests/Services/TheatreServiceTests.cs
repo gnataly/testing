@@ -1,7 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using TheatreCenter.Data.Repositories;
 using TheatreCenter.Data;
+using TheatreCenter.Domain.Models;
 using TheatreCenter.Services.Services;
 using TheatreCenter.Tests.Fixtures;
 using TheatreCenter.UnitTests.Tests.Database;
@@ -28,14 +29,17 @@ public class TheatreServiceIt : IntegrationTestBase
     {
         //await Fixture.WaitForDatabaseReadyAsync(TimeSpan.FromSeconds(30));
         var context = await Fixture.CreateTransactionalContextAsync();
-        var repository = Fixture.CreateRepository<TheatreRepository>(context);
-        _service = new TheatreService(repository);
+        var theatreRepository = Fixture.CreateRepository<TheatreRepository>(context);
+        var accountRepository = Fixture.CreateRepository<AccountRepository>(context);
+        _service = new TheatreService(theatreRepository, accountRepository, new NullLogger<TheatreService>());
 
-        _commitTransaction = async () => {
+        _commitTransaction = async () =>
+        {
             await context.Database.CommitTransactionAsync();
             await context.DisposeAsync();
         };
-        _rollbackTransaction = async () => {
+        _rollbackTransaction = async () =>
+        {
             await context.Database.RollbackTransactionAsync();
             await context.DisposeAsync();
         };
@@ -69,7 +73,7 @@ public class TheatreServiceIt : IntegrationTestBase
         updateResult.Should().NotBeNull();
         updateResult.Name.Should().Be(createdTheatre.Name);
 
-        var allTheatres = await _service.GetAllTheatresAsync();
+        var allTheatres = await _service.GetAllTheatresAsync(new TheatreFilter(), null);
         allTheatres.Should().Contain(t => t.Id == createdTheatre.Id);
 
         var deleteResult = await _service.DeleteTheatreAsync(createdTheatre.Id);

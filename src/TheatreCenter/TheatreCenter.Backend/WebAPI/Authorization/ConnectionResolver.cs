@@ -1,4 +1,4 @@
-﻿//using System.Security.Claims;
+//using System.Security.Claims;
 //using TheatreCenter.Domain.Enums;
 
 //namespace TheatreCenter.Backend.WebAPI.Authorization

@@ -1,0 +1,5 @@
+{
+  "CyclomaticComplexityThreshold": 10,
+  "HalsteadVolumeThreshold": null,
+  "HalsteadDifficultyThreshold": null
+}

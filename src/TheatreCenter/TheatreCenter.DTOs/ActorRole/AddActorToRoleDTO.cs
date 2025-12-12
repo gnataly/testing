@@ -1,19 +1,18 @@
-﻿using System.Text.Json.Serialization;
+//using System.Text.Json.Serialization;
 
-namespace TheatreCenter.DTOs.ActorRoles
-{
-    public class AddActorToRoleDTO
-    {
-        public AddActorToRoleDTO(int actorId, int roleId)
-        {
-            ActorId = actorId;
-            RoleId = roleId;
-        }
+//namespace TheatreCenter.DTOs;
 
-        [JsonPropertyName("actorId")]
-        public int ActorId { get; }
+//public class AddActorToRoleDto
+//{
+//    public AddActorToRoleDto(int actorId, int roleId)
+//    {
+//        ActorId = actorId;
+//        RoleId = roleId;
+//    }
 
-        [JsonPropertyName("roleId")]
-        public int RoleId { get; }
-    }
-}
+//    [JsonPropertyName("actorId")]
+//    public int ActorId { get; }
+
+//    [JsonPropertyName("roleId")]
+//    public int RoleId { get; }
+//}

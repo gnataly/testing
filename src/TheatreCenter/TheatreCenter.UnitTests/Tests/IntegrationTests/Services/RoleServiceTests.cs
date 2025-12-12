@@ -1,8 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using TheatreCenter.Data.Repositories;
 using TheatreCenter.Data;
 using TheatreCenter.Domain.Enums;
+using TheatreCenter.Domain.Models;
 using TheatreCenter.Services.Services;
 using TheatreCenter.Tests.Fixtures;
 using TheatreCenter.UnitTests.Tests.Database;
@@ -36,13 +37,15 @@ public class RoleServiceIt : IntegrationTestBase
         var roleRepository = Fixture.CreateRepository<RoleRepository>(context);
         _musicalRepository = Fixture.CreateRepository<MusicalRepository>(context);
         _theatreRepository = Fixture.CreateRepository<TheatreRepository>(context);
-        _service = new RoleService(roleRepository, _musicalRepository);
+        _service = new RoleService(roleRepository, _musicalRepository, new NullLogger<RoleService>());
 
-        _commitTransaction = async () => {
+        _commitTransaction = async () =>
+        {
             await context.Database.CommitTransactionAsync();
             await context.DisposeAsync();
         };
-        _rollbackTransaction = async () => {
+        _rollbackTransaction = async () =>
+        {
             await context.Database.RollbackTransactionAsync();
             await context.DisposeAsync();
         };
@@ -59,10 +62,12 @@ public class RoleServiceIt : IntegrationTestBase
 
         var theatre = _theatreFixture.CreateTheatre();
         await _theatreRepository.AddAsync(theatre);
+        await _theatreRepository.SaveChangesAsync();
 
         var musical = _musicalFixture.CreateMusical(
             theatreId: theatre.Id);
         await _musicalRepository.AddAsync(musical);
+        await _musicalRepository.SaveChangesAsync();
 
 
         var testRole = _roleFixture.CreateRole(
@@ -97,7 +102,7 @@ public class RoleServiceIt : IntegrationTestBase
         var rolesByType = await _service.GetByRoleTypeAsync(RoleType.Supporting);
         rolesByType.Should().Contain(r => r.Id == createdRole.Id);
 
-        var allRoles = await _service.GetAllAsync();
+        var allRoles = await _service.GetAllAsync(new RoleFilter());
         allRoles.Should().Contain(r => r.Id == createdRole.Id);
 
         var deleteResult = await _service.DeleteAsync(createdRole.Id);

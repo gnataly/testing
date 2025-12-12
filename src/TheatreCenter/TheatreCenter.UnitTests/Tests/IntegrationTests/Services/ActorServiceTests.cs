@@ -1,4 +1,4 @@
-﻿using TheatreCenter.Data;
+using TheatreCenter.Data;
 using TheatreCenter.Domain.Models;
 using TheatreCenter.Domain.Enums;
 using TheatreCenter.Services.Services;
@@ -32,14 +32,17 @@ public class ActorServiceIt : IntegrationTestBase
     {
         //await Fixture.WaitForDatabaseReadyAsync(TimeSpan.FromSeconds(30));
         var context = await Fixture.CreateTransactionalContextAsync();
-        var repository = Fixture.CreateRepository<ActorRepository>(context);
-        _service = new ActorService(repository, new NullLogger<ActorService>());
+        var actorRepository = Fixture.CreateRepository<ActorRepository>(context);
+        var accountRepository = Fixture.CreateRepository<AccountRepository>(context);
+        _service = new ActorService(actorRepository, accountRepository, new NullLogger<ActorService>());
 
-        _commitTransaction = async () => {
+        _commitTransaction = async () =>
+        {
             await context.Database.CommitTransactionAsync();
             await context.DisposeAsync();
         };
-        _rollbackTransaction = async () => {
+        _rollbackTransaction = async () =>
+        {
             await context.Database.RollbackTransactionAsync();
             await context.DisposeAsync();
         };
@@ -76,10 +79,7 @@ public class ActorServiceIt : IntegrationTestBase
         updateResult.Name.Should().Be(updatedActor.Name);
         updateResult.VoiceType.Should().Be(VoiceType.Baritone);
 
-        var actorsByVoice = await _service.GetActorsByVoiceTypeAsync(VoiceType.Baritone);
-        actorsByVoice.Should().Contain(a => a.Id == createdActor.Id);
-
-        var allActors = await _service.GetAllActorsAsync();
+        var allActors = await _service.GetAllActorsAsync(new ActorFilter(), null);
         allActors.Should().Contain(a => a.Id == createdActor.Id);
 
         var deleteResult = await _service.DeleteActorAsync(createdActor.Id);

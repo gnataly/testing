@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using System.Data;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -286,7 +286,7 @@ public class DatabaseFixture : IAsyncLifetime
     //{
     //    if (context == null)
     //        context = await CreateTransactionalContextAsync();
-        
+
     //    var repository = CreateRepository<TRepository>(context);
 
     //    return (repository,
@@ -300,12 +300,6 @@ public class DatabaseFixture : IAsyncLifetime
         where TRepository : class
     {
         var repositoryType = typeof(TRepository);
-
-        if (repositoryType == typeof(ActorRepository))
-        {
-            var logger = NullLogger<ActorRepository>.Instance;
-            return Activator.CreateInstance(repositoryType, context, logger) as TRepository;
-        }
 
         return Activator.CreateInstance(repositoryType, context) as TRepository;
     }

@@ -1,4 +1,4 @@
-﻿using TheatreCenter.Domain.Models;
+using TheatreCenter.Domain.Models;
 using AutoFixture;
 
 namespace TheatreCenter.Tests.Fixtures;

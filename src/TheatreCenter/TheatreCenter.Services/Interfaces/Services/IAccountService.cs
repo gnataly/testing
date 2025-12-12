@@ -1,17 +1,14 @@
-﻿using TheatreCenter;
-using TheatreCenter.Domain.Enums;
-using TheatreCenter.Domain.Interfaces.Repositories;
 using TheatreCenter.Domain.Models;
+using TheatreCenter.Domain.Enums;
 
 namespace TheatreCenter.Services.Interfaces.Services
 {
     public interface IAccountService
     {
         Task<Account?> GetByIdAsync(int id);
-        Task<IEnumerable<Account>> GetAllAsync();
+        Task<IEnumerable<Account>> GetAllAsync(AccountFilter filter);
         Task<Account?> AuthenticateAsync(string username, string passwordHash);
         Task<Account> RegisterAsync(string username, string passwordHash, AccessLevel accessLevel = AccessLevel.User);
-        Task LogoutAsync(int accountId);
         Task UpdateAsync(Account account);
         Task DeleteAsync(int accountId);
         Task<bool> AddFavoriteActorAsync(int accountId, int actorId);
@@ -26,6 +23,5 @@ namespace TheatreCenter.Services.Interfaces.Services
         Task<bool> SubmitUpgradeRequestAsync(int accountId);
         Task<IEnumerable<Account>> GetAccountsWithUpgradeRequestAsync();
         Task<bool> ProcessUpgradeRequestAsync(int accountId, bool isApproved);
-
     }
 }

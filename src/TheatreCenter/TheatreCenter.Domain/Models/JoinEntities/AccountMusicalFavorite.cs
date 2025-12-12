@@ -1,4 +1,4 @@
-﻿
+
 using TheatreCenter.Domain.Models;
 
 public class AccountMusicalFavorite

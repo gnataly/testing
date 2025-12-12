@@ -213,8 +213,8 @@ namespace TheatreCenter.Data.Migrations
 
                     b.Property<string>("AgeRestriction")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
+                        .HasMaxLength(25)
+                        .HasColumnType("character varying(25)");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -272,8 +272,8 @@ namespace TheatreCenter.Data.Migrations
 
                     b.Property<string>("RoleType")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                        .HasMaxLength(25)
+                        .HasColumnType("character varying(25)");
 
                     b.HasKey("Id");
 

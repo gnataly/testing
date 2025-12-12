@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -39,6 +39,9 @@ namespace TheatreCenter.Domain.Models
 
         [Required(ErrorMessage = "ID театра обязательно")]
         public int TheatreId { get; set; }
+
+        [NotMapped]
+        public bool IsFavorite { get; set; }
 
         //public DateTime UpdatedAt { get; set; }
 

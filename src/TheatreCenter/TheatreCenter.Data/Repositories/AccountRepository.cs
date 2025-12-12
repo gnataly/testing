@@ -1,7 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TheatreCenter.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
 using TheatreCenter.Domain.Interfaces.Repositories;
 using TheatreCenter.Domain.Models;
+using TheatreCenter.Domain.Enums;
 
 namespace TheatreCenter.Data.Repositories;
 
@@ -18,11 +18,8 @@ public class AccountRepository : IAccountRepository
     {
         return await _context.Accounts
             .Include(a => a.FavoriteActors)
-                .ThenInclude(f => f.Actor)
             .Include(a => a.FavoriteMusicals)
-                .ThenInclude(f => f.Musical)
             .Include(a => a.FavoriteTheatres)
-                .ThenInclude(f => f.Theatre)
             .FirstOrDefaultAsync(a => a.Id == id);
     }
 
@@ -32,21 +29,31 @@ public class AccountRepository : IAccountRepository
             .FirstOrDefaultAsync(a => a.Username == username);
     }
 
-    public async Task<IEnumerable<Account>> GetAllAsync()
+    public async Task<IEnumerable<Account>> GetAllAsync(AccountFilter filter)
     {
-        return await _context.Accounts.ToListAsync();
+        var query = _context.Accounts.AsQueryable();
+
+        if (filter.UpgradeRequest.HasValue)
+        {
+            query = query.Where(a => a.UpgradeRequest == filter.UpgradeRequest.Value);
+        }
+
+        if (!string.IsNullOrEmpty(filter.Search))
+        {
+            query = query.Where(a => a.Username.Contains(filter.Search));
+        }
+
+        return query;
     }
 
     public async Task CreateAsync(Account account)
     {
-        _context.Accounts.AddAsync(account);
-        await _context.SaveChangesAsync();
+        await _context.Accounts.AddAsync(account);
     }
 
     public async Task UpdateAsync(Account account)
     {
         _context.Accounts.Update(account);
-        await _context.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(int id)
@@ -55,7 +62,6 @@ public class AccountRepository : IAccountRepository
         if (account != null)
         {
             _context.Accounts.Remove(account);
-            await _context.SaveChangesAsync();
         }
     }
 
@@ -84,7 +90,6 @@ public class AccountRepository : IAccountRepository
             return false;
 
         account.FavoriteActors.Add(new AccountActorFavorite(accountId, actorId));
-        await _context.SaveChangesAsync();
         return true;
     }
 
@@ -100,7 +105,6 @@ public class AccountRepository : IAccountRepository
         if (favorite == null) return false;
 
         account.FavoriteActors.Remove(favorite);
-        await _context.SaveChangesAsync();
         return true;
     }
 
@@ -118,7 +122,6 @@ public class AccountRepository : IAccountRepository
             return false;
 
         account.FavoriteMusicals.Add(new AccountMusicalFavorite(accountId, musicalId));
-        await _context.SaveChangesAsync();
         return true;
     }
 
@@ -134,7 +137,6 @@ public class AccountRepository : IAccountRepository
         if (favorite == null) return false;
 
         account.FavoriteMusicals.Remove(favorite);
-        await _context.SaveChangesAsync();
         return true;
     }
 
@@ -152,7 +154,6 @@ public class AccountRepository : IAccountRepository
             return false;
 
         account.FavoriteTheatres.Add(new AccountTheatreFavorite(accountId, theatreId));
-        await _context.SaveChangesAsync();
         return true;
     }
 
@@ -168,7 +169,6 @@ public class AccountRepository : IAccountRepository
         if (favorite == null) return false;
 
         account.FavoriteTheatres.Remove(favorite);
-        await _context.SaveChangesAsync();
         return true;
     }
 
@@ -213,5 +213,23 @@ public class AccountRepository : IAccountRepository
 
         await _context.SaveChangesAsync();
         return true;
+    }
+
+    public async Task<bool> IsFavoriteActorAsync(int accountId, int actorId)
+    {
+        return await _context.AccountActorFavorites
+            .AnyAsync(f => f.AccountId == accountId && f.ActorId == actorId);
+    }
+
+    public async Task<bool> IsFavoriteMusicalAsync(int accountId, int musicalId)
+    {
+        return await _context.AccountMusicalFavorites
+            .AnyAsync(f => f.AccountId == accountId && f.MusicalId == musicalId);
+    }
+
+    public async Task<bool> IsFavoriteTheatreAsync(int accountId, int theatreId)
+    {
+        return await _context.AccountTheatreFavorites
+            .AnyAsync(f => f.AccountId == accountId && f.TheatreId == theatreId);
     }
 }

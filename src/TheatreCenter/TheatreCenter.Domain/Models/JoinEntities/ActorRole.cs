@@ -1,4 +1,4 @@
-﻿
+
 namespace TheatreCenter.Domain.Models
 {
     public class ActorRole
