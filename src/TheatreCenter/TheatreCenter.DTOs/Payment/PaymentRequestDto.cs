@@ -24,7 +24,7 @@ namespace TheatreCenter.DTOs.Payment
         public string PaymentToken { get; set; } = string.Empty; //аналог CardCryptogramPacket Криптограмма платежных данных
 
         [StringLength(64)]
-        public string? IpAddress { get; set; } 
+        public string? IpAddress { get; set; }
 
         [StringLength(32)]
         public string? MockForceStatus { get; set; }

@@ -42,77 +42,81 @@ namespace TheatreCenter.Tests.Fixtures
 
             var app = builder.Build();
 
-            app.MapPost("/payments/cards/charge", (PaymentChargeRequest request) =>
-            {
-                var transactionId = Guid.NewGuid().ToString("N");
-                var status = request.JsonData?.MockForceStatus?.ToLowerInvariant() switch
-                {
-                    "declined" => "Declined",
-                    "pending" => "Pending",
-                    _ => "Completed"
-                };
-
-                if (request.JsonData?.MockDelayMs is > 0)
-                {
-                    Thread.Sleep(request.JsonData.MockDelayMs.Value);
-                }
-
-                var state = new PaymentState
-                {
-                    TransactionId = transactionId,
-                    Amount = request.Amount,
-                    Currency = request.Currency ?? "RUB",
-                    Status = status
-                };
-
-                _payments[transactionId] = state;
-
-                var response = new CloudPaymentResponse
-                {
-                    Success = status == "Completed" || status == "Pending",
-                    Message = status == "Declined" ? "Mock declined" : "OK",
-                    Model = state
-                };
-
-                return Results.Json(response);
-            });
-
-            app.MapPost("/payments/get", (PaymentGetRequest request) =>
-            {
-                if (request.TransactionId == null || !_payments.TryGetValue(request.TransactionId, out var state))
-                {
-                    return Results.NotFound(new { Message = "Transaction not found" });
-                }
-
-                var response = new CloudPaymentResponse
-                {
-                    Success = true,
-                    Message = "OK",
-                    Model = state
-                };
-                return Results.Json(response);
-            });
-
-            app.MapPost("/payments/refund", (PaymentRefundRequest request) =>
-            {
-                if (request.TransactionId == null || !_payments.TryGetValue(request.TransactionId, out var state))
-                {
-                    return Results.NotFound(new { Message = "Transaction not found" });
-                }
-
-                state.Status = "Refunded";
-                var response = new CloudPaymentResponse
-                {
-                    Success = true,
-                    Message = "Refunded",
-                    Model = state
-                };
-                return Results.Json(response);
-            });
+            app.MapPost("/payments/cards/charge", HandleCharge);
+            app.MapPost("/payments/get", HandleGet);
+            app.MapPost("/payments/refund", HandleRefund);
 
             _host = app;
             app.Urls.Add($"{BaseUrl}");
             await app.StartAsync();
+        }
+
+        private IResult HandleCharge(PaymentChargeRequest request)
+        {
+            var transactionId = Guid.NewGuid().ToString("N");
+            var status = request.JsonData?.MockForceStatus?.ToLowerInvariant() switch
+            {
+                "declined" => "Declined",
+                "pending" => "Pending",
+                _ => "Completed"
+            };
+
+            if (request.JsonData?.MockDelayMs is > 0)
+            {
+                Thread.Sleep(request.JsonData.MockDelayMs.Value);
+            }
+
+            var state = new PaymentState
+            {
+                TransactionId = transactionId,
+                Amount = request.Amount,
+                Currency = request.Currency ?? "RUB",
+                Status = status
+            };
+
+            _payments[transactionId] = state;
+
+            var response = new CloudPaymentResponse
+            {
+                Success = status == "Completed" || status == "Pending",
+                Message = status == "Declined" ? "Mock declined" : "OK",
+                Model = state
+            };
+
+            return Results.Json(response);
+        }
+
+        private IResult HandleGet(PaymentGetRequest request)
+        {
+            if (request.TransactionId == null || !_payments.TryGetValue(request.TransactionId, out var state))
+            {
+                return Results.NotFound(new { Message = "Transaction not found" });
+            }
+
+            var response = new CloudPaymentResponse
+            {
+                Success = true,
+                Message = "OK",
+                Model = state
+            };
+            return Results.Json(response);
+        }
+
+        private IResult HandleRefund(PaymentRefundRequest request)
+        {
+            if (request.TransactionId == null || !_payments.TryGetValue(request.TransactionId, out var state))
+            {
+                return Results.NotFound(new { Message = "Transaction not found" });
+            }
+
+            state.Status = "Refunded";
+            var response = new CloudPaymentResponse
+            {
+                Success = true,
+                Message = "Refunded",
+                Model = state
+            };
+            return Results.Json(response);
         }
 
         public async ValueTask DisposeAsync()
