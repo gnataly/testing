@@ -1,6 +1,6 @@
 {
-  "parallelizeTestCollections": true,
-  "parallelizeAssembly": true,
+  "parallelizeTestCollections": false,
+  "parallelizeAssembly": false,
   "maxParallelThreads": -1,
   "diagnosticMessages": true,
   "internalDiagnosticMessages": true,
@@ -8,4 +8,3 @@
   "seed": "random",
   "shadowCopy": false
 }
-

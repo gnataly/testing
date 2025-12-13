@@ -339,5 +339,5 @@ TRUNCATE ""AccountActorFavorites"",
     }
 }
 
-[CollectionDefinition("Database collection")]
+[CollectionDefinition("Database collection", DisableParallelization = true)]
 public class DatabaseCollection : ICollectionFixture<DatabaseFixture> { }
