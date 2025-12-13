@@ -18,6 +18,7 @@ public class DatabaseFixture : IAsyncLifetime
     private readonly string _databaseName;
     private readonly string _scriptsPath;
     private static readonly SemaphoreSlim _globalLock = new(1, 1);
+    private static readonly SemaphoreSlim _truncateLock = new(1, 1);
     private static readonly object _initLock = new object();
 
     private static bool _isDatabaseInitialized = false;
@@ -275,10 +276,18 @@ TRUNCATE ""AccountActorFavorites"",
          ""Accounts""
          RESTART IDENTITY CASCADE;";
 
-        await using var conn = new NpgsqlConnection(ConnectionString);
-        await conn.OpenAsync();
-        await using var cmd = new NpgsqlCommand(truncateSql, conn);
-        await cmd.ExecuteNonQueryAsync();
+        await _truncateLock.WaitAsync();
+        try
+        {
+            await using var conn = new NpgsqlConnection(ConnectionString);
+            await conn.OpenAsync();
+            await using var cmd = new NpgsqlCommand(truncateSql, conn);
+            await cmd.ExecuteNonQueryAsync();
+        }
+        finally
+        {
+            _truncateLock.Release();
+        }
     }
 
 
