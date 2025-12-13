@@ -60,10 +60,16 @@ public class DatabaseFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        //CreateDatabaseAsync();
-        await ApplyScriptAsync("01-create.sql");
-        await TruncateAllAsync();
-        //ApplyScriptAsync("02-init_data.sql");
+        await _globalLock.WaitAsync();
+        try
+        {
+            await ApplyScriptAsync("01-create.sql");
+            await TruncateAllAsync();
+        }
+        finally
+        {
+            _globalLock.Release();
+        }
     }
 
     //public async Task InitializeAsync()

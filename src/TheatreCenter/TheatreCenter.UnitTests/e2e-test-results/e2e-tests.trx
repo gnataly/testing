@@ -1,32 +1,32 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TestRun id="144f52c2-843b-4b32-93ea-d62c5a5380e4" name="@8feaea7c99d3 2025-12-12 22:08:15" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
-  <Times creation="2025-12-12T22:08:15.6853361+00:00" queuing="2025-12-12T22:08:15.6853362+00:00" start="2025-12-12T22:08:10.2722955+00:00" finish="2025-12-12T22:08:16.3459079+00:00" />
-  <TestSettings name="default" id="3ce3eb2d-1b7d-4400-88c8-bb3733949e3c">
-    <Deployment runDeploymentRoot="_8feaea7c99d3_2025-12-12_22_08_15" />
+<TestRun id="40224baa-3bb8-4c6d-bd8c-1508e299f64d" name="@8d760b76edb8 2025-12-13 06:50:04" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2025-12-13T06:50:04.5616503+00:00" queuing="2025-12-13T06:50:04.5616504+00:00" start="2025-12-13T06:49:56.8255313+00:00" finish="2025-12-13T06:50:06.8395024+00:00" />
+  <TestSettings name="default" id="b0bca29a-77c7-4677-a6fe-ccfc59e1da2b">
+    <Deployment runDeploymentRoot="_8d760b76edb8_2025-12-13_06_50_04" />
   </TestSettings>
   <Results>
-    <UnitTestResult executionId="c2eebca2-ac0c-44da-9051-3459a1b24020" testId="6c7308fd-68fc-fa7c-6dbb-ec0e71308f36" testName="TheatreCenter.UnitTests.Tests.E2ETests.PaymentE2ETests.PaymentScenario_Declined_WhenForced" computerName="8feaea7c99d3" duration="00:00:00.0697260" startTime="2025-12-12T22:08:15.6959825+00:00" endTime="2025-12-12T22:08:15.9860322+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c2eebca2-ac0c-44da-9051-3459a1b24020" />
-    <UnitTestResult executionId="eedecd54-87a2-42e5-93a0-4e836756b76c" testId="5090e64d-df38-bbda-d184-a285d99c06c1" testName="TheatreCenter.UnitTests.Tests.E2ETests.PaymentE2ETests.PaymentScenario_Succeeds_AndRefunds" computerName="8feaea7c99d3" duration="00:00:02.3185728" startTime="2025-12-12T22:08:11.7972654+00:00" endTime="2025-12-12T22:08:15.6942736+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="eedecd54-87a2-42e5-93a0-4e836756b76c" />
-    <UnitTestResult executionId="8b96ce89-c2a3-4f47-8529-3ddf2fef256a" testId="1fb84e21-04ce-18b3-36b2-821ac1df65c8" testName="TheatreCenter.UnitTests.Tests.E2ETests.TheatreServiceE2ETests.ScenarioE2E_MusicalAndRolesManagement" computerName="8feaea7c99d3" duration="00:00:02.0624896" startTime="2025-12-12T22:08:11.7925978+00:00" endTime="2025-12-12T22:08:15.4387662+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8b96ce89-c2a3-4f47-8529-3ddf2fef256a" />
+    <UnitTestResult executionId="4b7a9f71-9a67-40d7-b0e7-02790bbc0bd1" testId="1fb84e21-04ce-18b3-36b2-821ac1df65c8" testName="TheatreCenter.UnitTests.Tests.E2ETests.TheatreServiceE2ETests.ScenarioE2E_MusicalAndRolesManagement" computerName="8d760b76edb8" duration="00:00:02.4554090" startTime="2025-12-13T06:49:59.6853515+00:00" endTime="2025-12-13T06:50:04.1992523+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4b7a9f71-9a67-40d7-b0e7-02790bbc0bd1" />
+    <UnitTestResult executionId="0df419b1-c4bf-4dcc-8a09-dbf39b5430cd" testId="6c7308fd-68fc-fa7c-6dbb-ec0e71308f36" testName="TheatreCenter.UnitTests.Tests.E2ETests.PaymentE2ETests.PaymentScenario_Declined_WhenForced" computerName="8d760b76edb8" duration="00:00:00.0893316" startTime="2025-12-13T06:50:05.8098845+00:00" endTime="2025-12-13T06:50:06.1400043+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0df419b1-c4bf-4dcc-8a09-dbf39b5430cd" />
+    <UnitTestResult executionId="b679e461-e508-4754-8cf9-25901d29f333" testId="5090e64d-df38-bbda-d184-a285d99c06c1" testName="TheatreCenter.UnitTests.Tests.E2ETests.PaymentE2ETests.PaymentScenario_Succeeds_AndRefunds" computerName="8d760b76edb8" duration="00:00:00.8339787" startTime="2025-12-13T06:50:04.5261140+00:00" endTime="2025-12-13T06:50:05.8058448+00:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b679e461-e508-4754-8cf9-25901d29f333" />
   </Results>
   <TestDefinitions>
     <UnitTest name="TheatreCenter.UnitTests.Tests.E2ETests.PaymentE2ETests.PaymentScenario_Declined_WhenForced" storage="/src/theatrecenter.unittests/bin/release/net8.0/theatrecenter.unittests.dll" id="6c7308fd-68fc-fa7c-6dbb-ec0e71308f36">
-      <Execution id="c2eebca2-ac0c-44da-9051-3459a1b24020" />
+      <Execution id="0df419b1-c4bf-4dcc-8a09-dbf39b5430cd" />
       <TestMethod codeBase="/src/TheatreCenter.UnitTests/bin/Release/net8.0/TheatreCenter.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="TheatreCenter.UnitTests.Tests.E2ETests.PaymentE2ETests" name="PaymentScenario_Declined_WhenForced" />
     </UnitTest>
     <UnitTest name="TheatreCenter.UnitTests.Tests.E2ETests.TheatreServiceE2ETests.ScenarioE2E_MusicalAndRolesManagement" storage="/src/theatrecenter.unittests/bin/release/net8.0/theatrecenter.unittests.dll" id="1fb84e21-04ce-18b3-36b2-821ac1df65c8">
-      <Execution id="8b96ce89-c2a3-4f47-8529-3ddf2fef256a" />
+      <Execution id="4b7a9f71-9a67-40d7-b0e7-02790bbc0bd1" />
       <TestMethod codeBase="/src/TheatreCenter.UnitTests/bin/Release/net8.0/TheatreCenter.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="TheatreCenter.UnitTests.Tests.E2ETests.TheatreServiceE2ETests" name="ScenarioE2E_MusicalAndRolesManagement" />
     </UnitTest>
     <UnitTest name="TheatreCenter.UnitTests.Tests.E2ETests.PaymentE2ETests.PaymentScenario_Succeeds_AndRefunds" storage="/src/theatrecenter.unittests/bin/release/net8.0/theatrecenter.unittests.dll" id="5090e64d-df38-bbda-d184-a285d99c06c1">
-      <Execution id="eedecd54-87a2-42e5-93a0-4e836756b76c" />
+      <Execution id="b679e461-e508-4754-8cf9-25901d29f333" />
       <TestMethod codeBase="/src/TheatreCenter.UnitTests/bin/Release/net8.0/TheatreCenter.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="TheatreCenter.UnitTests.Tests.E2ETests.PaymentE2ETests" name="PaymentScenario_Succeeds_AndRefunds" />
     </UnitTest>
   </TestDefinitions>
   <TestEntries>
-    <TestEntry testId="6c7308fd-68fc-fa7c-6dbb-ec0e71308f36" executionId="c2eebca2-ac0c-44da-9051-3459a1b24020" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="5090e64d-df38-bbda-d184-a285d99c06c1" executionId="eedecd54-87a2-42e5-93a0-4e836756b76c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="1fb84e21-04ce-18b3-36b2-821ac1df65c8" executionId="8b96ce89-c2a3-4f47-8529-3ddf2fef256a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1fb84e21-04ce-18b3-36b2-821ac1df65c8" executionId="4b7a9f71-9a67-40d7-b0e7-02790bbc0bd1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6c7308fd-68fc-fa7c-6dbb-ec0e71308f36" executionId="0df419b1-c4bf-4dcc-8a09-dbf39b5430cd" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5090e64d-df38-bbda-d184-a285d99c06c1" executionId="b679e461-e508-4754-8cf9-25901d29f333" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
   </TestEntries>
   <TestLists>
     <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
@@ -36,9 +36,9 @@
     <Counters total="3" executed="3" passed="3" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
     <Output>
       <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 8.0.22)
-[xUnit.net 00:00:00.21]   Discovering: TheatreCenter.UnitTests
-[xUnit.net 00:00:00.37]   Discovered:  TheatreCenter.UnitTests
-[xUnit.net 00:00:00.44]   Starting:    TheatreCenter.UnitTests
+[xUnit.net 00:00:00.32]   Discovering: TheatreCenter.UnitTests
+[xUnit.net 00:00:00.61]   Discovered:  TheatreCenter.UnitTests
+[xUnit.net 00:00:00.71]   Starting:    TheatreCenter.UnitTests
 info: Microsoft.Hosting.Lifetime[14]
       Now listening on: http://localhost:18081
 info: Microsoft.Hosting.Lifetime[0]
@@ -50,33 +50,33 @@ info: Microsoft.Hosting.Lifetime[0]
 info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
       Request starting HTTP/1.1 POST http://localhost:18081/payments/cards/charge - application/json;+charset=utf-8 -
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
-      Executing endpoint 'HTTP: POST /payments/cards/charge'
+      Executing endpoint 'HTTP: POST /payments/cards/charge =&gt; HandleCharge'
 info: Microsoft.AspNetCore.Http.Result.JsonResult[3]
       Writing value of type 'CloudPaymentResponse' as Json.
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
-      Executed endpoint 'HTTP: POST /payments/cards/charge'
+      Executed endpoint 'HTTP: POST /payments/cards/charge =&gt; HandleCharge'
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
-      Request finished HTTP/1.1 POST http://localhost:18081/payments/cards/charge - 200 - application/json;+charset=utf-8 195.7303ms
+      Request finished HTTP/1.1 POST http://localhost:18081/payments/cards/charge - 200 - application/json;+charset=utf-8 218.4325ms
 info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
       Request starting HTTP/1.1 POST http://localhost:18081/payments/get - application/json;+charset=utf-8 -
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
-      Executing endpoint 'HTTP: POST /payments/get'
+      Executing endpoint 'HTTP: POST /payments/get =&gt; HandleGet'
 info: Microsoft.AspNetCore.Http.Result.JsonResult[3]
       Writing value of type 'CloudPaymentResponse' as Json.
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
-      Executed endpoint 'HTTP: POST /payments/get'
+      Executed endpoint 'HTTP: POST /payments/get =&gt; HandleGet'
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
-      Request finished HTTP/1.1 POST http://localhost:18081/payments/get - 200 - application/json;+charset=utf-8 6.2683ms
+      Request finished HTTP/1.1 POST http://localhost:18081/payments/get - 200 - application/json;+charset=utf-8 7.8324ms
 info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
       Request starting HTTP/1.1 POST http://localhost:18081/payments/refund - application/json;+charset=utf-8 -
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
-      Executing endpoint 'HTTP: POST /payments/refund'
+      Executing endpoint 'HTTP: POST /payments/refund =&gt; HandleRefund'
 info: Microsoft.AspNetCore.Http.Result.JsonResult[3]
       Writing value of type 'CloudPaymentResponse' as Json.
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
-      Executed endpoint 'HTTP: POST /payments/refund'
+      Executed endpoint 'HTTP: POST /payments/refund =&gt; HandleRefund'
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
-      Request finished HTTP/1.1 POST http://localhost:18081/payments/refund - 200 - application/json;+charset=utf-8 3.6601ms
+      Request finished HTTP/1.1 POST http://localhost:18081/payments/refund - 200 - application/json;+charset=utf-8 5.0150ms
 info: Microsoft.Hosting.Lifetime[0]
       Application is shutting down...
 info: Microsoft.Hosting.Lifetime[14]
@@ -90,26 +90,26 @@ info: Microsoft.Hosting.Lifetime[0]
 info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
       Request starting HTTP/1.1 POST http://localhost:18081/payments/cards/charge - application/json;+charset=utf-8 -
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
-      Executing endpoint 'HTTP: POST /payments/cards/charge'
+      Executing endpoint 'HTTP: POST /payments/cards/charge =&gt; HandleCharge'
 info: Microsoft.AspNetCore.Http.Result.JsonResult[3]
       Writing value of type 'CloudPaymentResponse' as Json.
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
-      Executed endpoint 'HTTP: POST /payments/cards/charge'
+      Executed endpoint 'HTTP: POST /payments/cards/charge =&gt; HandleCharge'
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
-      Request finished HTTP/1.1 POST http://localhost:18081/payments/cards/charge - 200 - application/json;+charset=utf-8 9.9904ms
+      Request finished HTTP/1.1 POST http://localhost:18081/payments/cards/charge - 200 - application/json;+charset=utf-8 14.4026ms
 info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
       Request starting HTTP/1.1 POST http://localhost:18081/payments/get - application/json;+charset=utf-8 -
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
-      Executing endpoint 'HTTP: POST /payments/get'
+      Executing endpoint 'HTTP: POST /payments/get =&gt; HandleGet'
 info: Microsoft.AspNetCore.Http.Result.JsonResult[3]
       Writing value of type 'CloudPaymentResponse' as Json.
 info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
-      Executed endpoint 'HTTP: POST /payments/get'
+      Executed endpoint 'HTTP: POST /payments/get =&gt; HandleGet'
 info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
-      Request finished HTTP/1.1 POST http://localhost:18081/payments/get - 200 - application/json;+charset=utf-8 2.6792ms
+      Request finished HTTP/1.1 POST http://localhost:18081/payments/get - 200 - application/json;+charset=utf-8 2.7020ms
 info: Microsoft.Hosting.Lifetime[0]
       Application is shutting down...
-[xUnit.net 00:00:04.76]   Finished:    TheatreCenter.UnitTests
+[xUnit.net 00:00:07.97]   Finished:    TheatreCenter.UnitTests
 </StdOut>
     </Output>
   </ResultSummary>

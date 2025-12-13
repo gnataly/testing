@@ -1,7 +1,7 @@
 {
   "parallelizeTestCollections": false,
   "parallelizeAssembly": false,
-  "maxParallelThreads": -1,
+  "maxParallelThreads": 1,
   "diagnosticMessages": true,
   "internalDiagnosticMessages": true,
   "stopOnFail": false,
