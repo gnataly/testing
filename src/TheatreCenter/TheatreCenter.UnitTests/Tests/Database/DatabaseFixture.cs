@@ -60,7 +60,8 @@ public class DatabaseFixture : IAsyncLifetime
     public async Task InitializeAsync()
     {
         //CreateDatabaseAsync();
-        ApplyScriptAsync("01-create.sql");
+        await ApplyScriptAsync("01-create.sql");
+        await TruncateAllAsync();
         //ApplyScriptAsync("02-init_data.sql");
     }
 
@@ -254,6 +255,30 @@ public class DatabaseFixture : IAsyncLifetime
                 throw;
             }
         }
+    }
+
+    private async Task TruncateAllAsync()
+    {
+        const string truncateSql = @"
+TRUNCATE ""AccountActorFavorites"",
+         ""AccountMusicalFavorites"",
+         ""AccountTheatreFavorites"",
+         ""CastMembers"",
+         ""ActorRoles"",
+         ""MusicalThemes"",
+         ""Shows"",
+         ""Roles"",
+         ""Musicals"",
+         ""Themes"",
+         ""Actors"",
+         ""Theatres"",
+         ""Accounts""
+         RESTART IDENTITY CASCADE;";
+
+        await using var conn = new NpgsqlConnection(ConnectionString);
+        await conn.OpenAsync();
+        await using var cmd = new NpgsqlCommand(truncateSql, conn);
+        await cmd.ExecuteNonQueryAsync();
     }
 
 
